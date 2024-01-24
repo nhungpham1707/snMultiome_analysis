@@ -66,16 +66,7 @@ process_plan <- drake_plan(
   preInfer = target(make_anno_count_mx(sR,save_path=MergAtacInferInputDir, sngR_path=atacCellSngRDir),
                         transform = map(sR,
                         id_var = !!idLst,
-                        .id = id_var)) 
-  # mrgAtac = target(merge(c(atacSrDim), add.cell.ids = lbLst),
-  #                  transform = combine(atacSrDim,
-  #                                      id.var = !!idLst,
-  #                                      .id = id.var)),
-  # mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
-  # mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
-  )
-
-sample_demultiplex_plan <- drake_plan(
+                        .id = id_var)),
   h5Link = target(get_h5_link(lb, metadata),
                    transform = map(lb = !!mulLib,
                                    id.var = !!mulId,
@@ -123,12 +114,74 @@ sample_demultiplex_plan <- drake_plan(
   gexSID = target(assign_sample_name_and_tumor_type(metadata, gexNoContra),
                         transform = map(gexNoContra,
                                         id.var = !!mulId,
-                                        .id = id.var))
+                                        .id = id.var)),
+
+  atacDemul = target(assign_gex_to_atac(gexSID,atacSrDim),
+                        transform = map(gexSID,atacSrDim,
+                        id.var = !!mulId,
+                        .id = id.var))
+  # mrgAtac = target(merge(c(atacSrDim), add.cell.ids = lbLst),
+  #                  transform = combine(atacSrDim,
+  #                                      id.var = !!idLst,
+  #                                      .id = id.var)),
+  # mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
+  # mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
+  )
+
+# sample_demultiplex_plan <- drake_plan(
+  # h5Link = target(get_h5_link(lb, metadata),
+  #                  transform = map(lb = !!mulLib,
+  #                                  id.var = !!mulId,
+  #                                  .id = id.var)),
+  # gexSr = target(create_GEX_seurat(h5Link),
+  #                 transform = map(h5Link,
+  #                                 id.var = !!mulId,
+  #                                 .id = id.var)),
+  # gexSrstress = target(remove_stress_genes(gexSr, stress_gene_list),
+  #                           transform = map(gexSr,
+  #                                           id.var = !!mulId,
+  #                                           .id = id.var)),
+  # gexNor = target(normalize_dim_sr(gexSrstress),
+  #                  transform = map(gexSrstress,
+  #                                  id.var = !!mulId,
+  #                                  .id = id.var)),
+  # gexSex = target(calculate_sex_genes_module(gexNor),
+  #                      transform = map(gexNor,
+  #                                      id.var = !!mulId,
+  #                                      .id = id.var)),
+  # gexSexMeta = target(add_sex_metadata(gexSex),
+  #                      transform = map(gexSex,
+  #                                      id.var = !!mulId,
+  #                                      .id = id.var)),
+  # gexSoc = target(assign_metadata_from_souporcell(gexSexMeta, metadata),
+  #                  transform = map(gexSexMeta,
+  #                                  id.var = !!mulId,
+  #                                  .id = id.var)),
+  # vis_demul = target(visualize_soc_gender_demulti(gexSoc, 
+  #                                                 atacProcessFigDir),
+  #                    transform = map(gexSoc,id.var = !!mulId,
+  #                                    .id = id.var)),
+  # gexNoDb = target(remove_doublet_n_unknown(gexSoc),
+  #                      transform = map(gexSoc,
+  #                                      id.var = !!mulId,
+  #                                      .id = id.var)),
+  # gexNoUnknown = target(fix_unknown_gender_or_souporcell(gexNoDb),
+  #                     transform = map(gexNoDb,
+  #                                     id.var = !!mulId,
+  #                                     .id = id.var)),
+  # gexNoContra = target(remove_contradict_cells(gexNoUnknown),
+  #                        transform = map(gexNoUnknown,
+  #                                        id.var = !!mulId,
+  #                                        .id = id.var)),
+  # gexSID = target(assign_sample_name_and_tumor_type(metadata, gexNoContra),
+  #                       transform = map(gexNoContra,
+  #                                       id.var = !!mulId,
+  #                                       .id = id.var))
   # mergeGex = target(merge(c(gexSID), add.cell.ids = mulLib),
   #                    transform = combine(gexSID,
   #                                        id.var = !!mulId,
   #                                        .id = id.var))
-)
+# )
 
 # add_metadata_plan <- drake_plan(
 #   metadata = mergeGex$sampleID,
@@ -149,9 +202,10 @@ sample_demultiplex_plan <- drake_plan(
 #                 .id = id_var)) 
 # )
 
-plan <- bind_plans(combine_peak_plan, process_plan, sample_demultiplex_plan)
+# plan <- bind_plans(combine_peak_plan, process_plan, sample_demultiplex_plan)
+plan <- bind_plans(combine_peak_plan, process_plan)
 
-make(plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
+# make(plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
 
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_pipeline.png', font_size = 20 )
 
