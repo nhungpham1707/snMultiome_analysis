@@ -1,3 +1,5 @@
+output/
+*.out
 # History files
 .Rhistory
 .Rapp.history
