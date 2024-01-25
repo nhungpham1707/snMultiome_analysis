@@ -1,4 +1,4 @@
-setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code')
+setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu')
 ## Load your packages, e.g. library(drake).
 source("./packages.R")
 ## Load your R files ----
@@ -8,11 +8,15 @@ lapply(list.files("./R", full.names = TRUE), source)
 filename <- '30_11_2023_all_multiome_libraries.csv' 
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
-metadata <- metadata[c(1:3,5:6),] # to test code 
-lbLst <- unique(metadata$name)
+specialLib <- c("LX093_LX094_an_163")
+specialLibInd <- grep(specialLib, metadata$name)
+metadata <- metadata[-specialLibInd,]
+test_data <- metadata[c(1:3,5:6),] # to test code 
+lbLst <- unique(test_data$name)
 idLst <- lbLst %>% map(splitName)
-mulLib <- unique(metadata$name[nchar(metadata$souporcell_link) > 0])
+mulLib <- unique(test_data$name[nchar(test_data$souporcell_link) > 0])
 mulId <- mulLib %>% map(splitName)
+
 ## define plan ----
 
 combine_peak_plan <- drake_plan(
@@ -31,51 +35,42 @@ combine_peak_plan <- drake_plan(
 process_plan <- drake_plan(
   hg38 = getHg38Annotation(),
   atacSr = target(create_atacSr_w_disjoin(lb, metadata, allpeaksFilChr, hg38),
-                   transform = map(lb = !!lbLst,
-                                   id_var = !!idLst,
+                   transform = map(lb = !!mulLib,
+                                   id_var = !!mulId,
                                    .id = id_var)),
   atacSrMe = target(calculate_metrics(atacSr, metadata),
                       transform = map(atacSr,
-                                      id_var = !!idLst,
+                                      id_var = !!mulId,
                                       .id = id_var)),
   atacSrFil = target(sc_atac_filter_outliers(atacSrMe, 
                   figSavePath = atacProcessFigDir),
                   transform = map(atacSrMe,
-                                  id_var = !!idLst,
+                                  id_var = !!mulId,
                                   .id = id_var)),
   atacSrNor = target(sc_atac_normalize(atacSrFil),
                        transform = map(atacSrFil,
-                                       id.var = !!idLst,
+                                       id.var = !!mulId,
                                        .id = id_var)),
   atacSrDim = target(sc_atac_dim_redu(atacSrNor),
                        transform = map(atacSrNor,
-                                       id.var = !!idLst,
+                                       id.var = !!mulId,
                                        .id = id_var)),
   atacSrGeA = target(get_gene_activity(atacSrDim),
                         transform = map(atacSrDim,
-                                       id.var = !!idLst,
+                                       id.var = !!mulId,
                                        .id = id_var)),
   sR = target(run_singleR(atacSrGeA, save_path=atacCellSngRDir),
                         transform = map(atacSrGeA,
-                        id_var = !!idLst,
+                        id_var = !!mulId,
                         .id = id_var)),
-  psR = target(plot_singler(sR, save_path = atacCellSngRFigDir),
+  psR = target(plot_singler(sR, save_path=atacCellSngRFigDir),
                         transform = map(sR,
-                        id_var = !!idLst,
+                        id_var = !!mulId,
                         .id = id_var)),
   preInfer = target(make_anno_count_mx(sR,save_path=MergAtacInferInputDir, sngR_path=atacCellSngRDir),
                         transform = map(sR,
-                        id_var = !!idLst,
-                        .id = id_var)) 
-  # mrgAtac = target(merge(c(atacSrDim), add.cell.ids = lbLst),
-  #                  transform = combine(atacSrDim,
-  #                                      id.var = !!idLst,
-  #                                      .id = id.var)),
-  # mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
-  # mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
-  )
-
-sample_demultiplex_plan <- drake_plan(
+                        id_var = !!mulId,
+                        .id = id_var)),
   h5Link = target(get_h5_link(lb, metadata),
                    transform = map(lb = !!mulLib,
                                    id.var = !!mulId,
@@ -123,33 +118,26 @@ sample_demultiplex_plan <- drake_plan(
   gexSID = target(assign_sample_name_and_tumor_type(metadata, gexNoContra),
                         transform = map(gexNoContra,
                                         id.var = !!mulId,
-                                        .id = id.var))
-  # mergeGex = target(merge(c(gexSID), add.cell.ids = mulLib),
-  #                    transform = combine(gexSID,
-  #                                        id.var = !!mulId,
-  #                                        .id = id.var))
-)
+                                        .id = id.var)),
 
-# add_metadata_plan <- drake_plan(
-#   metadata = mergeGex$sampleID,
-# )
+  atacDemul = target(addMetAtac(gexSID,atacSrDim),
+                        transform = map(gexSID,atacSrDim,
+                        id.var = !!mulId,
+                        .id = id.var))
+  
+  # mrgAtac = target(merge(c(atacSrDim), add.cell.ids = lbLst),
+  #                  transform = combine(atacSrDim,
+  #                                      id.var = !!idLst,
+  #                                      .id = id.var)),
+  # mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
+  # mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
+  )
 
-# cell_annotation_plan <- drake_plan(
-#   sR = target(run_singleR(atacSrGeA, atacCellSngRDir),
-#                 transform = map(atacSrGeA,
-#                 id_var = !!idLst,
-#                 .id = id_var)),
-#   psR = target(plot_singler(sR),
-#                 transform = map(sR,
-#                 id_var = !!idLst,
-#                 .id = id_var)),
-#   preInfer = target(make_anno_count_mx(sR),
-#                 transform = map(sR,
-#                 id_var = !!idLst,
-#                 .id = id_var)) 
-# )
-
-plan <- bind_plans(combine_peak_plan, process_plan, sample_demultiplex_plan)
+# plan <- bind_plans(combine_peak_plan, process_plan, sample_demultiplex_plan)
+plan <- bind_plans(combine_peak_plan, process_plan)
+# options(clustermq.scheduler = "multicore") # nolint
+# make(plan, parallelism = "clustermq", jobs = 3, lock_cache = FALSE)
+# make(plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
 
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_pipeline.png', font_size = 20 )
 

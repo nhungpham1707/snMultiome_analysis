@@ -1,4 +1,4 @@
-setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code')
+setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu')
 ## Load your packages, e.g. library(drake).
 source("./packages.R")
 ## Load your R files ----

@@ -5,12 +5,16 @@ get_met <- function(gexSr){
     return(metaDf)
 }
 
-addMetAtac <- function(gexSr,AtacSr){
-    metaDf <- get_met(gexSr)
-    AtacSr <- AddMetadata(AtacSr, metaDf)
-    return(AtacSr)
+removeDbAtac <- function(gexSr,atacSr){
+    db <- setdiff(colnames(atacSr), colnames(gexSr))
+    to_keep <- setdiff(colnames(atacSr), db)
+    atacSr <- subset(x = atacSr, subset = barcodes %in% to_keep)
 }
 
-removeDbAtac <- function(AtacSr){
-    
+addMetAtac <- function(gexSr,atacSr){
+    atacSr <- removeDbAtac(gexSr,atacSr)
+    metaDf <- get_met(gexSr)
+    atacSr <- AddMetaData(atacSr, metaDf)
+    return(atacSr)
 }
+

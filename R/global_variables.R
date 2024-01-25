@@ -61,10 +61,9 @@ sc_atac_merge_sr_dir <- paste0(output_dir,'/sc_atac/merge_all')
 cell_type_atac_dir <- paste0(cell_type_dir, '/sc_atac')
 cell_type_atac_fig_dir <- paste0(cell_type_fig_dir, '/sc_atac')
 cellAtacInferDir <- paste0(cell_type_atac_dir, '/infercnv')
+AtacInferInputDir <- paste0(cellAtacInferDir, '/Input')
 cell_type_atac_infercnv_fig_dir <- paste0(cell_type_atac_fig_dir, '/infercnv')
 cellAtacInferMergDir <- paste0(cellAtacInferDir, '/merge_sr')
-MergAtacInferInputDir <- paste0(cellAtacInferMergDir, '/Input')
-
 atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
 cell_type_atac_singler_fig_dir <- paste0(cell_type_atac_fig_dir, '/singler')
 
@@ -107,7 +106,7 @@ dir.create(cell_type_atac_singler_fig_dir, recursive = TRUE)
 dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
 dir.create(hyperparameter_atac_dir, recursive = TRUE)
 dir.create(clustering_atac_dir, recursive = TRUE)
-dir.create(MergAtacInferInputDir, recursive = TRUE)
+dir.create(AtacInferInputDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 

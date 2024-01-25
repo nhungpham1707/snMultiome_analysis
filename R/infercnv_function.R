@@ -1,12 +1,12 @@
 # sR output from singleR
-make_anno_count_mx <- function(sR, save_path,sngR_path){
-    sr <- sR$sr
+# sr is seurat atac with gene activity 
+make_anno_count_mx <- function(sR, sr, save_path){
+    # sr <- sR$sr
     lib <- unique(sr$library)
-    singleR_res = readRDS(paste0(sngR_path, '/singleR_', lib, '.RDS'))
-    labels <- singleR_res$labels
-    names(labels) <- rownames(singleR_res)
+    # singleR_res = readRDS(paste0(sngR_path, '/singleR_', lib, '.RDS'))
+    labels <- sR$labels
+    names(labels) <- rownames(sR)
     sr_sngr <- AddMetaData(sr, metadata=labels, col.name = 'singleR_labels')
-    saveRDS(sr_sngr, paste0(save_path, '/', lib, '_AtacsrSngRLabel.RDS'))
     count_matrix <- GetAssayData(sr, slot = 'counts')
     saveRDS(count_matrix,paste0(save_path,"/", lib, "_sr_count_matrix.RDS") )
     df <- data.frame(cell = colnames(sr_sngr), type = sr_sngr@meta.data$singleR_labels)

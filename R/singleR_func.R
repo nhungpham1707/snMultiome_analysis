@@ -1,5 +1,5 @@
 # slot_name is the field name in the sr. e.g. "RNA", 'Gene Expression', 'peaks'. For sc_atac with gene activity it is 'RNA'. for sc_rna, it is 'rna'
-run_singleR <- function(sr, save_path, slot_name = 'RNA'){
+run_singleR <- function(sr, slot_name = 'RNA'){
     input <- as.matrix(sr[[slot_name]]@data)
     hpca.se <- celldex::HumanPrimaryCellAtlasData()
     labels = hpca.se$label.main
@@ -24,21 +24,12 @@ run_singleR <- function(sr, save_path, slot_name = 'RNA'){
                 assay.type.test = "logcounts",
                 assay.type.ref = "logcounts",
                 check.missing = TRUE)
-    lib <- unique(sr$library)
-    # unaligned.idents <- sr@active.ident
-    saveRDS(singler, file = paste0(save_path, '/singleR_', lib, '.RDS'))
-    res <- c()
-    res[['sr']] <- sr
-    res[['singler']] <- singler
-    res[['cluster']] <- sr@active.ident
-    res[['lb']] <- lib
-    return(res)
+    return(singler)
 }
 
-plot_singler <- function(res, save_path){
-    lib <- res[['lb']]
-    singler <- res[['singler']]
-    cluster <- res[['cluster']]
+plot_singler <- function(singler, sr, save_path){
+    cluster <- sr@active.ident
+    lib <- unique(sr$library)
     png(paste0(save_path, '/singler_score_heatmap_',lib, '.png'), width = 1200 * reso/72, height = 700 * reso/72, units ="px", res = reso)
     plotScoreHeatmap(
     singler,
