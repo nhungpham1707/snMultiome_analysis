@@ -2,21 +2,28 @@ setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu')
 ## Load your packages, e.g. library(drake).
 source("./packages.R")
 ## Load your R files ----
-lapply(list.files("./R", full.names = TRUE), source)
+functions_folder <- './R'
+list_files_with_exts(functions_folder, 'R') %>%
+  lapply(source) %>% invisible()
 
 ## read metadata ----
-filename <- '30_11_2023_all_multiome_libraries.csv' 
+filename <- '25012024_all_multiome_lib.csv'
 metadata <- getData(filename, delim = ',')
-ori_metadata <- metadata
 specialLib <- c("LX093_LX094_an_163")
 specialLibInd <- grep(specialLib, metadata$name)
-metadata <- metadata[-specialLibInd,]
-test_data <- metadata[c(1:3,5:6),] # to test code 
+nospecialMet <- metadata[-specialLibInd,]
+test_data <- nospecialMet[c(1:3,5:6),] # to test code 
 lbLst <- unique(test_data$name)
 idLst <- lbLst %>% map(splitName)
+# get multiplex libraries list 
 mulLib <- unique(test_data$name[nchar(test_data$souporcell_link) > 0])
 mulId <- mulLib %>% map(splitName)
-
+# get single libraries list 
+sngLib <- unique(test_data$name[nchar(test_data$souporcell_link) == 0])
+snglId <- sngLib %>% map(splitName)
+# get libraries that only demultiplex 
+# with souporcell
+soclId <- specialLib %>% map(splitName)
 ## define plan ----
 
 combine_peak_plan <- drake_plan(
@@ -32,8 +39,38 @@ combine_peak_plan <- drake_plan(
   allpeaksFilChr = filterChrBlacklist(allpeaksFil), 
 )
 
+
+process_special_lib_plan <- drake_plan(
+  ## process ---
+  atacSr_specialLib = create_atacSr_w_disjoin(specialLib, metadata, allpeaksFilChr, hg38),
+  atacSrMe_specialLib = calculate_metrics(atacSr_specialLib, metadata),
+  atacSrFil_specialLib = sc_atac_filter_outliers(atacSrMe_specialLib, 
+                  figSavePath = atacProcessFigDir),
+  atacSrNor_specialLib = sc_atac_normalize(atacSrFil_specialLib),
+  atacSrDim_specialLib = sc_atac_dim_redu(atacSrNor_specialLib),
+  atacSrGeA_specialLib = get_gene_activity(atacSrDim_specialLib),
+  ## run singler ---
+  sR_specialLib = run_singleR(atacSrGeA_specialLib),
+  psR_specialLib = plot_singler(sR_specialLib, atacSrGeA_specialLib, save_path=atacCellSngRFigDir),
+  ## prep for infercnv ---
+  preInfer_specialLib = make_anno_count_mx(sR_specialLib,atacSrGeA_specialLib, save_path=AtacInferInputDir),
+  ## samples demultiplex with only souporcell ---
+  h5Link_specialLib = get_h5_link(specialLib, metadata),
+  gexSr_specialLib = create_GEX_seurat(h5Link_specialLib),
+  gexSrstress_specialLib = remove_stress_genes(gexSr_specialLib, stress_gene_list),
+  gexNor_specialLib = normalize_dim_sr(gexSrstress_specialLib),
+  gexSoc_specialLib = assign_metadata_from_souporcell(gexNor_specialLib, metadata),
+  vis_demul_specialLib = visualize_soc_demulti(gexSoc_specialLib, atacProcessFigDir),
+  gexNoDb_specialLib = remove_soc_db_unknown(gexSoc_specialLib),
+  gexSID_specialLib = addMetaSoc(gexNoDb_specialLib),
+  atacDemul_specialLib = addMetSocAtac(gexSID_specialLib,atacSrDim_specialLib),
+  atacMeta_specialLib = addMetaFromFile(ori_metadata, atacDemul_specialLib)
+)
+
 process_plan <- drake_plan(
   hg38 = getHg38Annotation(),
+  # multiplex sample
+  ## process ---
   atacSr = target(create_atacSr_w_disjoin(lb, metadata, allpeaksFilChr, hg38),
                    transform = map(lb = !!mulLib,
                                    id_var = !!mulId,
@@ -59,6 +96,7 @@ process_plan <- drake_plan(
                         transform = map(atacSrDim,
                                        id.var = !!mulId,
                                        .id = id_var)),
+  ## run singler ---
   sR = target(run_singleR(atacSrGeA),
                         transform = map(atacSrGeA,
                         id_var = !!mulId,
@@ -67,12 +105,13 @@ process_plan <- drake_plan(
                         transform = map(sR,atacSrGeA,
                         id_var = !!mulId,
                         .id = id_var)),
+  ## prep for infercnv ---
   preInfer = target(make_anno_count_mx(sR,atacSrGeA, save_path=AtacInferInputDir),
                         transform = map(sR,atacSrGeA,
                         id_var = !!mulId,
                         .id = id_var)),
   
-  # demultiplex ----
+  ## demultiplex -- 
   h5Link = target(get_h5_link(lb, metadata),
                    transform = map(lb = !!mulLib,
                                    id.var = !!mulId,
@@ -125,18 +164,67 @@ process_plan <- drake_plan(
   atacDemul = target(addMetAtac(gexSID,atacSrDim),
                         transform = map(gexSID,atacSrDim,
                         id.var = !!mulId,
-                        .id = id.var))
-  
-  # mrgAtac = target(merge(c(atacSrDim), add.cell.ids = lbLst),
-  #                  transform = combine(atacSrDim,
-  #                                      id.var = !!idLst,
-  #                                      .id = id.var)),
-  # mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
-  # mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
+                        .id = id.var)),
+  atacMeta = target(addMetaFromFile(ori_metadata, atacDemul),
+                    transform = map(atacDemul,
+                    id.var = !!mulId,
+                    .id = id.var)),
+  # single libraries ----
+  ## process ---
+  atacSrsg = target(create_atacSr_w_disjoin(lb, metadata, allpeaksFilChr, hg38),
+                   transform = map(lb = !!sngLib,
+                                   id_var = !!snglId,
+                                   .id = id_var)),
+  atacSrMesg = target(calculate_metrics(atacSrsg, metadata),
+                      transform = map(atacSrsg,
+                                      id_var = !!snglId,
+                                      .id = id_var)),
+  atacSrFilsg = target(sc_atac_filter_outliers(atacSrMesg, 
+                  figSavePath = atacProcessFigDir),
+                  transform = map(atacSrMesg,
+                                  id_var = !!snglId,
+                                  .id = id_var)),
+  atacSrNorsg = target(sc_atac_normalize(atacSrFilsg),
+                       transform = map(atacSrFilsg,
+                                       id.var = !!snglId,
+                                       .id = id_var)),
+  atacSrDimsg = target(sc_atac_dim_redu(atacSrNorsg),
+                       transform = map(atacSrNorsg,
+                                       id.var = !!snglId,
+                                       .id = id_var)),
+  atacSrGeAsg = target(get_gene_activity(atacSrDimsg),
+                        transform = map(atacSrDimsg,
+                                       id.var = !!snglId,
+                                       .id = id_var)),
+  ## run singler ---
+  sRsg = target(run_singleR(atacSrGeAsg),
+                        transform = map(atacSrGeAsg,
+                        id_var = !!snglId,
+                        .id = id_var)),
+  psRsg = target(plot_singler(sRsg, atacSrGeAsg, save_path=atacCellSngRFigDir),
+                        transform = map(sRsg,atacSrGeAsg,
+                        id_var = !!snglId,
+                        .id = id_var)),
+  ## prep for infercnv ---
+  preInfersg = target(make_anno_count_mx(sRsg,atacSrGeAsg, save_path=AtacInferInputDir),
+                        transform = map(sRsg,atacSrGeAsg,
+                        id_var = !!snglId,
+                        .id = id_var)),
+  atacMetasg = target(addMetaFromFile(ori_metadata, atacSrDimsg),
+                    transform = map(atacSrDimsg,
+                    id.var = !!snglId,
+                    .id = id.var)),
+  ## merge -----
+
+  mrgAtac = target(merge(x =  atacDemul_specialLib, y= c(atacMeta,atacMetasg), add.cell.ids = c(specialLib,lbLst, sngLib)),
+                   transform = combine(atacMeta,atacMetasg,
+                                       id.var = !!idLst,
+                                       .id = id.var)),
+  mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
+  mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor))
   )
 
-# plan <- bind_plans(combine_peak_plan, process_plan, sample_demultiplex_plan)
-plan <- bind_plans(combine_peak_plan, process_plan)
+plan <- bind_plans(process_special_lib_plan, combine_peak_plan, process_plan)
 # options(clustermq.scheduler = "multicore") # nolint
 # make(plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
 make(plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)

@@ -99,6 +99,12 @@ visualize_soc_gender_demulti <- function(sr, figSavePath){
   
   savePlot(paste0(figSavePath,'/', lb,"_samples_demultiplex.png"), p)
 }
+visualize_soc_demulti <- function(sr, figSavePath){
+  lb <- unique(sr$library)
+  p <- DimPlot(sr, group.by = 'genotype', reduction = "umap", order = T)
+  
+  savePlot(paste0(figSavePath,'/', lb,"_samples_demultiplex.png"), p)
+}
 
 # assign gender for final assessment based on combined res 
 # from souporcel and gender 
@@ -118,6 +124,17 @@ remove_doublet_n_unknown <- function(sr){
   db_sex <- which(sr$sex == 'doublets')
   db_geno <- which(sr$genotype == 'doublet')
   torm_cells <- unique(colnames(sr)[c(unknown_cells,db_sex, db_geno)])  
+  to_keep <- setdiff(colnames(sr), torm_cells)
+  sr_rm <- subset(x = sr, subset = barcodes %in% to_keep)
+  lb <- unique(sr$library)
+  write.csv(torm_cells, paste0(report_dir, '/', lb, '_doublets_n_unkown_cells_to_remove.csv'))
+  return(sr_rm)
+}
+
+remove_soc_db_unknown <- function(sr){
+  unknown_cells <- which(sr$genotype == 'unassigned')
+  db_geno <- which(sr$genotype == 'doublet')
+  torm_cells <- unique(colnames(sr)[c(unknown_cells, db_geno)])  
   to_keep <- setdiff(colnames(sr), torm_cells)
   sr_rm <- subset(x = sr, subset = barcodes %in% to_keep)
   lb <- unique(sr$library)

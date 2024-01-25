@@ -1,8 +1,7 @@
 # data_file_name is the sample_gender_meta_data 
 getData <- function(filename, delim = ','){
   message('--reading metadata file----')
-  data <- read.csv(paste0(base_data_dir, '/', filename), 
-                   sep = delim)
+  data <- read.csv(paste0(base_data_dir, '/', filename), sep = delim, row.names = NULL)
   return (data)
 }
 

@@ -55,6 +55,7 @@ suppressPackageStartupMessages({
   library(celldex)
   library(scROSHI) # dev github version  
   library(scales) # for default colors 
+  library(tools)
   
   conflict_prefer('select', 'clusterProfiler')
   conflict_prefer('filter', 'clusterProfiler')
