@@ -34,9 +34,10 @@ getMultiplexMet <- function(metadata, sLst, sr){
 
 getSinglexMet <- function(metadata, sr){
     lib <- unique(sr$library)
-    sMet <- metadata[which(metadata$name == lib)]
-    sMet <- map_dfr(seq_len(length(sr$barcodes)), ~sMet)
-    rownames(sMet) <- sr$barcodes
+    sMet <- metadata[which(metadata$name == lib),]
+    barcodes <- sr$barcodes
+    sMet <- map_dfr(seq_len(length(barcodes)), ~sMet)
+    rownames(sMet) <- barcodes
     return(sMet)
 }
 addMetaFromFile <- function(metadata, sr){
@@ -48,7 +49,7 @@ addMetaFromFile <- function(metadata, sr){
         meta <- getMultiplexMet(metadata, sLst, sr)} else {
         meta <- getSinglexMet(metadata, sr)
         }
-    sr <- addMetaData(sr, meta)
+    sr <- AddMetaData(sr, meta)
 }
 
 # for samples that have similar genders in 
@@ -56,7 +57,7 @@ addMetaFromFile <- function(metadata, sr){
 # on souporcell # sr are gex after demultiplex ,after removing unknown and doublet souporcell
 addMetaSoc <- function(metadata, sr){
     lib <- unique(sr$library)
-    metadata <- which(metadata$name == lib)
+    metadata <- metadata[which(metadata$name == lib),]
     gLst <- unique(sr$genotype)
     allMet <- c()
     for (i in 1:length(gLst)){
@@ -68,7 +69,7 @@ addMetaSoc <- function(metadata, sr){
         }
     rownames(allMet) <- allMet$barcodes
     allMet <- allMet[,-ncol(allMet)]
-    sr <- addMetaData(sr, allMet)
+    sr <- AddMetaData(sr, allMet)
 }
 
 

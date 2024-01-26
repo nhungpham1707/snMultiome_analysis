@@ -5,8 +5,6 @@ getData <- function(filename, delim = ','){
   return (data)
 }
 
-
-
 # generate shorter lib name to be visible in drake graph
 splitName <- function(name){
   name <- strsplit(name, split = '_')[[1]][1]

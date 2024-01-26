@@ -54,3 +54,10 @@ plot_singler <- function(singler, sr, save_path){
     )
     dev.off()
 }
+# sR singler res
+# sr seurat after normalize and dim reduc
+get_sgR_label <- function(sR,sr){
+    labels <- sR$labels
+    names(labels) <- rownames(sR)
+    sr_sngr <- AddMetaData(sr, metadata=labels, col.name = 'singleR_labels')
+}
