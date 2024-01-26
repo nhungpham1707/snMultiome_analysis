@@ -128,8 +128,7 @@ get_nCount_outlier <- function(atacSr, atacSce, figSavePath){
   lb <- unique(atacSr$library)
   plot_isoutlier(atacSce, yName='nCount_peaks',
                  toColor = ncountOutlier, 
-                 saveName = paste0('scATAC_outlier_nucleosome_signal_', 
-                                   lb, '.png'),
+                 saveName = paste0(lb,'_scATAC_outlier_nucleosome_signal.png'),
                  savePath = figSavePath)
   return(ncountThred)
 }
@@ -141,8 +140,7 @@ blacklistThred <- attr(blacklistOutlier, "thresholds")
 lb <- unique(atacSr$library)
 plot_isoutlier(atacSce, yName="blacklist_fraction",
                toColor = blacklistOutlier, 
-               saveName = paste0('scATAC_outlier_blacklist_fraction_', 
-                                 lb, '.png'),
+               saveName = paste0(lb,'_scATAC_outlier_blacklist_fraction.png'),
                savePath = figSavePath)
 return(blacklistThred)
 }
@@ -155,8 +153,7 @@ get_nucleosome_outlier <- function(atacSr, atacSce, figSavePath){
   lb <- unique(atacSr$library)
   plot_isoutlier(atacSce, yName="nucleosome_signal",
                  toColor = nucleOutlier, 
-                 saveName = paste0('scATAC_outlier_nucleosome_signal_', 
-                                   lb, '.png'),
+                 saveName = paste0(lb,'_scATAC_outlier_nucleosome_signal.png'),
                  savePath = figSavePath)
   return(nucleThred)
 }
@@ -167,8 +164,7 @@ get_TSS_outlier <- function(atacSr, atacSce, figSavePath){
   lb <- unique(atacSr$library)
   plot_isoutlier(atacSce, yName="TSS.enrichment",
                  toColor = TSSOutlier, 
-                 saveName = paste0('scATAC_outlier_TSS_enrichment_', 
-                                   lb, '.png'),
+                 saveName = paste0(lb,'_scATAC_outlier_TSS_enrichment.png'),
                  savePath = figSavePath)
   return(TSSThred)
 }

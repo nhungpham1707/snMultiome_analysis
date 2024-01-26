@@ -13,11 +13,12 @@ make_anno_count_mx <- function(sR, sr, save_path){
     write.table(df, file = paste0(save_path,"/", lib, "_sr_cell_annotation.txt"), sep = "\t", quote = FALSE, na = "", row.names = FALSE, col.names = FALSE)
 }
 
+# mrgsr is merge seurat after gene activity
 make_anno_count_Mrgmx <- function(mrgsr, save_path){
     count_matrix <- GetAssayData(mrgsr, slot = 'counts')
     saveRDS(count_matrix,paste0(save_path,"/merge_sr_count_matrix.RDS") )
     df <- data.frame(cell = colnames(mrgsr), type = mrgsr@meta.data$singleR_labels)
-    write.table(df, file = paste0(save_path,"/", lib, "_sr_cell_annotation.txt"), sep = "\t", quote = FALSE, na = "", row.names = FALSE, col.names = FALSE)
+    write.table(df, file = paste0(save_path,"/merge_sr_cell_annotation.txt"), sep = "\t", quote = FALSE, na = "", row.names = FALSE, col.names = FALSE)
 }
 
 make_infercnvObj <- function(lib, normal_cells,geneOderLink, inLink){

@@ -18,11 +18,11 @@ nospecialMet <- metadata[-specialLibInd,]
 soclId <- specialLib %>% map(splitName)
 # get multiplex libraries list 
 mulLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) > 0])
-mulLib <- mulLib[1]
+# mulLib <- mulLib[1]
 mulId <- mulLib %>% map(splitName)
 # get single libraries list 
 sngLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) == 0])
-sngLib <- sngLib[1]
+# sngLib <- sngLib[1]
 snglId <- sngLib %>% map(splitName)
 # get all samples to make combine peaks
 
@@ -239,17 +239,19 @@ process_plan <- drake_plan(
                                        .id = id.var)),
   mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
   mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor)),
-  mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_color2),
-  mrgPsID = dimplot_w_nCell_label(mrgAtacDim, by = 'sampleID',atacMrgFigDir , col = my_color2),
-  mrgPlibnCell = dimplot_w_nCell_label(mrgAtacDim, by = 'library',atacMrgFigDir , col = my_color2),
+  mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_cols2),
+  mrgPsID = dimplot_w_nCell_label(mrgAtacDim, by = 'sampleID',atacMrgFigDir , col = my_cols2),
+  mrgPlibnCell = dimplot_w_nCell_label(mrgAtacDim, by = 'library',atacMrgFigDir , col = my_cols2),
   mrgP = dimplotnSave(mrgAtacDim, atacMrgFigDir, save_name = 'cluster'),
   mrgPlib = dimplotBynSave(mrgAtacDim, by = 'library',
-                           atacMrgFigDir, save_name = 'lib_no_nCell', col = my_color2)
+                           atacMrgFigDir, save_name = 'lib_no_nCell', col = my_cols2),
+  # prep for infercnv
+  mrgGA = get_gene_activity(mrgAtacDim),
+  preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir)
 )
 
-plan <- bind_plans(process_special_lib_plan, combine_peak_plan, process_plan)
-# options(clustermq.scheduler = "multicore") # nolint
-# make(plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
+plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
+
 # make(plan, lock_cache = FALSE)
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_pipeline.png', font_size = 20 )
 

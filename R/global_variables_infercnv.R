@@ -31,7 +31,7 @@
 # ---------------------------------------
 
 # define dir -------
-base_sc_dir <- "/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code" # modify if change project
+base_sc_dir <- "/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu" # modify if change project
 base_data_dir <- '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/analyses/analyses'  # modify if change project
 output_dir <- paste0(base_sc_dir, '/output')
 report_dir <- paste0(output_dir,'/report')
@@ -55,18 +55,17 @@ cell_type_rna_scroshi_dir <- paste0(cell_type_rna_dir, '/scROSHI')
 atacProcessDir<-paste0(output_dir,'/sc_atac/processing') 
 atacProcessFigDir <- paste0(output_dir,'/figures/sc_atac/processing')
 atacDemultiFigDir <- paste0(output_dir,'/figures/sc_atac/demultiplex')
-sc_atac_merge_sr_fig_dir <- paste0(output_dir,'/figures/sc_atac/merge_all')
+atacMrgFigDir <- paste0(output_dir,'/figures/sc_atac/merge_all')
 sc_atac_merge_sr_dir <- paste0(output_dir,'/sc_atac/merge_all')
 
 cell_type_atac_dir <- paste0(cell_type_dir, '/sc_atac')
 cell_type_atac_fig_dir <- paste0(cell_type_fig_dir, '/sc_atac')
 cellAtacInferDir <- paste0(cell_type_atac_dir, '/infercnv')
-
+AtacInferInputDir <- paste0(cellAtacInferDir, '/Input')
+cell_type_atac_infercnv_fig_dir <- paste0(cell_type_atac_fig_dir, '/infercnv')
 cellAtacInferMergDir <- paste0(cellAtacInferDir, '/merge_sr')
-MergAtacInferInputDir <- paste0(cellAtacInferMergDir, '/Input')
-
 atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
-atacCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singler')
+cell_type_atac_singler_fig_dir <- paste0(cell_type_atac_fig_dir, '/singler')
 
 cell_type_atac_scroshi_dir <- paste0(cell_type_atac_dir, '/scROSHI')
 
@@ -95,12 +94,16 @@ dir.create(atacProcessDir, recursive = TRUE)
 dir.create(atacProcessFigDir, recursive = TRUE)
 dir.create(atacDemultiFigDir, recursive = TRUE)
 dir.create(sc_atac_merge_sr_dir, recursive = TRUE)
-dir.create(sc_atac_merge_sr_fig_dir, recursive = TRUE)
+dir.create(atacMrgFigDir, recursive = TRUE)
 
 dir.create(cell_type_atac_dir, recursive = TRUE)
 dir.create(cell_type_atac_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferDir, recursive = TRUE)
+dir.create(cell_type_atac_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferMergDir, recursive = TRUE)
 dir.create(atacCellSngRDir, recursive = TRUE)
-dir.create(atacCellSngRFigDir, recursive = TRUE)
-dir.create(MergAtacInferInputDir, recursive = TRUE)
+dir.create(cell_type_atac_singler_fig_dir, recursive = TRUE)
+dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
+dir.create(hyperparameter_atac_dir, recursive = TRUE)
+dir.create(clustering_atac_dir, recursive = TRUE)
+dir.create(AtacInferInputDir, recursive = TRUE)

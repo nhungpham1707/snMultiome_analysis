@@ -31,7 +31,7 @@
 # ---------------------------------------
 
 # define dir -------
-base_sc_dir <- "/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code" # modify if change project
+base_sc_dir <- "/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu" # modify if change project
 base_data_dir <- '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/analyses/analyses'  # modify if change project
 output_dir <- paste0(base_sc_dir, '/output')
 report_dir <- paste0(output_dir,'/report')
