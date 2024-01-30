@@ -232,8 +232,8 @@ process_plan <- drake_plan(
                                       id.var = !!snglId,
                                       .id = id.var)),
   ## merge -----
-  mrgAtac = target(merge(x =  atacSrDim_specialLib, y= c(atacSrDim,atacSrDimsg),add.cell.ids = c(specialLib,mulLib,sngLib)),
-                   transform = combine(atacSrDim,atacSrDimsg,
+  mrgAtac = target(merge_pairwise(c(atacMeta_specialLib, atacMeta, atacMetasg),atcMrgDir),
+            transform = combine(atacMeta,atacMetasg,
                     id.var = !!c(mulLib, sngLib),
                     .id = id.var)),
   mrgAtacNor = target(sc_atac_normalize(mrgAtac)),

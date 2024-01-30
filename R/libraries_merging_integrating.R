@@ -16,3 +16,16 @@ integration_w_anchors <- function(sr_list){
 FindIntegrationAnchors(sr_list, reduction = 'rlsi')
 sr.integrated <- IntegrateData(anchorset = anchors, dims = 1:50)
 }
+
+# merge pairwise to reduce memory use 
+merge_pairwise <- function(sr_list, save_path){
+  srMrg <- sr_list[[1]]
+  for (i in 2:length(sr_list)){
+    message(paste('merging', i, 'samples'))
+    sr <- sr_list[[i]]
+    lib <-  unique(sr$library)
+    srMrg <- merge(x = srMrg, y = sr, add.cell.ids = c('',lib), merge.data = TRUE)
+    saveRDS(srMrg, file = paste0(save_path, '/merge_', i, 'samples.RDS'))       
+  }
+  return(srMrg)
+}

@@ -10,7 +10,7 @@ list_files_with_exts(functions_folder, 'R') %>%
 baseDir <- '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes'
 healthy_metadata <- read.csv(paste0(baseDir,'/filtered.cell_metadata.for_website.txt.gz'), sep = '\t')
 all_tissue_list <- unique(healthy_metadata$tissue)
-tissue_list <- all_tissue_list[1:2]
+tissue_list <- all_tissue_list
 
 healthy_plan <- drake_plan(
     hthysr = target(readRDS(paste0(baseDir, '/', ts, '_filtered.seurat.for_website.RDS')),
@@ -35,7 +35,14 @@ healthy_plan <- drake_plan(
                             .id = id.vars)),
     hthymrgNor = sc_atac_normalize(hthymrg),
     hthymrgDim = sc_atac_dim_redu(hthymrgNor),
-    hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir)
+    hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir),
+    hthyanchors = target(FindIntegrationAnchors(c(hthyDim), 
+                   reduction = 'rlsi'),
+                  transform = combine(hthyDim,
+                      id.var = !!tissue_list,
+                      .id = id.)),
+    hthyInt = IntegrateData(anchorset = hthyanchors, dims = 1:50)
 )
+
 
 vis_drake_graph(healthy_plan, targets_only = TRUE, lock_cache = FALSE, file = 'healthy.png', font_size = 20 )

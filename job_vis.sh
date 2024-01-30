@@ -13,6 +13,7 @@ conda activate r43_copy
 Rscript _drake_vis_infercnv.R
 
 conda activate scRNA_scATAC_env_copy
+Rscript _drake_vis_no_relapse.R
 Rscript _drake_vis_graph.R
 Rscript _drake_vis_healthy.R
 echo 'test conda worked!'

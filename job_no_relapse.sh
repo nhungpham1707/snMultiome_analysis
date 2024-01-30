@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=mergepw
-#SBATCH --output=mergepairwise.out
+#SBATCH --job-name=norelapse
+#SBATCH --output=norelapse.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=375G
+#SBATCH --mem=300G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END
@@ -12,7 +12,7 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 
 # process, merge and prep for infercnv
 conda activate scRNA_scATAC_env_copy
-Rscript _drake.R
+Rscript _drake_no_relapse.R
 
 # run infercnv 
 # conda activate r43_copy
