@@ -23,11 +23,11 @@ nospecialMet <- metadata[-specialLibInd,]
 soclId <- specialLib %>% map(splitName)
 # get multiplex libraries list 
 mulLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) > 0])
-mulLib <- mulLib[1]
+# mulLib <- mulLib[1]
 mulId <- mulLib %>% map(splitName)
 # get single libraries list 
 sngLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) == 0])
-sngLib <- sngLib[1]
+# sngLib <- sngLib[1]
 snglId <- sngLib %>% map(splitName)
 # get all samples to make combine peaks
 
@@ -53,4 +53,8 @@ infercnv_plan <- drake_plan(
                             .id = id.vars))
 )
 make(infercnv_plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
+
+# options(clustermq.scheduler = "multicore") # nolint
+# make(infercnv_plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
+
 vis_drake_graph(infercnv_plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv.png', font_size = 20 )

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=drake_infercnv
-#SBATCH --output=drake_infercnv.out
+#SBATCH --output=drake_infercnv2.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=100G

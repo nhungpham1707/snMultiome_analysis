@@ -54,6 +54,8 @@ cell_type_rna_scroshi_dir <- paste0(cell_type_rna_dir, '/scROSHI')
 
 atacProcessDir<-paste0(output_dir,'/sc_atac/processing') 
 atacProcessFigDir <- paste0(output_dir,'/figures/sc_atac/processing')
+healthyFigDir <- paste0(output_dir, '/figures/healthy_data')
+healthyDir <- paste0(output_dir, '/healthy_data')
 atacDemultiFigDir <- paste0(output_dir,'/figures/sc_atac/demultiplex')
 atacMrgFigDir <- paste0(output_dir,'/figures/sc_atac/merge_all')
 sc_atac_merge_sr_dir <- paste0(output_dir,'/sc_atac/merge_all')
@@ -65,7 +67,7 @@ AtacInferInputDir <- paste0(cellAtacInferDir, '/Input')
 cell_type_atac_infercnv_fig_dir <- paste0(cell_type_atac_fig_dir, '/infercnv')
 cellAtacInferMergDir <- paste0(cellAtacInferDir, '/merge_sr')
 atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
-cell_type_atac_singler_fig_dir <- paste0(cell_type_atac_fig_dir, '/singler')
+atacCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singler')
 
 cell_type_atac_scroshi_dir <- paste0(cell_type_atac_dir, '/scROSHI')
 
@@ -102,11 +104,14 @@ dir.create(cellAtacInferDir, recursive = TRUE)
 dir.create(cell_type_atac_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferMergDir, recursive = TRUE)
 dir.create(atacCellSngRDir, recursive = TRUE)
-dir.create(cell_type_atac_singler_fig_dir, recursive = TRUE)
+dir.create(atacCellSngRFigDir, recursive = TRUE)
 dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
 dir.create(hyperparameter_atac_dir, recursive = TRUE)
 dir.create(clustering_atac_dir, recursive = TRUE)
 dir.create(AtacInferInputDir, recursive = TRUE)
+dir.create(healthyFigDir, recursive = TRUE)
+dir.create(healthyDir, recursive = TRUE)
+
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 

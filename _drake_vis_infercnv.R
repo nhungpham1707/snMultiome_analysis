@@ -23,11 +23,11 @@ nospecialMet <- metadata[-specialLibInd,]
 soclId <- specialLib %>% map(splitName)
 # get multiplex libraries list 
 mulLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) > 0])
-mulLib <- mulLib[1]
+# mulLib <- mulLib[1]
 mulId <- mulLib %>% map(splitName)
 # get single libraries list 
 sngLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) == 0])
-sngLib <- sngLib[1]
+# sngLib <- sngLib[1]
 snglId <- sngLib %>% map(splitName)
 # get all samples to make combine peaks
 

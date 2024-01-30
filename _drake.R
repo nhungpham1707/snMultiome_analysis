@@ -232,11 +232,10 @@ process_plan <- drake_plan(
                                       id.var = !!snglId,
                                       .id = id.var)),
   ## merge -----
-  mrgAtac = target(merge(x =  atacMeta_specialLib, y= c(atacMeta,atacMetasg), 
-                         add.cell.ids = c(specialLib,mulLib,sngLib)),
-                   transform = combine(atacMeta,atacMetasg,
-                                       id.var = !!idLst,
-                                       .id = id.var)),
+  mrgAtac = target(merge(x =  atacSrDim_specialLib, y= c(atacSrDim,atacSrDimsg),add.cell.ids = c(specialLib,mulLib,sngLib)),
+                   transform = combine(atacSrDim,atacSrDimsg,
+                    id.var = !!c(mulLib, sngLib),
+                    .id = id.var)),
   mrgAtacNor = target(sc_atac_normalize(mrgAtac)),
   mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor)),
   mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_cols2),
@@ -247,12 +246,25 @@ process_plan <- drake_plan(
                            atacMrgFigDir, save_name = 'lib_no_nCell', col = my_cols2),
   # prep for infercnv
   mrgGA = get_gene_activity(mrgAtacDim),
-  preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir)
+  preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir),
+
+  # dimplot each sample
+  # dimP = target(dimplotnSave(sr, atacMrgFigDir, save_name = 'cluster'),add.cell.ids = ),
+  #                  transform = map(atacMeta,atacMetasg,
+  #                 id.var = !!c(specialLib,mulLib,sngLib),
+  
+  # integration w anchors
+  # anchors = target(FindIntegrationAnchors(c(atacMeta_specialLib, c(atacMeta,atacMetasg)), 
+  #                  reduction = 'rlsi'),
+  #                 transform = combine(atacMeta,atacMetasg,
+  #                     id.var = !!c(mulLib, sngLib),
+  #                     .id = id.)),
+  # srInt = IntegrateData(anchorset = anchors, dims = 1:50)
 )
 
 plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
 options(clustermq.scheduler = "multicore") # nolint
-make(plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
+make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 # make(plan, lock_cache = FALSE)
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_pipeline.png', font_size = 20 )
 

@@ -183,6 +183,37 @@ sc_atac_filter_outliers <- function(atacSr, figSavePath){
                   TSS.enrichment > TSSThred[1])
   return(atacSr)
 }   
+
+filter_outliers_healthyAtac <- function(atacSr, figSavePath){
+  atacSce <- as.SingleCellExperiment(atacSr)
+  ncountOutlier <- isOutlier(atacSr$nCount_peaks, type="both")
+  ncountThred <- attr(ncountOutlier, "thresholds")
+  lb <- unique(atacSr$tissue)
+  plot_isoutlier(atacSce, yName='nCount_peaks',
+                 toColor = ncountOutlier, 
+                 saveName = paste0(lb,'_scATAC_outlier_nucleosome_signal.png'),
+                 savePath = figSavePath)
+  
+  blacklistOutlier <- isOutlier(atacSr$blacklist_fraction, type="higher")
+  blacklistThred <- attr(blacklistOutlier, "thresholds")
+  plot_isoutlier(atacSce, yName="blacklist_fraction",
+               toColor = blacklistOutlier, 
+               saveName = paste0(lb,'_scATAC_outlier_blacklist_fraction.png'),
+               savePath = figSavePath)
+  # write report
+  nOutlier_count <- length(which(ncountOutlier == TRUE))
+  nOutlier_blk <- length(which(blacklistOutlier == TRUE))
+  total_cells <- ncol(atacSr) 
+  report_df <- data.frame(total_cells = total_cells,
+              nOutlier_count = nOutlier_count,
+              nOutlier_blk = nOutlier_blk)
+  write.csv(report_df, paste0(report_dir, '/', lb, 'outlier_statistic.csv'))
+  atacSr <- subset(x = atacSr, 
+                   subset = nCount_peaks < ncountThred[2] &             
+                     nCount_peaks > ncountThred[1] &
+                  blacklist_fraction < blacklistThred[2])
+  return(atacSr)
+}   
   
 sc_atac_normalize <- function(atacSr){
   atacSr <- RunTFIDF(atacSr) 

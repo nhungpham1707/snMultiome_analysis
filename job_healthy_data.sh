@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=cleanHealt
-#SBATCH --output=healthy_data.out
+#SBATCH --job-name=Healtall
+#SBATCH --output=healthy_data_all.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=300G
