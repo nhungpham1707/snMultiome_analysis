@@ -65,6 +65,7 @@ atcnoRMrgDir <- paste0(output_dir,'/sc_atac/merge_all_no_relapse')
 cell_type_atac_dir <- paste0(cell_type_dir, '/sc_atac')
 cell_type_atac_fig_dir <- paste0(cell_type_fig_dir, '/sc_atac')
 cellAtacInferDir <- paste0(cell_type_atac_dir, '/infercnv')
+cellAtacnoRInferDir <- paste0(cell_type_atac_dir, '/infercnv/no_relapse')
 AtacInferInputDir <- paste0(cellAtacInferDir, '/Input')
 AtacnoRInferInputDir <- paste0(cellAtacInferDir, '/InputnoRelapse')
 cell_type_atac_infercnv_fig_dir <- paste0(cell_type_atac_fig_dir, '/infercnv')
@@ -120,6 +121,7 @@ dir.create(atacnoRCellSngRFigDir, recursive = TRUE)
 dir.create(AtacnoRInferInputDir, recursive = TRUE)
 dir.create(atcnoRMrgDir, recursive = TRUE)
 dir.create(atacnoRMrgFigDir, recursive = TRUE)
+dir.create(cellAtacnoRInferDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 

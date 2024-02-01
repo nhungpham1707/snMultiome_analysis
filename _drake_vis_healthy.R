@@ -45,4 +45,4 @@ healthy_plan <- drake_plan(
 )
 
 
-vis_drake_graph(healthy_plan, targets_only = TRUE, lock_cache = FALSE, file = 'healthy.png', font_size = 20 )
+vis_drake_graph(healthy_plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_healthy.png', font_size = 20 )

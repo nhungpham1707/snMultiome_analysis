@@ -263,5 +263,5 @@ plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
 # options(clustermq.scheduler = "multicore") # nolint
 # make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 # make(plan, lock_cache = FALSE)
-vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_no_relapse_pipeline.png', font_size = 20 )
+vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_cleancode_no_relapse_pipeline.png', font_size = 20 )
 

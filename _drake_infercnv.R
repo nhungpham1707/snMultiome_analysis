@@ -12,7 +12,9 @@ source('./R/utils.R')
 
 ## read metadata ----
 # filename <- '30_11_2023_all_multiome_libraries.csv' 
-filename <- '25012024_all_multiome_lib.csv'
+# filename <- '25012024_all_multiome_lib.csv'
+filename <- '30012024_remove_relapse.csv'
+
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
 specialLib <- c("LX189_LX190_an_325") # fail sample
@@ -20,20 +22,21 @@ specialLibInd <- grep(specialLib, metadata$name)
 nospecialMet <- metadata[-specialLibInd,]
 lbLst <- unique(nospecialMet$name) 
 idLst <- lbLst %>% map(splitName)
-
+lbLst <- c(lbLst, 'merge')
+idLst <- c(idLst, 'merge')
 # define normal cells 
 normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
 ## define plan ----
-inLink <- AtacInferInputDir
-outLink <- cellAtacInferDir
+inLink <- AtacnoRInferInputDir
+outLink <- cellAtacnoRInferDir 
 geneOderLink <- paste0(base_data_dir, '/gencode_v19_gene_pos.txt')
 infercnv_plan <- drake_plan(
-    AtacIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOderLink, inLink),
+    AtacnoRIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOderLink, inLink),
                 transform = map(lib = !!lbLst,
                             id.vars = !!idLst,
                             .id = id.vars)),
-    AtacIfcnvRes = target(run_infercnv(AtacIfcnvOb, outLink),
-                transform = map(AtacIfcnvOb,
+    AtacnoRIfcnvRes = target(run_infercnv(AtacnoRIfcnvOb, outLink),
+                transform = map(AtacnoRIfcnvOb,
                             id.vars = !!idLst,
                             .id = id.vars))
 )

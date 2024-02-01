@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=visinfer
-#SBATCH --output=visinfercnv.out
+#SBATCH --output=log_visinfercnv.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=20G
@@ -11,9 +11,10 @@
 source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 conda activate r43_copy
 Rscript _drake_vis_infercnv.R
+Rscript _drake_vis_mrg_infer.R
 
 conda activate scRNA_scATAC_env_copy
 Rscript _drake_vis_no_relapse.R
 Rscript _drake_vis_graph.R
 Rscript _drake_vis_healthy.R
-echo 'test conda worked!'
+echo 'vis conda worked!'

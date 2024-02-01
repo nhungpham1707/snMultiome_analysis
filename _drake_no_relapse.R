@@ -7,6 +7,15 @@ list_files_with_exts(functions_folder, 'R') %>%
   lapply(source) %>% invisible()
 
 ## read metadata ----
+
+# filename <- '25012024_all_multiome_lib.csv'
+# relapse_lib <- c("LX347_LX348_an_595", "LX379_LX380_an_596", "LX381_LX382_an_597", "LX383_LX384_an_598")
+
+# # remove relapse samples from the multiplex "LX183_LX184_an_322" "LX069_LX070_an_157" after demultiplex 
+# metadata <- getData(filename, delim = ',')
+# ori_metadata <- metadata
+# metadata <- metadata[-(grep(relapse_lib, metadata$name))]
+
 filename <- '30012024_remove_relapse.csv'
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
@@ -244,7 +253,10 @@ process_plan <- drake_plan(
   # prep for infercnv
   mrgnoRGA = get_gene_activity(mrgAtacnoRDim),
   preInfernoRMrg = make_anno_count_Mrgmx(mrgnoRGA, save_path=AtacnoRInferInputDir),
-
+  sRsgMrgnoR = run_singleR(mrgnoRGA),
+  psRMrgnoRsg = plot_mrg_singler(sRsgMrgnoR, mrgnoRGA, save_path=atacnoRCellSngRFigDir,
+  save_name = 'merge_no_relapse'),
+  atacMrgSgRnoR = get_sgR_label(sRsgMrgnoR, mrgAtacnoRDim)
   # dimplot each sample
   # dimP = target(dimplotnSave(sr, atacnoRMrgFigDir, save_name = 'cluster'),add.cell.ids = ),
   #                  transform = map(atacMeta,atacMetasg,
@@ -264,4 +276,10 @@ plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
 # make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 make(plan, lock_cache = FALSE)
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_no_relapse_pipeline.png', font_size = 20 )
+loadd(mrgAtacDim)
+process_mrg <- drake_plan(
+saveMrg = saveRDS(mrgAtacDim, paste0(atcMrgDir, '/mrgDim.RDS')),
+saveMrgnoR = saveRDS(mrgAtacnoRDim, paste0(atcnoRMrgDir,'/mrgDim.RDS'))
+)
 
+make(process_mrg, lock_cache = FALSE)

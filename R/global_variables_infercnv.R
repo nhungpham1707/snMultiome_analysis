@@ -24,7 +24,7 @@
 #   - atacDemultiFigDir/
 #     atacProcessFigDir figures, 
 #     e.g. dimplot, vlnplot of data
-#   - sc_atac_merge_sr_dir : 
+#   - atcMrgDir : 
 #     merge seurats of all samples.
 #     this file is the amin file to use 
 #     for downstream analysis 
@@ -54,23 +54,30 @@ cell_type_rna_scroshi_dir <- paste0(cell_type_rna_dir, '/scROSHI')
 
 atacProcessDir<-paste0(output_dir,'/sc_atac/processing') 
 atacProcessFigDir <- paste0(output_dir,'/figures/sc_atac/processing')
+atacnoRProcessFigDir <- paste0(output_dir,'/figures/sc_atac/processing_noRelapse')
+healthyFigDir <- paste0(output_dir, '/figures/healthy_data')
+healthyDir <- paste0(output_dir, '/healthy_data')
 atacDemultiFigDir <- paste0(output_dir,'/figures/sc_atac/demultiplex')
 atacMrgFigDir <- paste0(output_dir,'/figures/sc_atac/merge_all')
-sc_atac_merge_sr_dir <- paste0(output_dir,'/sc_atac/merge_all')
-
+atacnoRMrgFigDir <- paste0(output_dir,'/figures/sc_atac/merge_all_no_relapse')
+atcMrgDir <- paste0(output_dir,'/sc_atac/merge_all')
+atcnoRMrgDir <- paste0(output_dir,'/sc_atac/merge_all_no_relapse')
 cell_type_atac_dir <- paste0(cell_type_dir, '/sc_atac')
 cell_type_atac_fig_dir <- paste0(cell_type_fig_dir, '/sc_atac')
 cellAtacInferDir <- paste0(cell_type_atac_dir, '/infercnv')
+cellAtacnoRInferDir <- paste0(cell_type_atac_dir, '/infercnv/no_relapse')
 AtacInferInputDir <- paste0(cellAtacInferDir, '/Input')
+AtacnoRInferInputDir <- paste0(cellAtacInferDir, '/InputnoRelapse')
 cell_type_atac_infercnv_fig_dir <- paste0(cell_type_atac_fig_dir, '/infercnv')
 cellAtacInferMergDir <- paste0(cellAtacInferDir, '/merge_sr')
 atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
-cell_type_atac_singler_fig_dir <- paste0(cell_type_atac_fig_dir, '/singler')
+atacCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singler')
+atacnoRCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singlerNoRelap')
 
 cell_type_atac_scroshi_dir <- paste0(cell_type_atac_dir, '/scROSHI')
 
-hyperparameter_atac_dir <- paste0(sc_atac_merge_sr_dir, '/hyperparameter')
-clustering_atac_dir <- paste0(sc_atac_merge_sr_dir, '/cluster')
+hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
+clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
 # create dir -----
 # figures
 dir.create("output/figures", recursive = TRUE)
@@ -93,7 +100,7 @@ dir.create(cell_type_rna_scroshi_dir, recursive = TRUE)
 dir.create(atacProcessDir, recursive = TRUE)
 dir.create(atacProcessFigDir, recursive = TRUE)
 dir.create(atacDemultiFigDir, recursive = TRUE)
-dir.create(sc_atac_merge_sr_dir, recursive = TRUE)
+dir.create(atcMrgDir, recursive = TRUE)
 dir.create(atacMrgFigDir, recursive = TRUE)
 
 dir.create(cell_type_atac_dir, recursive = TRUE)
@@ -102,8 +109,16 @@ dir.create(cellAtacInferDir, recursive = TRUE)
 dir.create(cell_type_atac_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferMergDir, recursive = TRUE)
 dir.create(atacCellSngRDir, recursive = TRUE)
-dir.create(cell_type_atac_singler_fig_dir, recursive = TRUE)
+dir.create(atacCellSngRFigDir, recursive = TRUE)
 dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
 dir.create(hyperparameter_atac_dir, recursive = TRUE)
 dir.create(clustering_atac_dir, recursive = TRUE)
 dir.create(AtacInferInputDir, recursive = TRUE)
+dir.create(healthyFigDir, recursive = TRUE)
+dir.create(healthyDir, recursive = TRUE)
+dir.create(atacnoRProcessFigDir, recursive = TRUE)
+dir.create(atacnoRCellSngRFigDir, recursive = TRUE)
+dir.create(AtacnoRInferInputDir, recursive = TRUE)
+dir.create(atcnoRMrgDir, recursive = TRUE)
+dir.create(atacnoRMrgFigDir, recursive = TRUE)
+dir.create(cellAtacnoRInferDir, recursive = TRUE)

@@ -259,7 +259,7 @@ process_plan <- drake_plan(
 
 plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
 
-vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'cleancode_pipeline.png', font_size = 20 )
+vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_cleancode_pipeline.png', font_size = 20 )
 
 # test if res exceeb byte is because of drake
 # message('load drake atac')

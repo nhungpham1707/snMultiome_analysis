@@ -61,3 +61,31 @@ get_sgR_label <- function(sR,sr){
     names(labels) <- rownames(sR)
     sr_sngr <- AddMetaData(sr, metadata=labels, col.name = 'singleR_labels')
 }
+
+plot_mrg_singler <- function(singler, sr, save_path, save_name){
+    cluster <- sr@active.ident
+    lib <- save_name
+    png(paste0(save_path, '/singler_score_heatmap_',lib, '.png'), width = 1200 * reso/72, height = 700 * reso/72, units ="px", res = reso)
+    plotScoreHeatmap(
+    singler,
+    cells.use = NULL,
+    labels.use = NULL,
+    clusters = cluster, #or NULL
+    show.labels = TRUE,
+    show.pruned = FALSE,
+    max.labels = 40,
+    normalize = TRUE,
+    cells.order = NULL,
+    order.by = "clusters",
+    scores.use = NULL,
+    calls.use = 0,
+    na.color = "gray30",
+    cluster_cols = FALSE,
+    annotation_col = NULL, #ann_colors gave error
+    show_colnames = FALSE,
+    color = (grDevices::colorRampPalette(c("#D1147E", "white", "#00A44B")))(100),
+    silent = FALSE,
+    grid.vars = list()
+    )
+    dev.off()
+}
