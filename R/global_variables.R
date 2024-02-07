@@ -74,8 +74,8 @@ atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
 atacCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singler')
 atacnoRCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singlerNoRelap')
 
-cell_type_atac_scroshi_dir <- paste0(cell_type_atac_dir, '/scROSHI')
-
+atacScroshiFigDir <- paste0(cell_type_atac_fig_dir, '/scROSHI')
+atacScroshiDir <- paste0(cell_type_atac_dir, '/scROSHI')
 hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
 clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
 # create dir -----
@@ -110,7 +110,7 @@ dir.create(cell_type_atac_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferMergDir, recursive = TRUE)
 dir.create(atacCellSngRDir, recursive = TRUE)
 dir.create(atacCellSngRFigDir, recursive = TRUE)
-dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
+dir.create(atacScroshiFigDir, recursive = TRUE)
 dir.create(hyperparameter_atac_dir, recursive = TRUE)
 dir.create(clustering_atac_dir, recursive = TRUE)
 dir.create(AtacInferInputDir, recursive = TRUE)
@@ -122,6 +122,8 @@ dir.create(AtacnoRInferInputDir, recursive = TRUE)
 dir.create(atcnoRMrgDir, recursive = TRUE)
 dir.create(atacnoRMrgFigDir, recursive = TRUE)
 dir.create(cellAtacnoRInferDir, recursive = TRUE)
+dir.create(atacScroshiDir, recursive = TRUE)
+
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 

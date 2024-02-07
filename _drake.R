@@ -50,7 +50,7 @@ process_special_lib_plan <- drake_plan(
   atacSr_specialLib = create_atacSr_w_disjoin(specialLib, metadata, allpeaksFilChr, hg38),
   atacSrMe_specialLib = calculate_metrics(atacSr_specialLib, metadata),
   atacSrFil_specialLib = sc_atac_filter_outliers(atacSrMe_specialLib, 
-                                                 figSavePath = atacProcessFigDir),
+                               figSavePath = atacProcessFigDir),
   atacSrNor_specialLib = sc_atac_normalize(atacSrFil_specialLib),
   atacSrDim_specialLib = sc_atac_dim_redu(atacSrNor_specialLib),
   atacSrGeA_specialLib = get_gene_activity(atacSrDim_specialLib),
@@ -62,6 +62,9 @@ process_special_lib_plan <- drake_plan(
   ## prep for infercnv ---
   preInfer_specialLib = make_anno_count_mx(sR_specialLib,atacSrGeA_specialLib, 
                                            save_path=AtacInferInputDir),
+  ## run scROSHI -----
+  atacsp_scrsdm = run_scROSHI_w_demo_data(sr = atacSrGeA_specialLib, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
+  atacsp_scrsatrt = run_scROSHI_w_atrt_data(sr = atacSrGeA_specialLib, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
   ## samples demultiplex with only souporcell ---
   h5Link_specialLib = get_h5_link(specialLib, metadata),
   gexSr_specialLib = create_GEX_seurat(h5Link_specialLib),
@@ -122,7 +125,15 @@ process_plan <- drake_plan(
                     transform = map(sR,atacSrGeA,
                                     id_var = !!mulId,
                                     .id = id_var)),
-  
+  ## run scROSHI -----
+  atac_scrsdm = target(run_scROSHI_w_demo_data(sr = atacSrGeA, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
+                      transform = map(atacSrGeA,
+                                    id_var = !!mulId,
+                                    .id = id_var)),
+  atac_scrsatrt = target(run_scROSHI_w_atrt_data(sr = atacSrGeA, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
+                      transform = map(atacSrGeA,
+                                    id_var = !!mulId,
+                                    .id = id_var)),
   ## demultiplex -- 
   h5Link = target(get_h5_link(lb, metadata),
                   transform = map(lb = !!mulLib,
@@ -224,6 +235,15 @@ process_plan <- drake_plan(
   ## prep for infercnv ---
   preInfersg = target(make_anno_count_mx(sRsg,atacSrGeAsg, save_path=AtacInferInputDir),
                       transform = map(sRsg,atacSrGeAsg,
+                                      id_var = !!snglId,
+                                      .id = id_var)),
+  ## run scROSHI -----
+  atacsg_scrsdm = target(run_scROSHI_w_demo_data(sr = atacSrGeAsg, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
+                  transform = map(atacSrGeAsg,
+                                      id_var = !!snglId,
+                                      .id = id_var)),
+  atacsg_scrsatrt = target(run_scROSHI_w_atrt_data(sr = atacSrGeAsg, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
+                  transform = map(atacSrGeAsg,
                                       id_var = !!snglId,
                                       .id = id_var)),
   ## add metadata ----
