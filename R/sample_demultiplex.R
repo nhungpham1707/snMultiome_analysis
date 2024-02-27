@@ -1,42 +1,4 @@
-get_h5_link <- function(lb, metadata){
-  link <- unique(metadata$data_link[which(metadata$name == lb)])
-  h5Link <- paste0(base_data_dir, '/', link, 
-                   '/outs/filtered_feature_bc_matrix.h5')
-  h5LinkDf <- data.frame(link_to_h5 = h5Link,
-                        lb = lb)# needed for later
-}
-
-create_GEX_seurat <- function(h5LinkDf){
-  message ('-----------------creating rna seurat----------------')
-  
-  counts <- Read10X_h5(h5LinkDf$link_to_h5)
-  sr <- CreateSeuratObject(counts = counts[["Gene Expression"]], 
-                             assay = "RNA")
-  sr$barcodes <- colnames(sr)
-  sr$library <- h5LinkDf$lb
-  return(sr)
-}
-
-remove_stress_genes <- function(sr, gene_list){
-  message ('-----------------removing stress gene from rna seurat---')
-  gene_to_retain <- setdiff(rownames(sr), gene_list)
-  message (paste(length(setdiff(rownames(sr), gene_to_retain)), 
-                 'stress genes were removed'))
-  sr_rm <- subset(sr, feature = gene_to_retain)
-  return(sr_rm)
-}
-
-normalize_dim_sr <- function(sr){
-  message ('-----------------normalizing rna seurate----------------')
-  sr <- NormalizeData(sr, normalization.method = "LogNormalize")
-  sr <- ScaleData(sr, features = rownames(sr), verbose = FALSE)
-  sr <- FindVariableFeatures(sr)
-  sr <- SCTransform(sr,verbose = FALSE, variable.features.n = 3000)
-  sr <- RunPCA(sr, verbose = TRUE, npcs = 50)
-  sr <- RunUMAP(sr, dims = 1:30, n.neighbors = 30)
-  return(sr)
-}
-
+# sr is rna seurat object after normalization, scale and dim reduc
 calculate_sex_genes_module <- function(sr){
   message ('-----------------calculating sex genes module-------------')
   message('---set default assay-----')
@@ -245,4 +207,14 @@ assign_sample_name_and_tumor_type <- function(metadata, sr){
   rownames(mergMetaSub) <- rownames(sr@meta.data)
   sr <- AddMetaData(sr, mergMetaSub)
   return(sr)
+}
+generate_demultiplex_metadata <- function(gexSID_list){
+
+  demultiplex_metadata <- c()
+  for (i in 1:length(gexSID_list)){
+  demultiplex_metadata <- data.frame(library = gexSID_list[[i]]$library,
+    barcodes = colnames(gexSID_list[[i]]),
+    sampleID = gexSID_list[[i]]$sampleID) %>% rbind(demultiplex_metadata,.)
+  }
+  return (demultiplex_metadata)
 }

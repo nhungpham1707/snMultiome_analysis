@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=scroshi
-#SBATCH --output=log_scroshi.out
+#SBATCH --job-name=singr
+#SBATCH --output=log_singlr.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=350G
+#SBATCH --mem=100G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END

@@ -5,6 +5,7 @@ get_met <- function(gexSr){
     return(metaDf)
 }
 
+# db - doublet or cells that fail from sample demultiplex 
 removeDbAtac <- function(gexSr,atacSr){
     db <- setdiff(colnames(atacSr), colnames(gexSr))
     to_keep <- setdiff(colnames(atacSr), db)

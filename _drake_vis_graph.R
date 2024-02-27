@@ -10,6 +10,10 @@ list_files_with_exts(functions_folder, 'R') %>%
 filename <- '25012024_all_multiome_lib.csv'
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
+# get all library ID
+alLib <- unique(metadata$name)
+alID <- alLib %>% map(splitName)
+# get multiplex library that has the same gender
 specialLib <- c("LX093_LX094_an_163")
 specialLibInd <- grep(specialLib, metadata$name)
 nospecialMet <- metadata[-specialLibInd,]
@@ -25,10 +29,10 @@ sngLib <- unique(nospecialMet$name[nchar(nospecialMet$souporcell_link) == 0])
 # sngLib <- sngLib[1]
 snglId <- sngLib %>% map(splitName)
 # get all samples to make combine peaks
-
+# region ---
 lbLst <- unique(c(specialLib, mulLib, sngLib)) 
 idLst <- lbLst %>% map(splitName)
-
+# endregion
 ## define plan ----
 
 combine_peak_plan <- drake_plan(
@@ -62,9 +66,6 @@ process_special_lib_plan <- drake_plan(
   ## prep for infercnv ---
   preInfer_specialLib = make_anno_count_mx(sR_specialLib,atacSrGeA_specialLib, 
                                            save_path=AtacInferInputDir),
-  ## run scROSHI -----
-  atacsp_scrsdm = run_scROSHI_w_demo_data(sr = atacSrGeA_specialLib, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
-  atacsp_scrsatrt = run_scROSHI_w_atrt_data(sr = atacSrGeA_specialLib, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
   ## samples demultiplex with only souporcell ---
   h5Link_specialLib = get_h5_link(specialLib, metadata),
   gexSr_specialLib = create_GEX_seurat(h5Link_specialLib),
@@ -76,6 +77,7 @@ process_special_lib_plan <- drake_plan(
   gexSID_specialLib = addMetaSoc(metadata, gexNoDb_specialLib),
   atacDemul_specialLib = addMetSocAtac(gexSID_specialLib,atacSgR_specialLib),
   atacMeta_specialLib = addMetaFromFile(metadata, atacDemul_specialLib)
+
 )
 
 process_plan <- drake_plan(
@@ -123,15 +125,6 @@ process_plan <- drake_plan(
   ## prep for infercnv ---
   preInfer = target(make_anno_count_mx(sR,atacSrGeA, save_path=AtacInferInputDir),
                     transform = map(sR,atacSrGeA,
-                                    id_var = !!mulId,
-                                    .id = id_var)),
-  ## run scROSHI -----
-  atac_scrsdm = target(run_scROSHI_w_demo_data(sr = atacSrGeA, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
-                      transform = map(atacSrGeA,
-                                    id_var = !!mulId,
-                                    .id = id_var)),
-  atac_scrsatrt = target(run_scROSHI_w_atrt_data(sr = atacSrGeA, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
-                      transform = map(atacSrGeA,
                                     id_var = !!mulId,
                                     .id = id_var)),
   ## demultiplex -- 
@@ -183,7 +176,11 @@ process_plan <- drake_plan(
                   transform = map(gexNoContra,
                                   id.var = !!mulId,
                                   .id = id.var)),
-  
+  # prepare demultiplex metadata 
+  gexDemulMeta = target(generate_demultiplex_metadata(c(gexSID)),
+                  transform = combine(gexSID,
+                  id.var = !!mulId,
+                  .id = id.var)),
   atacDemul = target(addMetAtac(gexSID,atacSgR),
                      transform = map(gexSID,atacSgR,
                                      id.var = !!mulId,
@@ -237,21 +234,12 @@ process_plan <- drake_plan(
                       transform = map(sRsg,atacSrGeAsg,
                                       id_var = !!snglId,
                                       .id = id_var)),
-  ## run scROSHI -----
-  atacsg_scrsdm = target(run_scROSHI_w_demo_data(sr = atacSrGeAsg, cols = my_cols2, pt = 1, save_path = atacScroshiFigDir),
-                  transform = map(atacSrGeAsg,
-                                      id_var = !!snglId,
-                                      .id = id_var)),
-  atacsg_scrsatrt = target(run_scROSHI_w_atrt_data(sr = atacSrGeAsg, cols = my_cols, pt = 1,  save_path = atacScroshiFigDir),
-                  transform = map(atacSrGeAsg,
-                                      id_var = !!snglId,
-                                      .id = id_var)),
   ## add metadata ----
   atacMetasg = target(addMetaFromFile(metadata, atacsgSgR),
                       transform = map(atacsgSgR,
                                       id.var = !!snglId,
                                       .id = id.var)),
-  ## merge -----
+  ## merge atac-----
   mrgAtac = target(merge_pairwise(c(atacMeta_specialLib, atacMeta, atacMetasg),atcMrgDir),
             transform = combine(atacMeta,atacMetasg,
                     id.var = !!c(mulLib, sngLib),
@@ -260,26 +248,97 @@ process_plan <- drake_plan(
   mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor)),
   mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_cols2),
   mrgPsID = dimplot_w_nCell_label(mrgAtacDim, by = 'sampleID',atacMrgFigDir , col = my_cols2),
-  mrgPlibnCell = dimplot_w_nCell_label(mrgAtacDim, by = 'library',atacMrgFigDir , col = my_cols2),
-  mrgP = dimplotnSave(mrgAtacDim, atacMrgFigDir, save_name = 'cluster'),
-  mrgPlib = dimplotBynSave(mrgAtacDim, by = 'library',
-                           atacMrgFigDir, save_name = 'lib_no_nCell', col = my_cols2),
-  # prep for infercnv
+  # mrgPlibnCell = dimplot_w_nCell_label(mrgAtacDim, by = 'library',atacMrgFigDir , col = my_cols2),
+  # mrgP = dimplotnSave(mrgAtacDim, atacMrgFigDir, save_name = 'cluster'),
+  # mrgPlib = dimplotBynSave(mrgAtacDim, by = 'library',
+  #                          atacMrgFigDir, save_name = 'lib_no_nCell', col = my_cols2),
+  # # prep mrg atac for infercnv
   mrgGA = get_gene_activity(mrgAtacDim),
-  preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir),
+  # preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir),
+  # integration w anchors -----------------
+  # atac_anchors = target(FindIntegrationAnchors(c(atacMeta_specialLib, atacMeta, atacMetasg), reduction = 'rlsi', anchor.features = 2000),
+  #                   transform = combine(atacMeta,atacMetasg,
+  #                   id.var = !!c(mulLib, sngLib),
+  #  atac_anchors = target(integration_w_anchors_subset(c(atacMeta_specialLib, atacMeta, atacMetasg), to_remove = 'atac'),
+  #                   transform = combine(atacMeta,atacMetasg,
+  #                   id.var = !!c(mulLib, sngLib),
+  #                   .id = id.var)),
+  # atac.integrated = IntegrateData(anchorset = atac_anchors, dims = 1:50),
+  # int.AtacNor = normalize_anchors(atac.integrated),
+  # int.AtacDim = sc_atac_dim_redu(int.AtacNor),
+  # saveInt = saveRDS(int.AtacDim, paste0(atcMrgDir, '/int.AtacDim.RDS')),
+  # int.Ptype = dimplotnSave (int.AtacDim, atacMrgFigDir, save_name = 'int.atac.png', col = my_cols2),
+  # int.sID = dimplotBynSave(int.AtacDim, by = 'sampleID',atacMrgFigDir, save_name = 'int.atac.sID.png', col = my_cols2),
+  # int.subtype = dimplotBynSave(int.AtacDim, by = 'Subtype',atacMrgFigDir, save_name = 'int.atac.subtype.png', col = my_cols2),
+  ## process rna ----
+  h5Link_all = target(get_h5_link(lb, metadata),
+                  transform = map(lb = !!alLib,
+                                  id.var = !!alID,
+                                  .id = id.var)),
+  gexSr_all = target(create_GEX_seurat(h5Link_all),
+                  transform = map(h5Link_all,
+                              id.var = !!alID,
+                              .id = id.var)),
+  gexSrstress_all = target(remove_stress_genes(gexSr_all,
+                          stress_gene_list),
+                          transform = map(gexSr_all,
+                              id.var = !!alID,
+                              .id = id.var)),
+  gexMito_all = target(check_mito_genes(gexSrstress_all),
+                    transform = map(gexSrstress_all,
+                    id.var = !!alID,
+                    .id = id.var)),
+  p_rnametric = target(rna_visualize_metric(gexMito_all,rnaFigDir),
+                    transform = map(gexMito_all,
+                    id.var = !!alID,
+                    .id = id.var)),
+  gexFilt = target(filter_rna_sr_w_isoutlier(gexMito_all, rnaFigDir),
+                  transform = map(gexMito_all,
+                  id.var = !!alID,
+                  .id = id.var)),
+  gexNor_all = target(normalize_dim_plot_sr(gexFilt, rnaFigDir, alLib),
+                          transform = map(gexFilt,!!alLib,
+                          id.var = !!alID,
+                              .id = id.var)),
+  gexClus = target(clustering_rna_data(gexNor_all),
+                  transform = map(gexNor_all,
+                  id.var = !!alID,
+                              .id = id.var)),
+  p_rnaClus = target(plot_cluster(gexClus, rnaFigDir, alLib), 
+              transform = map(gexClus, !!alLib,
+                  id.var = !!alID,
+                              .id = id.var)),
 
-  # dimplot each sample
-  # dimP = target(dimplotnSave(sr, atacMrgFigDir, save_name = 'cluster'),add.cell.ids = ),
-  #                  transform = map(atacMeta,atacMetasg,
-  #                 id.var = !!c(specialLib,mulLib,sngLib),
-  
-  # integration w anchors
-  # anchors = target(FindIntegrationAnchors(c(atacMeta_specialLib, c(atacMeta,atacMetasg)), 
-  #                  reduction = 'rlsi'),
-  #                 transform = combine(atacMeta,atacMetasg,
-  #                     id.var = !!c(mulLib, sngLib),
-  #                     .id = id.)),
-  # srInt = IntegrateData(anchorset = anchors, dims = 1:50)
+  # # merge rna with normalized samples -----
+  mrgRna_all = target(merge_pairwise(c(gexClus), rnaMrgDir),
+            transform = combine(gexClus,
+            id.var = !!alID,
+            .id = id.var)),
+  mrgRnaNor_all = normalize_dim_plot_sr(mrgRna_all, rnaMrgFigDir, lib_name = 'merge'),
+  saverna_all = saveRDS(mrgRnaNor_all, paste0(rnaMrgDir, '/mrgRna.RDS')),
+  mrgRnaClu = clustering_rna_data(mrgRnaNor_all),
+  p_mrgRna_all_0.5 = plot_cluster(mrgRnaClu, rnaMrgFigDir, group.by = 'rna_snn_res.0.5', save_name = 'merge' ),
+   saveplotmrgrna_0.5 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all_0.5),
+   p_mrgRna_all_0.3 = plot_cluster(mrgRnaClu, rnaMrgFigDir, group.by = 'rna_snn_res.0.3', save_name = 'merge' ),
+   saveplotmrgrna_0.3 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all_0.3),
+   p_mrgRna_all = plot_cluster(mrgRnaClu, rnaMrgFigDir, save_name = 'merge' ),
+   saveplotmrgrna = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all),
+
+   # merge rna without normalized samples ----
+  mrgRna_noNOr_all = target(merge_pairwise(c(gexFilt), rnaMrgDir),
+            transform = combine(gexFilt,
+            id.var = !!alID,
+            .id = id.var)),
+  mrgRnaNor_noNOr_all = normalize_dim_plot_sr(mrgRna_noNOr_all, rnaMrgFigDir, lib_name = 'merge'),
+  saverna_noNOr_all = saveRDS(mrgRnaNor_noNOr_all, paste0(rnaMrgDir, '/mrgRna_noNOr.RDS')),
+  mrgRnaClu_noNOr = clustering_rna_data(mrgRnaNor_noNOr_all),
+  p_mrgRna_noNOr_all_0.5 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.5', save_name = 'merge_noNOr' ),
+   saveplotmrgrna_noNOr_0.5 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all_0.5),
+   p_mrgRna_noNOr_all_0.3 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.3', save_name = 'merge_noNOr' ),
+   saveplotmrgrna_noNOr_0.3 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all_0.3),
+   p_mrgRna_noNOr_all = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, save_name = 'merge_noNOr' ),
+   saveplotmrgrna_noNOr = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all)
+
 )
 
 plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
@@ -295,3 +354,4 @@ vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_clean
 # message('merging atac')
 # mergetest <- merge(x = atacSrDim_LX049, y =c(atacSrDim_LX051, atacSrDim_LX065 ), add.cell.ids = lbLst, merge.data = TRUE)
 # message('finish merging atac without error')
+

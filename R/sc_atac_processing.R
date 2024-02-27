@@ -33,7 +33,7 @@ create_atacAssay <- function(lb, metadata, annotation){
 create_atacDisjoin <- function(atacAssay, lb, metadata, 
                            combined.peaks, annotation){
   fragpath <- getFragPath(metadata, lb)
-  frags <- CreateFragmentObject(path = fragpath)
+  # frags <- CreateFragmentObject(path = fragpath)
   CRcounts <- FeatureMatrix(fragments = Fragments(atacAssay),
                             features = combined.peaks, 
                             cells = colnames(atacAssay))
