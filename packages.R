@@ -57,6 +57,15 @@ suppressPackageStartupMessages({
   library(scales) # for default colors 
   library(tools)
   
+
+  library(SingleCellExperiment)
+  library(cowplot)
+  library(limma)
+  library(magrittr)
+  library(dplyr)
+  library(purrr)
+  library(CellMixS)
+
   conflict_prefer('select', 'clusterProfiler')
   conflict_prefer('filter', 'clusterProfiler')
   

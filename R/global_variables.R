@@ -80,6 +80,9 @@ atacScroshiFigDir <- paste0(cell_type_atac_fig_dir, '/scROSHI')
 atacScroshiDir <- paste0(cell_type_atac_dir, '/scROSHI')
 hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
 clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
+batchDir <- paste0(output, '/batchEffect')
+batchAtacDir <- paste0(batchDir, '/atac')
+batchRnaDir <- paste0(batchDir, '/rna')
 # create dir -----
 # figures
 dir.create("output/figures", recursive = TRUE)
@@ -127,6 +130,9 @@ dir.create(cellAtacnoRInferDir, recursive = TRUE)
 dir.create(atacScroshiDir, recursive = TRUE)
 dir.create(rnaMrgFigDir, recursive = TRUE)
 dir.create(rnaMrgDir, recursive = TRUE)
+dir.create(batchDir, recursive = TRUE)
+dir.create(batchAtacDir, recursive = TRUE)
+dir.create(batchRnaDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 
