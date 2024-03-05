@@ -80,7 +80,7 @@ atacScroshiFigDir <- paste0(cell_type_atac_fig_dir, '/scROSHI')
 atacScroshiDir <- paste0(cell_type_atac_dir, '/scROSHI')
 hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
 clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
-batchDir <- paste0(output, '/batchEffect')
+batchDir <- paste0(output_dir, '/batchEffect')
 batchAtacDir <- paste0(batchDir, '/atac')
 batchRnaDir <- paste0(batchDir, '/rna')
 # create dir -----
