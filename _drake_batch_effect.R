@@ -10,10 +10,10 @@ batch_plan <- drake_plan(
   mrgAtac = readRDS('output/sc_atac/merge_all/mrgDim.RDS'),
     mrgAtacSce = as.SingleCellExperiment(mrgAtac),
     ## visualize batch ----
-    # atac_visBatchDate = plotBatchVis(mrgAtacSce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
-    # atac_visBatchLib = plotBatchVis(mrgAtacSce, batch = 'library', save_path = batchAtacDir, col = my_cols),
-    # atac_visBatchSample = plotBatchVis(mrgAtacSce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
-    # atac_visBatchGender = plotBatchVis(mrgAtacSce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchDate = plotBatchVis(mrgAtacSce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
+    atac_visBatchLib = plotBatchVis(mrgAtacSce, batch = 'library', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchSample = plotBatchVis(mrgAtacSce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchGender = plotBatchVis(mrgAtacSce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
 
     ## calculate cms ---
    atac_cms = cms(mrgAtacSce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
