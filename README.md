@@ -31,9 +31,7 @@ The file should have following columns with these exact names (case sensitive):
  
   An example of the metadata file can be found below
 
-<p>
-<img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.jpg" alt>
-</p>
+
 <p>
     <em>Metadata file example. columns are separated by ';'<em>.
         </p>
@@ -60,7 +58,7 @@ conda activate scRNA_scATAC
 Data was processed according to published procedure  https://stuartlab.org/signac/articles/pbmc_vignette 
 The overall steps are described in Fig below
 <p>
-<img src="https://github.com/nhungpham1707/CUTnRUN/blob/main/Figures/M1.png" alt>
+<img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.jpg" alt>
 </p>
 <p>
     <em>Module 1. Data processing and alignment<em>.
