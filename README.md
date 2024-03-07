@@ -58,7 +58,7 @@ conda activate scRNA_scATAC
 Data was processed according to published procedure  https://stuartlab.org/signac/articles/pbmc_vignette 
 The overall steps are described in Fig below
 <p>
-<img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.jpg" alt>
+<img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.jpg" width="48" alt>
 </p>
 <p>
     <em>Module 1. Data processing and alignment<em>.
