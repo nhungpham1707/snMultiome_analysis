@@ -30,7 +30,9 @@ The file should have following columns with these exact names (case sensitive):
     #' @return RDS of seurat object in sc_atac_preprocessing_dir, report in report_dir and plots in sc_atac_preprocessing_fig_dir defined in global_variables.R
  
   An example of the metadata file can be found below
-
+<p>
+<img src="https://github.com/nhungpham1707/scATAC_scRNA/blob/main/example_metadata_file.png" alt>
+</p>
 
 <p>
     <em>Metadata file example. columns are separated by ';'<em>.
@@ -61,7 +63,7 @@ The overall steps are described in Fig below
 <img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.jpg" width="450" alt>
 </p>
 <p>
-    <em>Module 1. Data processing and alignment<em>.
+    <em>Pipeline<em>.
         </p>
 ### scATAC processing:
         - annotation
