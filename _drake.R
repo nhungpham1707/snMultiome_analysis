@@ -346,7 +346,7 @@ process_plan <- drake_plan(
 
 )
 
-batch_plan <- drake_plan(
+cluster_behavior_plan <- drake_plan(
   # remove NA cells in rna ----
   rna_noNA = remove_na_cells(mrgRnaClu_noNOr),
   # make atac sce ----
@@ -374,7 +374,7 @@ batch_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_sil.rna.p = custom_savePlot('output/batch_effect/rna_silhouette_cluster_behavior.png', sil.rna.p),
+  save_sil.rna.p = custom_savePlot('output/batchEffect/rna_silhouette_cluster_behavior.png', sil.rna.p),
   table(Cluster=colLabels(rna.sce), sil.rna$closest),
   # cluster 7 & 23 have many cells that can easily mix with other clusters
   ## cluster purity ------
@@ -387,7 +387,7 @@ batch_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  svae_pure.atac.p = custom_savePlot('output/batch_effect/atac_cluster_purity.png', pure.atac.p),
+  svae_pure.atac.p = custom_savePlot('output/batchEffect/atac_cluster_purity.png', pure.atac.p),
   # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
   table(Cluster=colLabels(atac.sce), pure.atac$maximum),
   ### rna ----
@@ -398,13 +398,28 @@ batch_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_pure.rna.p = custom_savePlot('output/batch_effect/rna_cluster_purity.png', pure.rna.p)
+  save_pure.rna.p = custom_savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
+)
+
+batch_plan <- drake_plan(
+  ## visualize batch ----
+    atac_visBatchDate = plotBatchVis(atac.sce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
+    atac_visBatchLib = plotBatchVis(atac.sce, batch = 'library', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchSample = plotBatchVis(atac.sce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchGender = plotBatchVis(atac.sce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
+
+    ## calculate cms ---
+   atac_cms = cms(atac.sce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    atac_cms_50 = cms(atac_cms, k =50, group = 'Date.of.Library', res_name = 'dj_date_k50', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+   atac_cms_lib = cms(atac_cms_50, k =200, group = 'library', res_name = 'dj_lib', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    atac_cms_sid = cms(atac_cms_lib, k =200, group = 'sampleID', res_name = 'dj_sid', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    plot_atac_cmsSid = visHist(atac_cms_sid),
+    save_cms = saveRDS(atac_cms_sid, file = paste0(batchAtacDir, '/atac_cms.RDS')),
+    savePAtacCms = save_plot(paste0(batchAtacDir, '/atac_cms.png'), plot_atac_cmsSid)
 )
 
 
-
-
-plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
+plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan, cluster_behavior_plan, batch_plan)
 # options(clustermq.scheduler = "multicore") # nolint
 # make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 make(plan, lock_cache = FALSE)
