@@ -346,6 +346,64 @@ process_plan <- drake_plan(
 
 )
 
+batch_plan <- drake_plan(
+  # remove NA cells in rna ----
+  rna_noNA = remove_na_cells(mrgRnaClu_noNOr),
+  # make atac sce ----
+  atac.sce = make_sce(mrgAtacDim),
+  # make rna sce -----
+  rna.sce = make_sce(rna_noNA),
+  # check cluster behavior ---- 
+  ## Silhouette widths ------
+  ### atac ----
+  sil.atac = calculate_silhouette(atac.sce, reduce_method = 'LSI'),
+  sil.atac.p =  ggplot(sil.atac, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") 
+  + scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)), 
+  save_silAtac_p = custom_savePlot('output/batchEffect/atac_cluster_behavior.png', sil.atac.p),
+  silAtac_tab = table(Cluster=colLabels(atac.sce), sil.atac$closest),  # cluster 0, 1 and 4 have many cells that can easily mix with other clusters
+  ### rna -----
+  sil.rna = calculate_silhouette(rna.sce, reduce_method = 'PCA'),
+  sil.rna.p = ggplot(sil.rna, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_sil.rna.p = custom_savePlot('output/batch_effect/rna_silhouette_cluster_behavior.png', sil.rna.p),
+  table(Cluster=colLabels(rna.sce), sil.rna$closest),
+  # cluster 7 & 23 have many cells that can easily mix with other clusters
+  ## cluster purity ------
+  ### atac ----
+  pure.atac = calculate_purity(atac.sce, reduce_method = 'LSI'),
+  pure.atac.p = ggplot(pure.atac , aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+  scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  svae_pure.atac.p = custom_savePlot('output/batch_effect/atac_cluster_purity.png', pure.atac.p),
+  # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
+  table(Cluster=colLabels(atac.sce), pure.atac$maximum),
+  ### rna ----
+  pure.rna = calculate_purity(rna.sce, 'PCA'),
+  pure.rna.p = ggplot(pure.rna_data, aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.rna.p = custom_savePlot('output/batch_effect/rna_cluster_purity.png', pure.rna.p)
+)
+
+
+
+
 plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan)
 # options(clustermq.scheduler = "multicore") # nolint
 # make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)

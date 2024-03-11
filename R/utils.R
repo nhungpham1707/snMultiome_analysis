@@ -19,3 +19,20 @@ savePlot <- function(filename,
          height = 700 * reso/72, units ="px", dpi = reso)
   
 }
+
+# remove cells that fail from demultiplex 
+# these cells cannot be assigned to any sample id or subtype 
+remove_na_cells <- function(sr){
+  na_cells <- colnames(sr)[is.na(sr$Subtype)] 
+  sr$m_barcode <- colnames(sr)
+  to_keep <- setdiff(sr$m_barcode, na_cells)
+  sr_noNA <- subset(sr, subset = m_barcode %in% to_keep)
+}
+
+# make single cell experiment object
+make_sce <- function(sr){
+sce <- as.SingleCellExperiment(sr)
+rowData(sce)$SYMBOL <- rownames(sce) 
+colLabels(sce) <- sce$seurat_clusters
+return(sce)
+}

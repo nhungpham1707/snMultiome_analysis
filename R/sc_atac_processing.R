@@ -223,12 +223,23 @@ sc_atac_normalize <- function(atacSr){
   return(atacSr)
 }
 
+# The combined steps of TF-IDF followed by SVD are known as latent semantic indexing (LSI), and were first introduced for the analysis of scATAC-seq data by Cusanovich et al. 2015
 sc_atac_dim_redu <- function(atacSr){
   atacSr <- RunUMAP(object= atacSr, reduction = 'lsi', dims = 2:30) 
   # remove the 1st dim because it correlates w seq depth
   atacSr <- FindNeighbors(object= atacSr, reduction = 'lsi', dims = 2:30)
   atacSr <- FindClusters(object = atacSr, verbose = FALSE, algorithm = 3)
   return(atacSr)
+}
+
+# cell cyle-, stress-, hemoglobin-, ribosome-, genes
+# sometime affect the clustering. It is best to remove
+# them from the variable gene lists before running dim reduc
+# for  
+remove_confounders <- function(sr, confounder_genes){
+  srat_clean <- sr # copy so we can compare
+
+VariableFeatures(srat_clean) <- setdiff( VariableFeatures(srat_clean), remove)
 }
 
 get_gene_activity <- function(sr){
