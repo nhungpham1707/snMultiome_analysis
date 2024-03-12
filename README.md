@@ -47,7 +47,7 @@ data_link/outs/atac_fragments.tsv.gz
 souporcell_link/k2/clusters.tsv  
 ## Tools:
 
-The main packages are Seurat, Signac and an in-house package SCutils that can be downloaded from bitbucket for curated stress and male gene list. A similar conda environment can be reproduced from the yaml file using the code below:
+The main packages are Seurat, Signac and an in-house package SCutils that can be downloaded from [bitbucket](https://bitbucket.org/princessmaximacenter/scutils/src/master/) for curated stress and male gene list. A similar conda environment can be reproduced from the yaml file using the code below:
 ```
 conda env create -f export_environment.yaml
 ```

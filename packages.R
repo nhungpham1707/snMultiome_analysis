@@ -73,3 +73,17 @@ suppressPackageStartupMessages({
   conflict_prefer('setdiff', 'base')
   conflict_prefer('union', 'base')
 })
+
+suppressPackageStartupMessages({
+  library(harmony)
+  library(SingleCellExperiment)
+  library(cowplot)
+  library(limma)
+  library(magrittr)
+  library(dplyr)
+  library(purrr)
+  library(ggplot2)
+  library(scater)
+  library(CellMixS)
+  library(bluster) # for clustering behavior 
+})

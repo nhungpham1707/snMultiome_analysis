@@ -334,6 +334,8 @@ process_plan <- drake_plan(
   saverna_noNOr_all = saveRDS(mrgRnaNor_noNOr_all, paste0(rnaMrgDir, '/mrgRna_noNOr.RDS')),
   mrgRnaClu_noNOr = clustering_rna_data(mrgRnaNor_noNOr_all),
   saverna_noNOr_clu = saveRDS(mrgRnaClu_noNOr, paste0(rnaMrgDir, '/mrgRna_noNOrClu.RDS')),
+  rna_meta = assign_meta(metadata, gexDemulMeta,
+  mrgRnaClu_noNOr, save_name = paste0(rnaMrgDir, '/mrgRna_meta.RDS')),
   # p_mrgRna_noNOr_all_0.5 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.5', save_name = 'merge_noNOr' ),
   #  saveplotmrgrna_noNOr_0.5 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all_0.5),
   #  p_mrgRna_noNOr_all_0.3 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.3', save_name = 'merge_noNOr' ),
@@ -348,7 +350,7 @@ process_plan <- drake_plan(
 
 cluster_behavior_plan <- drake_plan(
   # remove NA cells in rna ----
-  rna_noNA = remove_na_cells(mrgRnaClu_noNOr),
+  rna_noNA = remove_na_cells(rna_meta),
   # make atac sce ----
   atac.sce = make_sce(mrgAtacDim),
   # make rna sce -----
@@ -403,19 +405,34 @@ cluster_behavior_plan <- drake_plan(
 
 batch_plan <- drake_plan(
   ## visualize batch ----
+  ### atac ---
     atac_visBatchDate = plotBatchVis(atac.sce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
     atac_visBatchLib = plotBatchVis(atac.sce, batch = 'library', save_path = batchAtacDir, col = my_cols),
     atac_visBatchSample = plotBatchVis(atac.sce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
     atac_visBatchGender = plotBatchVis(atac.sce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
+  ### rna -----
+     rna_visBatchDate = plotBatchVis(rna.sce, batch = "Date.of.Library", save_path = batchRnaDir, col = my_cols),
+    rna_visBatchLib = plotBatchVis(rna.sce, batch = 'library', save_path = batchRnaDir, col = my_cols),
+    rna_visBatchSample = plotBatchVis(rna.sce, batch = 'sampleID', save_path = batchRnaDir, col = my_cols),
+    rna_visBatchGender = plotBatchVis(rna.sce, batch = 'Gender', save_path = batchRnaDir, col = my_cols),
 
     ## calculate cms ---
+    ### atac ----
    atac_cms = cms(atac.sce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
     atac_cms_50 = cms(atac_cms, k =50, group = 'Date.of.Library', res_name = 'dj_date_k50', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
    atac_cms_lib = cms(atac_cms_50, k =200, group = 'library', res_name = 'dj_lib', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
     atac_cms_sid = cms(atac_cms_lib, k =200, group = 'sampleID', res_name = 'dj_sid', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
     plot_atac_cmsSid = visHist(atac_cms_sid),
     save_cms = saveRDS(atac_cms_sid, file = paste0(batchAtacDir, '/atac_cms.RDS')),
-    savePAtacCms = save_plot(paste0(batchAtacDir, '/atac_cms.png'), plot_atac_cmsSid)
+    savePAtacCms = save_plot(paste0(batchAtacDir, '/atac_cms.png'), plot_atac_cmsSid),
+    ### rna ----
+    rna_cms = cms(rna.sce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    rna_cms_50 = cms(rna_cms, k =50, group = 'Date.of.Library', res_name = 'dj_date_k50', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    rna_cms_lib = cms(rna_cms_50, k =200, group = 'library', res_name = 'dj_lib', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    rna_cms_sid = cms(rna_cms_lib, k =200, group = 'sampleID', res_name = 'dj_sid', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
+    plot_rna_cmsSid = visHist(rna_cms_sid),
+    save_rna_cms = saveRDS(rna_cms_sid, file = paste0(batchRnaDir, '/rna_cms.RDS')),
+    savePrnaCms = save_plot(paste0(batchRnaDir, '/rna_cms.png'), plot_rna_cmsSid)
 )
 
 

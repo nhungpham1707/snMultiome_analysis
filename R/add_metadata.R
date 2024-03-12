@@ -86,3 +86,61 @@ addMetSocAtac <- function(gexSr,atacSr){
     atacSr <- AddMetaData(atacSr, metaDf)
     return(atacSr)
 }
+
+# add metadata after sample demultiplex to mrg object 
+
+prepare_sr_meta <- function(sr){
+    colnames(sr@meta.data)
+    sr_barcodes <- data.frame(libary = sr$library,
+                      m_barcodes = colnames(sr),
+                      barcodes = sr$barcodes)
+    sr_barcodes$lib_bar <- paste0(sr_barcodes$libary, '_', sr_barcodes$barcodes)
+    return(sr_barcodes)
+}
+
+# not all libraries were multiplex, 
+# sample Ids and other metadata can be directly
+# assigned to these libraries  
+get_singlex_meta <- function(metadata, demul_meta, sr_barcodes){
+    splex <- setdiff(metadata$name, demul_meta$library)
+    splex_meta <- metadata[metadata$name %in% splex,]
+    splex_sr <- sr_barcodes[sr_barcodes$libary %in% splex_meta$name,]
+    splex_sr_meta <- merge(splex_sr, splex_meta, by.x = 'libary', by.y = 'name')
+    splex_sr_meta <- within(splex_sr_meta, rm('libary', 'barcodes'))
+    return(splex_sr_meta)
+
+}
+
+get_multiplex_meta <- function(metadata, demul_meta, sr_barcodes){
+    mplex_meta <- metadata[metadata$sampleID %in% demul_meta$sampleID,]
+    mplex_meta <- mplex_meta[,2:ncol(mplex_meta)]
+    head(mplex_meta)
+    mplex_meta <- merge(mplex_meta, demul_meta, by.x = 'sampleID', by.y = 'sampleID')
+    mplex_meta$lib_bar <- paste0(mplex_meta$library, '_', mplex_meta$barcodes)
+    mplex_sr_meta <- merge(mplex_meta, sr_barcodes, by= 'lib_bar')
+    mplex_sr_meta <- within(mplex_sr_meta, rm('lib_bar', 'barcodes.x', 'barcodes.y','name', 'library', 'libary'))
+    return(mplex_sr_meta)
+}
+
+combine_meta <- function(mplex_sr_meta, splex_sr_meta){
+    print ('colnames of mplex_sr_meta are')
+    colnames(mplex_sr_meta)
+    print('colnames of splex_sr_meta are')
+    colnames(splex_sr_meta)
+    all_meta <- rbind(mplex_sr_meta, splex_sr_meta)
+    rownames(all_meta) <- all_meta$m_barcodes
+    all_meta <- within(all_meta, rm('m_barcodes'))
+    return(all_meta)
+}
+
+assign_meta <- function(metadata, demul_meta, sr, save_name){
+    sr_barcodes <- prepare_sr_meta(sr)
+    splex_sr_meta <- get_singlex_meta(metadata, demul_meta, sr_barcodes)
+    mplex_sr_meta <- get_multiplex_meta(metadata, demul_meta, sr_barcodes)
+    all_meta <- combine_meta(splex_sr_meta, mplex_sr_meta)
+    sr_meta <- AddMetaData(sr, all_meta)
+    saveRDS(sr_meta, save_name)
+    return(sr_meta)
+}
+
+ 
