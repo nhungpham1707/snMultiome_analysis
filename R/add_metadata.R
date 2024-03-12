@@ -106,7 +106,7 @@ get_singlex_meta <- function(metadata, demul_meta, sr_barcodes){
     splex_meta <- metadata[metadata$name %in% splex,]
     splex_sr <- sr_barcodes[sr_barcodes$libary %in% splex_meta$name,]
     splex_sr_meta <- merge(splex_sr, splex_meta, by.x = 'libary', by.y = 'name')
-    splex_sr_meta <- within(splex_sr_meta, rm('libary', 'barcodes'))
+    splex_sr_meta <- within(splex_sr_meta, rm('libary', 'barcodes', 'lib_bar'))
     return(splex_sr_meta)
 
 }
@@ -124,9 +124,9 @@ get_multiplex_meta <- function(metadata, demul_meta, sr_barcodes){
 
 combine_meta <- function(mplex_sr_meta, splex_sr_meta){
     print ('colnames of mplex_sr_meta are')
-    colnames(mplex_sr_meta)
+    print(colnames(mplex_sr_meta))
     print('colnames of splex_sr_meta are')
-    colnames(splex_sr_meta)
+    print(colnames(splex_sr_meta))
     all_meta <- rbind(mplex_sr_meta, splex_sr_meta)
     rownames(all_meta) <- all_meta$m_barcodes
     all_meta <- within(all_meta, rm('m_barcodes'))
