@@ -394,7 +394,7 @@ cluster_behavior_plan <- drake_plan(
   table(Cluster=colLabels(atac.sce), pure.atac$maximum),
   ### rna ----
   pure.rna = calculate_purity(rna.sce, 'PCA'),
-  pure.rna.p = ggplot(pure.rna_data, aes(x=cluster, y=purity, colour=maximum)) +
+  pure.rna.p = ggplot(pure.rna, aes(x=cluster, y=purity, colour=maximum)) +
     ggbeeswarm::geom_quasirandom(method="smiley") + 
     theme( panel.background = element_blank(), 
           axis.line = element_line(colour = "black"),
@@ -403,7 +403,7 @@ cluster_behavior_plan <- drake_plan(
   save_pure.rna.p = custom_savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
 )
 
-batch_plan <- drake_plan(
+batch_detection_plan <- drake_plan(
   ## visualize batch ----
   ### atac ---
     atac_visBatchDate = plotBatchVis(atac.sce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
@@ -418,37 +418,41 @@ batch_plan <- drake_plan(
 
     ## calculate cms ---
     ### atac ----
-   atac_cms = cms(atac.sce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    atac_cms_50 = cms(atac_cms, k =50, group = 'Date.of.Library', res_name = 'dj_date_k50', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-   atac_cms_lib = cms(atac_cms_50, k =200, group = 'library', res_name = 'dj_lib', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    atac_cms_sid = cms(atac_cms_lib, k =200, group = 'sampleID', res_name = 'dj_sid', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    plot_atac_cmsSid = visHist(atac_cms_sid),
-    save_cms = saveRDS(atac_cms_sid, file = paste0(batchAtacDir, '/atac_cms.RDS')),
-    savePAtacCms = save_plot(paste0(batchAtacDir, '/atac_cms.png'), plot_atac_cmsSid),
+    atac_cms = calculate_n_plot_cms(atac.sce, save_path = batchAtacDir, neighbors = 200, save_name = 'dj', 'LSI'),
     ### rna ----
-    rna_cms = cms(rna.sce, k =200, group = 'Date.of.Library', res_name = 'dj_date', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    rna_cms_50 = cms(rna_cms, k =50, group = 'Date.of.Library', res_name = 'dj_date_k50', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    rna_cms_lib = cms(rna_cms_50, k =200, group = 'library', res_name = 'dj_lib', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    rna_cms_sid = cms(rna_cms_lib, k =200, group = 'sampleID', res_name = 'dj_sid', n_dim = 30, cell_min = 100, dim_red = 'LSI'), 
-    plot_rna_cmsSid = visHist(rna_cms_sid),
-    save_rna_cms = saveRDS(rna_cms_sid, file = paste0(batchRnaDir, '/rna_cms.RDS')),
-    savePrnaCms = save_plot(paste0(batchRnaDir, '/rna_cms.png'), plot_rna_cmsSid)
+    rna_cms = calculate_n_plot_cms(rna.sce, save_path = batchRnaDir, save_name = 'no_correction', neighbors = 200, 'PCA'), 
 )
 
+batch_correction_plan <- drake_plan(
+  # try with harmony -----
+  ## atac ----
+  hm_lib.atac = RunHarmony(mrgAtacDim, group.by.vars = 'library', reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_lib.atac_umap = RunUMAP(hm_lib.atac, dims = 2:30, reduction = 'harmony'),
 
-plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan, cluster_behavior_plan, batch_plan)
+  hm_date.atac = RunHarmony(mrgAtacDim, group.by.vars = "Date.of.Library", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_date.atac_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
+
+  hm_patient.atac = RunHarmony(mrgAtacDim, group.by.vars = "Individual.ID", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_patient.atac_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony'),
+  ## rna ----
+  hm_lib.rna = RunHarmony(rna_meta, group.by.vars = 'library', reduction.use = 'PCA', project.dim = FALSE),
+  hm_lib.rna_umap = RunUMAP(hm_lib.atac, dims = 2:30, reduction = 'harmony'),
+
+  hm_date.rna = RunHarmony(rna_meta, group.by.vars = "Date.of.Library", reduction.use = 'PCA', project.dim = FALSE),
+  hm_date.rna_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
+
+  hm_patient.rna = RunHarmony(rna_meta, group.by.vars = "Individual.ID", reduction.use = 'PCA', project.dim = FALSE),
+  hm_patient.rna_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony')
+
+
+)
+ 
+
+plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
 # options(clustermq.scheduler = "multicore") # nolint
 # make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 make(plan, lock_cache = FALSE)
 vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_cleancode_pipeline.png', font_size = 20 )
 
-# test if res exceeb byte is because of drake
-# message('load drake atac')
-# loadd("atacSrDim_LX049")                        
-# loadd("atacSrDim_LX051")                        
-# loadd("atacSrDim_LX065") 
 
-# message('merging atac')
-# mergetest <- merge(x = atacSrDim_LX049, y =c(atacSrDim_LX051, atacSrDim_LX065 ), add.cell.ids = lbLst, merge.data = TRUE)
-# message('finish merging atac without error')
 

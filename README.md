@@ -13,19 +13,22 @@ filter matrix.h5 output from cellranger
 clsuter.tsv file from souporcell (k=2) 
 ## Prepare a metadata file
 
-The file should have following columns with these exact names (case sensitive): 
+The file should have the following columns with these exact names (case sensitive): 
   
   | **column name**| **description**|
   |------------|------------|
-  |**RNA_lib**|ID of scRNA as the same with the name of the folder containing .h5 files|
-  |**ATAC_lib**| ID of scATAC as the same with the name of the folder containing .h5 and fragment files|
+  |**RNA_lib**|ID of scRNA library|
+  |**ATAC_lib**| ID of scATAC library|
   |**data_link**| link to the h5 file. for example, if the path to filter matrix is LX049_LX050/an_127/outs/filtered_feature_bc_matrix.h5, data_link will be LX049_LX050/an_127|
-  |**name**| replace '/' in data_link with '_'. for ex, LX049_LX050_an127|
-  |**source**| metadata for the sample|
-  |**sampleID**| ID of the sample (can be different from library ID)|
-  |**Subtype**| tumor type|
-  |**Gender**| patient gender|
-  |**Souporcell_link**| link to souporcell result, for ex LX049_LX050/an_207. BY default the function will look for LX049_LX050/an_207/k2/clusters.tsv file|  
+  |**name**| replace '/' in data_link with '_'. for ex, LX049_LX050_an127. This will be used to label clusters by library|
+  |**source**| metadata for the sample. for instance, tissue location|
+  |**sampleID**| ID of the sample for each library (can be different from library ID). This infomation is used for confounding correction|
+  |**Subtype**| tumor type. for instance, 'MRTK', 'ATRT'|
+  |**Souporcell_link**| link to souporcell result, for ex LX049_LX050/an_207. BY default the function will look for LX049_LX050/an_207/k2/clusters.tsv file| 
+  |**Date.of.Library**| sequencing date of each library. This infomation is used for confounding correction|
+  |**Individual.ID**| patients ID for each library. This infomation is used for confounding correction| 
+  |**Gender**| patient genders for each library. This infomation is used for confounding correction|
+
 
     #' @return RDS of seurat object in sc_atac_preprocessing_dir, report in report_dir and plots in sc_atac_preprocessing_fig_dir defined in global_variables.R
  

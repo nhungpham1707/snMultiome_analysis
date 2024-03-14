@@ -107,14 +107,14 @@ get_singlex_meta <- function(metadata, demul_meta, sr_barcodes){
     splex_sr <- sr_barcodes[sr_barcodes$libary %in% splex_meta$name,]
     splex_sr_meta <- merge(splex_sr, splex_meta, by.x = 'libary', by.y = 'name')
     splex_sr_meta <- within(splex_sr_meta, rm('libary', 'barcodes', 'lib_bar'))
-    return(splex_sr_meta)
+    return(splex_sr_meta) # somehow ATAC_lib not there 
 
 }
 
 get_multiplex_meta <- function(metadata, demul_meta, sr_barcodes){
     mplex_meta <- metadata[metadata$sampleID %in% demul_meta$sampleID,]
-    mplex_meta <- mplex_meta[,2:ncol(mplex_meta)]
-    head(mplex_meta)
+    # mplex_meta <- mplex_meta[,2:ncol(mplex_meta)]
+    # head(mplex_meta)
     mplex_meta <- merge(mplex_meta, demul_meta, by.x = 'sampleID', by.y = 'sampleID')
     mplex_meta$lib_bar <- paste0(mplex_meta$library, '_', mplex_meta$barcodes)
     mplex_sr_meta <- merge(mplex_meta, sr_barcodes, by= 'lib_bar')
@@ -125,20 +125,23 @@ get_multiplex_meta <- function(metadata, demul_meta, sr_barcodes){
 combine_meta <- function(mplex_sr_meta, splex_sr_meta){
     print ('colnames of mplex_sr_meta are')
     print(colnames(mplex_sr_meta))
+    print(ncol(mplex_sr_meta))
     print('colnames of splex_sr_meta are')
     print(colnames(splex_sr_meta))
+    print(ncol(splex_sr_meta))
     all_meta <- rbind(mplex_sr_meta, splex_sr_meta)
-    rownames(all_meta) <- all_meta$m_barcodes
-    all_meta <- within(all_meta, rm('m_barcodes'))
-    return(all_meta)
+    all_meta2 <- all_meta[!duplicated(all_meta$m_barcodes),] #somehow LX094 barcodes are duplicated
+    rownames(all_meta2) <- all_meta2$m_barcodes
+    meta_to_add <- within(all_meta2, rm('m_barcodes'))
+    return(meta_to_add)
 }
 
 assign_meta <- function(metadata, demul_meta, sr, save_name){
     sr_barcodes <- prepare_sr_meta(sr)
     splex_sr_meta <- get_singlex_meta(metadata, demul_meta, sr_barcodes)
     mplex_sr_meta <- get_multiplex_meta(metadata, demul_meta, sr_barcodes)
-    all_meta <- combine_meta(splex_sr_meta, mplex_sr_meta)
-    sr_meta <- AddMetaData(sr, all_meta)
+    meta_to_add <- combine_meta(splex_sr_meta, mplex_sr_meta)
+    sr_meta <- AddMetaData(sr, meta_to_add)
     saveRDS(sr_meta, save_name)
     return(sr_meta)
 }

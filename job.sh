@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=rnameta3
-#SBATCH --output=log_rna_meta3.out
+#SBATCH --job-name=rnameta
+#SBATCH --output=log_rna_meta.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
