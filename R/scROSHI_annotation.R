@@ -9,9 +9,11 @@
 # data('marker_list')
 # Output: singlecellExperiment object with extra columns for cell type in metadata
 
-annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_path){
+annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_name, save_path){
     lib <- unique(sr$library)
+    if(missing(save_name)){
     save_name <- lib
+    }
     sr.sce <- as.SingleCellExperiment(sr)
     rowData(sr.sce)$SYMBOL <- rownames(sr.sce) 
     sce_data = sr.sce
@@ -30,10 +32,10 @@ annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_path)
     return(results_sr)
 }
 
-run_scROSHI_w_demo_data <- function(sr, cols, pt = 2, save_path){
+run_scROSHI_w_demo_data <- function(sr, cols, pt = 2, save_name, save_path){
     data('config')
     data('marker_list')
-    results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_path)
+    results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_name, save_path)
     return(results_sr)
     message('finish scROSHI with demo data no error')
 }
@@ -50,7 +52,7 @@ run_scROSHI_w_c8_data <- function(sr, cols, pt = 1, save_name, save_path){
     message('finish scROSHI w c8 with no error')
 }
 
-run_scROSHI_w_atrt_data <- function(sr, cols, pt = 1, save_path){
+run_scROSHI_w_atrt_data <- function(sr, cols, pt = 1, save_name, save_path){
     ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
     ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
     ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
@@ -63,7 +65,7 @@ run_scROSHI_w_atrt_data <- function(sr, cols, pt = 1, save_path){
      Subtype = c(rep('none', time = length(names(ATRT_list)))))
     marker_list <- ATRT_list
     config <- ATRT_config
-    results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_path)
+    results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_path, save_name)
     message('finish scROSHI w atrt with no error')
     return(results_sr)
 }

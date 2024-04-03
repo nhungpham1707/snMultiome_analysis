@@ -31,16 +31,16 @@ annotate_mrg_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_n
     ggsave(file = paste0(path_to_save, '/', save_name,"scROSHI_cell_type_annotation.png"), 
         width = 1200 * reso/72, height = 700 * reso/72, units ="px", dpi = reso)
     summary_res <- table(results_sr@meta.data$celltype_final)
-    write.csv(summary_res, paste0(report_dir, '/scROSHI_cell_annotation_', save_name, '.csv'))
+    write.csv(summary_res, paste0(path_to_save, '/scROSHI_cell_annotation_', save_name, '.csv'))
     return(results_sr)
 }
 
 run_scROSHI_mrg_w_demo_data <- function(sr, cols, pt = 2, save_name, path_to_save){
     data('config')
     data('marker_list')
-    results_sr <- annotate_mrg_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_name, path_to_save)
+    results_sr <- annotate_mrg_w_scROSHI(sr, marker_list, config, pt = pt, cols, save_name, path_to_save)
     return(results_sr)
-    message('finish scROSHI with demo data no error')
+    message('finish scROSHI with demo data no error!')
 }
 
 run_scROSHI_mrg_w_c8_data <- function(sr, cols, pt = 1, save_name, path_to_save){
@@ -70,7 +70,7 @@ run_scROSHI_mrg_w_atrt_data <- function(sr, cols, pt = 1, save_name, path_to_sav
     marker_list <- ATRT_list
     config <- ATRT_config
     results_sr <- annotate_mrg_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_name, path_to_save)
-    message('finish scROSHI w atrt with no error')
+    message('finish scROSHI w atrt with no error!')
     return(results_sr)
 }
 

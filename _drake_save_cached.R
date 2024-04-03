@@ -12,5 +12,12 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(atac_anchors)
 # saveRDS(atac_anchors, '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_atac/merge_all/anchors.RDS')
 
-loadd( "rnaMrgNoNor_sgr")
-saveRDS(rnaMrgNoNor_sgr, paste0('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/cell_type/sc_rna/singler/mrgRna_noNOr_singleR.RDS'))
+# loadd( "rnaMrgNoNor_sgr")
+# saveRDS(rnaMrgNoNor_sgr, paste0('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/cell_type/sc_rna/singler/mrgRna_noNOr_singleR.RDS'))
+
+loadd(rnaMrgSgr)
+colnames(rnaMrgSgr@meta.data)
+
+rna <- readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_RNA/merge_all/mrgRna_w_singler.RDS')
+print('read mrrgRna_w_singler is')
+colnames(sr@meta.data)

@@ -249,8 +249,28 @@ process_plan <- drake_plan(
   mrgAtacDim = target(sc_atac_dim_redu(mrgAtacNor)),
   mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_cols2),
   mrgPsID = dimplot_w_nCell_label(mrgAtacDim, by = 'sampleID',atacMrgFigDir , col = my_cols2),
+  # mrgPlibnCell = dimplot_w_nCell_label(mrgAtacDim, by = 'library',atacMrgFigDir , col = my_cols2),
+  # mrgP = dimplotnSave(mrgAtacDim, atacMrgFigDir, save_name = 'cluster'),
+  # mrgPlib = dimplotBynSave(mrgAtacDim, by = 'library',
+  #                          atacMrgFigDir, save_name = 'lib_no_nCell', col = my_cols2),
   # # prep mrg atac for infercnv
   mrgGA = get_gene_activity(mrgAtacDim),
+  # preInferMrg = make_anno_count_Mrgmx(mrgGA, save_path=AtacInferInputDir),
+  # integration w anchors -----------------
+  # atac_anchors = target(FindIntegrationAnchors(c(atacMeta_specialLib, atacMeta, atacMetasg), reduction = 'rlsi', anchor.features = 2000),
+  #                   transform = combine(atacMeta,atacMetasg,
+  #                   id.var = !!c(mulLib, sngLib),
+  #  atac_anchors = target(integration_w_anchors_subset(c(atacMeta_specialLib, atacMeta, atacMetasg), to_remove = 'atac'),
+  #                   transform = combine(atacMeta,atacMetasg,
+  #                   id.var = !!c(mulLib, sngLib),
+  #                   .id = id.var)),
+  # atac.integrated = IntegrateData(anchorset = atac_anchors, dims = 1:50),
+  # int.AtacNor = normalize_anchors(atac.integrated),
+  # int.AtacDim = sc_atac_dim_redu(int.AtacNor),
+  # saveInt = saveRDS(int.AtacDim, paste0(atcMrgDir, '/int.AtacDim.RDS')),
+  # int.Ptype = dimplotnSave (int.AtacDim, atacMrgFigDir, save_name = 'int.atac.png', col = my_cols2),
+  # int.sID = dimplotBynSave(int.AtacDim, by = 'sampleID',atacMrgFigDir, save_name = 'int.atac.sID.png', col = my_cols2),
+  # int.subtype = dimplotBynSave(int.AtacDim, by = 'Subtype',atacMrgFigDir, save_name = 'int.atac.subtype.png', col = my_cols2),
   ## process rna ----
   h5Link_all = target(get_h5_link(lb, metadata),
                   transform = map(lb = !!alLib,
@@ -298,8 +318,12 @@ process_plan <- drake_plan(
   mrgRnaNor_all = normalize_dim_plot_sr(mrgRna_all, rnaMrgFigDir, lib_name = 'merge'),
   saverna_all = saveRDS(mrgRnaNor_all, paste0(rnaMrgDir, '/mrgRna.RDS')),
   mrgRnaClu = clustering_rna_data(mrgRnaNor_all),
-  p_mrgRna_all = plot_cluster(mrgRnaClu, rnaMrgFigDir, save_name = 'merge' ),
-  saveplotmrgrna = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all),
+  # p_mrgRna_all_0.5 = plot_cluster(mrgRnaClu, rnaMrgFigDir, group.by = 'rna_snn_res.0.5', save_name = 'merge' ),
+  #  saveplotmrgrna_0.5 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all_0.5),
+  #  p_mrgRna_all_0.3 = plot_cluster(mrgRnaClu, rnaMrgFigDir, group.by = 'rna_snn_res.0.3', save_name = 'merge' ),
+  #  saveplotmrgrna_0.3 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all_0.3),
+   p_mrgRna_all = plot_cluster(mrgRnaClu, rnaMrgFigDir, save_name = 'merge' ),
+   saveplotmrgrna = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all),
 
    # merge rna without normalized samples ----
   mrgRna_noNOr_all = target(merge_pairwise(c(gexFilt), rnaMrgDir),
@@ -312,23 +336,16 @@ process_plan <- drake_plan(
   saverna_noNOr_clu = saveRDS(mrgRnaClu_noNOr, paste0(rnaMrgDir, '/mrgRna_noNOrClu.RDS')),
   rna_meta = assign_meta(metadata, gexDemulMeta,
   mrgRnaClu_noNOr, save_name = paste0(rnaMrgDir, '/mrgRna_meta.RDS')),
-   # run singleR rna ---
+  # p_mrgRna_noNOr_all_0.5 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.5', save_name = 'merge_noNOr' ),
+  #  saveplotmrgrna_noNOr_0.5 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all_0.5),
+  #  p_mrgRna_noNOr_all_0.3 = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, group.by = 'rna_snn_res.0.3', save_name = 'merge_noNOr' ),
+  #  saveplotmrgrna_noNOr_0.3 = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all_0.3),
+  #  p_mrgRna_noNOr_all = plot_cluster(mrgRnaClu_noNOr, rnaMrgFigDir, save_name = 'merge_noNOr' ),
+  #  saveplotmrgrna_noNOr = savePlot(paste0(rnaMrgFigDir, '/mrgRNA_noNOr.png'), p_mrgRna_noNOr_all),
+  # run singleR rna ---
   rnaMrgNoNor_sgr = run_singleR(mrgRnaClu_noNOr),
-  savernaSgR = saveRDS(rnaMrgNoNor_sgr, paste0(cellRNAsingRdir, '/mrgRna_noNOr_singleR.RDS')),
-  rnaMrgSgr = get_sgR_label(rnaMrgNoNor_sgr, rna_meta),
-  # prep rna for infercnv -----
-  # prepare count matrix 
-  preInferRna = target(make_anno_count_rna_mx(rnaMrgSgr, gexClus, save_path = rnaInferInputDir ),
-                    transform = map(gexClus,
-                  id.var = !!alID,
-                  .id = id.var))
-)
+  savernaSgR = saveRDS(rnaMrgNoNor_sgr, paste0(cellRNAsingRdir, '/mrgRna_noNOr_singleR.RDS'))
 
-cell_annotation_plan <- drake_plan(
-  # scroshi
-   mrgRna_scroshi_demo = run_scROSHI_w_demo_data(sr = rnaMrgSgr, cols = my_cols, pt = 1, save_name = 'merge_all_rna_w_demo_marker', save_path = CellRnaScroshiDir),
-  
-  mrgRna_scroshi_atrt = run_scROSHI_w_atrt_data(sr = mrgRna_scroshi_demo, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
 )
 
 cluster_behavior_plan <- drake_plan(
@@ -349,7 +366,7 @@ cluster_behavior_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)), 
-  save_silAtac_p = savePlot('output/batchEffect/atac_cluster_behavior.png', sil.atac.p),
+  save_silAtac_p = custom_savePlot('output/batchEffect/atac_cluster_behavior.png', sil.atac.p),
   silAtac_tab = table(Cluster=colLabels(atac.sce), sil.atac$closest),  # cluster 0, 1 and 4 have many cells that can easily mix with other clusters
   ### rna -----
   sil.rna = calculate_silhouette(rna.sce, reduce_method = 'PCA'),
@@ -359,7 +376,7 @@ cluster_behavior_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_sil.rna.p = savePlot('output/batchEffect/rna_silhouette_cluster_behavior.png', sil.rna.p),
+  save_sil.rna.p = custom_savePlot('output/batchEffect/rna_silhouette_cluster_behavior.png', sil.rna.p),
   table(Cluster=colLabels(rna.sce), sil.rna$closest),
   # cluster 7 & 23 have many cells that can easily mix with other clusters
   ## cluster purity ------
@@ -372,9 +389,10 @@ cluster_behavior_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_pure.atac.p = savePlot('output/batchEffect/atac_cluster_purity.png', pure.atac.p),
+  svae_pure.atac.p = custom_savePlot('output/batchEffect/atac_cluster_purity.png', pure.atac.p),
   # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
-   ### rna ----
+  table(Cluster=colLabels(atac.sce), pure.atac$maximum),
+  ### rna ----
   pure.rna = calculate_purity(rna.sce, 'PCA'),
   pure.rna.p = ggplot(pure.rna, aes(x=cluster, y=purity, colour=maximum)) +
     ggbeeswarm::geom_quasirandom(method="smiley") + 
@@ -382,7 +400,7 @@ cluster_behavior_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_pure.rna.p = savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
+  save_pure.rna.p = custom_savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
 )
 
 batch_detection_plan <- drake_plan(
@@ -393,10 +411,10 @@ batch_detection_plan <- drake_plan(
     atac_visBatchSample = plotBatchVis(atac.sce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
     atac_visBatchGender = plotBatchVis(atac.sce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
   ### rna -----
-    rna_VisBatchDate = plotBatchVis(rna.sce, batch = "Date.of.Library", save_path = batchRnaDir, col = my_cols),
-    rna_VisBatchLib = plotBatchVis(rna.sce, batch = 'library', save_path = batchRnaDir, col = my_cols),
-    rna_VisBatchSample = plotBatchVis(rna.sce, batch = 'sampleID', save_path = batchRnaDir, col = my_cols),
-    rna_VisBatchGender = plotBatchVis(rna.sce, batch = 'Gender', save_path = batchRnaDir, col = my_cols),
+     rna_visBatchDate = plotBatchVis(rna.sce, batch = "Date.of.Library", save_path = batchRnaDir, col = my_cols),
+    rna_visBatchLib = plotBatchVis(rna.sce, batch = 'library', save_path = batchRnaDir, col = my_cols),
+    rna_visBatchSample = plotBatchVis(rna.sce, batch = 'sampleID', save_path = batchRnaDir, col = my_cols),
+    rna_visBatchGender = plotBatchVis(rna.sce, batch = 'Gender', save_path = batchRnaDir, col = my_cols),
 
     ## calculate cms ---
     ### atac ----
@@ -410,68 +428,27 @@ batch_correction_plan <- drake_plan(
   ## atac ----
   hm_lib.atac = RunHarmony(mrgAtacDim, group.by.vars = 'library', reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
   hm_lib.atac_umap = RunUMAP(hm_lib.atac, dims = 2:30, reduction = 'harmony'),
-  
-  # hm_date.atac = RunHarmony(mrgAtacDim, group.by.vars = "Date.of.Library", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
-  # hm_date.atac_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
 
-  # hm_patient.atac = RunHarmony(mrgAtacDim, group.by.vars = "Individual.ID", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
-  # hm_patient.atac_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony'),
+  hm_date.atac = RunHarmony(mrgAtacDim, group.by.vars = "Date.of.Library", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_date.atac_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
+
+  hm_patient.atac = RunHarmony(mrgAtacDim, group.by.vars = "Individual.ID", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_patient.atac_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony'),
   ## rna ----
-  hm_lib.rna = RunHarmony(rnaMrgSgr, group.by.vars = 'library', reduction.use = 'pca', project.dim = FALSE),
-  hm_lib.rna_nb = FindNeighbors(object = hm_lib.rna, reduction = "harmony"),
-  hm_lib.rna_clus = FindClusters(hm_lib.rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
-  hm_lib.rna_umap = RunUMAP(hm_lib.rna_clus, dims = 2:30, reduction = 'harmony'),
-  hm_rna_singr_p = DimPlot(hm_lib.rna_umap, group.by = 'singleR_labels', raster = FALSE, cols = my_cols),
-  svae_hm_rna_singr = savePlot('output/batchEffect/hm_rna_singr.png', hm_rna_singr_p),
-  hm_rna_lib_p = DimPlot(hm_lib.rna_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
-  save_hmrna_lib = savePlot('output/batchEffect/hm_rna_lib.png', hm_rna_lib_p),
-  hm_rna_type_p = DimPlot(hm_lib.rna_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
-  save_hm_rna_type = savePlot('output/batchEffect/hm_rna_type.png', hm_rna_type_p)
-  # hm_date.rna = RunHarmony(rna_meta, group.by.vars = "Date.of.Library", reduction.use = 'pca', project.dim = FALSE),
-  # hm_date.rna_umap = RunUMAP(hm_date.rna, dims = 2:30, reduction = 'harmony'),
+  hm_lib.rna = RunHarmony(rna_meta, group.by.vars = 'library', reduction.use = 'PCA', project.dim = FALSE),
+  hm_lib.rna_umap = RunUMAP(hm_lib.atac, dims = 2:30, reduction = 'harmony'),
 
-  # hm_patient.rna = RunHarmony(rna_meta, group.by.vars = "Individual.ID", reduction.use = 'pca', project.dim = FALSE),
-  # hm_patient.rna_umap = RunUMAP(hm_patient.rna, dims = 2:30, reduction = 'harmony')
+  hm_date.rna = RunHarmony(rna_meta, group.by.vars = "Date.of.Library", reduction.use = 'PCA', project.dim = FALSE),
+  hm_date.rna_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
+
+  hm_patient.rna = RunHarmony(rna_meta, group.by.vars = "Individual.ID", reduction.use = 'PCA', project.dim = FALSE),
+  hm_patient.rna_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony')
 
 
 )
-# convert seurat to anndata https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html 
+ 
+
+plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
 
 
-plan <- bind_plans(combine_peak_plan,process_special_lib_plan,  process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
 
-
-# options(clustermq.scheduler = "multicore") # nolint
-# make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
-make(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
-# vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_cleancode_pipeline.png', font_size = 20 )
-
-# plot cms score
-
-# loadd(atac_cms)
-# loadd(rna_cms)
-# his_p <- visHist(atac_cms)
-# metric_p <- visMetric(atac_cms, metric_var = 'cms_smooth.date')
-# plot_grip(his_p, metric_p, ncol = 2)
-
-# names(colData(atac_cms))
-# cms_df <- data.frame(date = atac_cms$cms.dj_date_k200,
-#         smooth_date = atac_cms$cms_smooth.dj_date_k200,
-#         lib = atac_cms$cms.dj_lib_k200,
-#         smooth_lib = atac_cms$cms_smooth.dj_lib_k200,
-#         patient = atac_cms$cms.dj_patient_k200,
-#         smooth_patient = atac_cms$cms_smooth.dj_patient_k200 )
-
-# saveRDS(cms_df, paste0(batchAtacDir,'/cms_df.rds'))
-# his_p <- visHist(atac_cms, metric = 'cms.dj_date_k200' )
-# metric_p <- visMetric(atac_cms, metric_var = 'cms_smooth.dj_date_k200')
-# # p <- plot_grip(his_p, metric_p, ncol = 2)
-# savePlot(paste0(batchAtacDir, '/dj_date_hist.png'), his_p )
-# savePlot(paste0(batchAtacDir, '/dj_date_metric.png'), metric_p )
-# print('rna colnames')
-# names(colData(rna_cms))
-
-# his_rna <- visHist(rna_cms, metric = "cms.no_correction_patient_k200" )
-# savePlot(paste0(batchAtacDir, '/rna_patient_hist.png'), his_rna)
-# metric_rna <- visMetric(rna_cms, metric_var = "cms_smooth.no_correction_patient_k200")
-# savePlot(paste0(batchAtacDir, '/rna_patient_metric.png'), metric_rna)

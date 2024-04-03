@@ -86,4 +86,5 @@ suppressPackageStartupMessages({
   library(scater)
   library(CellMixS)
   library(bluster) # for clustering behavior 
+  library(cowplot)
 })

@@ -24,12 +24,16 @@ lbLst <- unique(nospecialMet$name)
 idLst <- lbLst %>% map(splitName)
 lbLst <- c(lbLst, 'merge')
 idLst <- c(idLst, 'merge')
+
 # define normal cells 
 normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
 ## define plan ----
 inLink <- AtacnoRInferInputDir
 outLink <- cellAtacnoRInferDir 
+rnaInLink <- rnaInferInputDir
+rnaOutLink <- cellRnaIcnvdir 
 geneOderLink <- paste0(base_data_dir, '/gencode_v19_gene_pos.txt')
+
 infercnv_plan <- drake_plan(
     AtacnoRIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOderLink, inLink),
                 transform = map(lib = !!lbLst,
@@ -40,7 +44,21 @@ infercnv_plan <- drake_plan(
                             id.vars = !!idLst,
                             .id = id.vars))
 )
-make(infercnv_plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
+
+
+rna_infercnv_plan <- drake_plan(
+    rnaIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOderLink, rnaInLink),
+                transform = map(lib = !!lbLst,
+                            id.vars = !!idLst,
+                            .id = id.vars)),
+    rnaIfcnvRes = target(run_infercnv(rnaIfcnvOb, rnaOutLink),
+                transform = map(rnaIfcnvOb,
+                            id.vars = !!idLst,
+                            .id = id.vars))
+)
+
+
+make(rna_infercnv_plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
 
 # options(clustermq.scheduler = "multicore") # nolint
 # make(infercnv_plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)

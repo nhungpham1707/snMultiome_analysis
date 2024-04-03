@@ -18,7 +18,7 @@
 #   - report_dir: any statistic csv files, 
 #   e.g. cells numbers before 
 #   and after processing
-#   - sc_rna_processing_dir/
+#   - rnaProcessDir/
 #    atacProcessDir: process files 
 #    for scATAC and scRNA 
 #   - atacDemultiFigDir/
@@ -39,16 +39,19 @@ dataset_overview_fig_dir <- paste0(output_dir,'/figures/dataset')
 cell_type_dir <- paste0(output_dir,'/cell_type')
 cell_type_fig_dir <- paste0(output_dir,'/figures/cell_type')
 
-sc_rna_processing_dir <-paste0(output_dir,'/sc_RNA/processing') 
-sc_rna_processing_fig_dir <- paste0(output_dir, '/figures/sc_RNA/processing')
+rnaProcessDir <-paste0(output_dir,'/sc_RNA/processing') 
+rnaFigDir <- paste0(output_dir, '/figures/sc_RNA/processing')
+rnaMrgDir <- paste0(output_dir,'/sc_RNA/merge_all')
+rnaMrgFigDir <- paste0(output_dir,'/figures/sc_RNA/merge_all')
 sc_rna_demultiplex_fig_dir <- paste0(output_dir,'/figures/sc_RNA/demultiplex')
 cell_type_rna_dir <- paste0(cell_type_dir, '/sc_rna')
 cell_type_rna_fig_dir <- paste0(cell_type_fig_dir, '/sc_rna')
 
-cell_type_rna_singler_dir <- paste0(cell_type_rna_dir, '/singler')
+cellRNAsingRdir <- paste0(cell_type_rna_dir, '/singler')
 cell_type_rna_singler_fig_dir <- paste0(cell_type_rna_fig_dir, '/singler')
 
-cell_type_rna_infercnv_dir <- paste0(cell_type_rna_dir, '/infercnv')
+cellRnaIcnvdir <- paste0(cell_type_rna_dir, '/infercnv')
+rnaInferInputDir <- paste0(cellRnaIcnvdir, '/input')
 cell_type_rna_infercnv_fig_dir <- paste0(cell_type_rna_fig_dir, '/infercnv')
 cell_type_rna_scroshi_dir <- paste0(cell_type_rna_dir, '/scROSHI')
 
@@ -74,10 +77,13 @@ atacCellSngRDir <- paste0(cell_type_atac_dir, '/singler')
 atacCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singler')
 atacnoRCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singlerNoRelap')
 
-cell_type_atac_scroshi_dir <- paste0(cell_type_atac_dir, '/scROSHI')
-
+atacScroshiFigDir <- paste0(cell_type_atac_fig_dir, '/scROSHI')
+atacScroshiDir <- paste0(cell_type_atac_dir, '/scROSHI')
 hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
 clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
+batchDir <- paste0(output_dir, '/batchEffect')
+batchAtacDir <- paste0(batchDir, '/atac')
+batchRnaDir <- paste0(batchDir, '/rna')
 # create dir -----
 # figures
 dir.create("output/figures", recursive = TRUE)
@@ -86,14 +92,14 @@ dir.create(dataset_overview_fig_dir , recursive = TRUE)
 dir.create(cell_type_dir, recursive = TRUE)
 dir.create(cell_type_fig_dir, recursive = TRUE)
 # output for scRNA
-dir.create(sc_rna_processing_dir, recursive = TRUE)
-dir.create(sc_rna_processing_fig_dir, recursive = TRUE)
+dir.create(rnaProcessDir, recursive = TRUE)
+dir.create(rnaFigDir, recursive = TRUE)
 dir.create(sc_rna_demultiplex_fig_dir, recursive = TRUE)
 dir.create(cell_type_rna_dir, recursive = TRUE)
 dir.create(cell_type_rna_fig_dir, recursive = TRUE)
-dir.create(cell_type_rna_infercnv_dir, recursive = TRUE)
+dir.create(cellRnaIcnvdir, recursive = TRUE)
 dir.create(cell_type_rna_infercnv_fig_dir, recursive = TRUE)
-dir.create(cell_type_rna_singler_dir, recursive = TRUE)
+dir.create(cellRNAsingRdir, recursive = TRUE)
 dir.create(cell_type_rna_singler_fig_dir, recursive = TRUE)
 dir.create(cell_type_rna_scroshi_dir, recursive = TRUE)
 # output for scATAC
@@ -110,7 +116,7 @@ dir.create(cell_type_atac_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellAtacInferMergDir, recursive = TRUE)
 dir.create(atacCellSngRDir, recursive = TRUE)
 dir.create(atacCellSngRFigDir, recursive = TRUE)
-dir.create(cell_type_atac_scroshi_dir, recursive = TRUE)
+dir.create(atacScroshiFigDir, recursive = TRUE)
 dir.create(hyperparameter_atac_dir, recursive = TRUE)
 dir.create(clustering_atac_dir, recursive = TRUE)
 dir.create(AtacInferInputDir, recursive = TRUE)
@@ -122,3 +128,10 @@ dir.create(AtacnoRInferInputDir, recursive = TRUE)
 dir.create(atcnoRMrgDir, recursive = TRUE)
 dir.create(atacnoRMrgFigDir, recursive = TRUE)
 dir.create(cellAtacnoRInferDir, recursive = TRUE)
+dir.create(atacScroshiDir, recursive = TRUE)
+dir.create(rnaMrgFigDir, recursive = TRUE)
+dir.create(rnaMrgDir, recursive = TRUE)
+dir.create(batchDir, recursive = TRUE)
+dir.create(batchAtacDir, recursive = TRUE)
+dir.create(batchRnaDir, recursive = TRUE)
+dir.create(rnaInferInputDir, recursive = TRUE)

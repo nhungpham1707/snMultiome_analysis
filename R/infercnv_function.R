@@ -21,6 +21,20 @@ make_anno_count_Mrgmx <- function(mrgsr, save_path){
     write.table(df, file = paste0(save_path,"/merge_sr_cell_annotation.txt"), sep = "\t", quote = FALSE, na = "", row.names = FALSE, col.names = FALSE)
 }
 
+# make for rna 
+# merge_rna has singler label
+make_anno_count_rna_mx <- function(merge_rna, sr, save_path){
+    lib <- unique(sr$library)
+    count_matrix <- GetAssayData(sr, slot = 'counts')
+    saveRDS(count_matrix,paste0(save_path,"/", lib, "_sr_count_matrix.RDS") )
+
+    # get singlr label
+    mrg_sgr <- data.frame(lib = merge_rna$library, bc = merge_rna$barcodes, celltype = merge_rna$singleR_labels)
+    cell_type <- mrg_sgr[mrg_sgr$lib %in% lib,]
+    df <- data.frame(cell = cell_type$bc, type = cell_type$celltype)
+    write.table(df, file = paste0(save_path,"/", lib, "_sr_cell_annotation.txt"), sep = "\t", quote = FALSE, na = "", row.names = FALSE, col.names = FALSE)
+}
+
 make_infercnvObj <- function(lib, normal_cells,geneOderLink, inLink){
     cellAnnoLink <- paste0(inLink,"/", lib, "_sr_cell_annotation.txt")
     countMx <- readRDS(paste0(inLink,"/", lib, "_sr_count_matrix.RDS"))

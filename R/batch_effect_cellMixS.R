@@ -13,10 +13,10 @@ batch, '.png'), p)
 # after or between different methods
 # neighbors can be calculated from the average number of cells per cluster
 calculate_cms <- function(sce, neighbors = 200, save_name, dim_met){
-    cms <- cms(sce, k =neighbors, group = 'Date.of.Library', res_name = paste0(save_name, '_date_k', neighbors), n_dim = 30, cell_min = 100, dim_red = dim_met)
-    cms <- cms(cms, k =neighbors, group = 'library', res_name = paste0(save_name,'_lib_k',neighbors), n_dim = 30, cell_min = 100, dim_red = dim_met)
-    cms <- cms(cms, k =neighbors, group = 'sampleID', res_name = paste0(save_name,'_sample_k',neighbors), n_dim = 30, cell_min = 100, dim_red = dim_met)
-    cms <- cms(cms, k =neighbors, group = 'Individual.ID', res_name = paste0(save_name,'_patient_k',neighbors), n_dim = 30, cell_min = 100, dim_red = dim_met)
+    cms <- cms(sce, k =neighbors, group = 'Date.of.Library', res_name = paste0(save_name, '_date_k', neighbors), n_dim = 3, cell_min = 100, dim_red = dim_met)
+    cms <- cms(cms, k =neighbors, group = 'library', res_name = paste0(save_name,'_lib_k',neighbors), n_dim = 3, cell_min = 100, dim_red = dim_met)
+    cms <- cms(cms, k =neighbors, group = 'sampleID', res_name = paste0(save_name,'_sample_k',neighbors), n_dim = 3, cell_min = 100, dim_red = dim_met)
+    cms <- cms(cms, k =neighbors, group = 'Individual.ID', res_name = paste0(save_name,'_patient_k',neighbors), n_dim = 3, cell_min = 100, dim_red = dim_met)
     return (cms)
 }
 
