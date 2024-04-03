@@ -13,11 +13,11 @@ import pickle
 scvi.settings.seed = 0
 print("Last run with scvi-tools version:", scvi.__version__)
 
-save_dir = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/batchEffect/rna/sysvi/'
+save_dir = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/batchEffect/atac/sysvi/'
 print("save dir is", save_dir)
 
 # load data
-adata = sc.read('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_RNA/merge_all/rna.h5ad')
+adata = sc.read('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_atac/merge_all/atac.h5ad')
 print('adata is')
 adata
 
@@ -33,15 +33,8 @@ SysVI.setup_anndata(
 print('-----------------train model-------------')
 model = SysVI(adata=adata)
 # Train
-max_epochs = 20
+max_epochs = 50
 model.train(
-    plan_kwargs={
-        "loss_weights": {
-            "kl_weight": 0,
-            "z_distance_cycle_weight": 0
-            # Add additional parameters, such as number of epochs
-        }
-    },
     max_epochs=max_epochs,
     # Parameters used for checking losses
     log_every_n_steps=1,
@@ -50,13 +43,13 @@ model.train(
 )
 
 # save model 
-with open(save_dir+'rna_model_20epoch_kl0.pkl', 'wb') as file:
+with open(save_dir+'50epomodel.pkl', 'wb') as file:
     pickle.dump(model, file)
 
-# with open(save_dir+'rna_model.pkl', 'rb') as file:
+# with open(save_dir+'model.pkl', 'rb') as file:
 #     model = pickle.load(file)
 
-# print(model)
+print(model)
 # Plot loses
 # The plotting code below was specifically adapted to the above-specified model and its training
 # If changing the model or training the plotting functions may need to be adapted accordingly
@@ -103,7 +96,7 @@ for ax_i, l_train in enumerate(losses):
         )
 
 # fig.tight_layout()
-fig.savefig(save_dir+'rna_losses_20epoch_kl0.png')
+fig.savefig(save_dir+'50epolosses.png')
 
 # integrated embedding
 print('----integrate embedding-----')
@@ -123,7 +116,7 @@ embed.obs["Individual.ID"] = embed.obs["Individual.ID"].map(patient_mapping)
 print('----compute umap------')
 sc.pp.neighbors(embed, use_rep="X")
 sc.tl.umap(embed)
-with open(save_dir+'rna_embed_20epo_kl0.pkl', 'wb') as file:
+with open(save_dir+'50epoembed.pkl', 'wb') as file:
     pickle.dump(embed, file)
 
 # Plot UMAP embedding
@@ -145,6 +138,6 @@ for col, ax in zip(cols, axs):
         sort_order=False,
         frameon=False,
     )
-fig.savefig(save_dir+'umap_20epo_kl0.png')
+fig.savefig(save_dir+'50epo_umap.png')
 
 print('finished!')

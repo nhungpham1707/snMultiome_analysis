@@ -410,12 +410,6 @@ batch_correction_plan <- drake_plan(
   ## atac ----
   hm_lib.atac = RunHarmony(mrgAtacDim, group.by.vars = 'library', reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
   hm_lib.atac_umap = RunUMAP(hm_lib.atac, dims = 2:30, reduction = 'harmony'),
-  
-  # hm_date.atac = RunHarmony(mrgAtacDim, group.by.vars = "Date.of.Library", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
-  # hm_date.atac_umap = RunUMAP(hm_date.atac, dims = 2:30, reduction = 'harmony'),
-
-  # hm_patient.atac = RunHarmony(mrgAtacDim, group.by.vars = "Individual.ID", reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
-  # hm_patient.atac_umap = RunUMAP(hm_patient.atac, dims = 2:30, reduction = 'harmony'),
   ## rna ----
   hm_lib.rna = RunHarmony(rnaMrgSgr, group.by.vars = 'library', reduction.use = 'pca', project.dim = FALSE),
   hm_lib.rna_nb = FindNeighbors(object = hm_lib.rna, reduction = "harmony"),
@@ -426,13 +420,36 @@ batch_correction_plan <- drake_plan(
   hm_rna_lib_p = DimPlot(hm_lib.rna_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
   save_hmrna_lib = savePlot('output/batchEffect/hm_rna_lib.png', hm_rna_lib_p),
   hm_rna_type_p = DimPlot(hm_lib.rna_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
-  save_hm_rna_type = savePlot('output/batchEffect/hm_rna_type.png', hm_rna_type_p)
-  # hm_date.rna = RunHarmony(rna_meta, group.by.vars = "Date.of.Library", reduction.use = 'pca', project.dim = FALSE),
-  # hm_date.rna_umap = RunUMAP(hm_date.rna, dims = 2:30, reduction = 'harmony'),
-
-  # hm_patient.rna = RunHarmony(rna_meta, group.by.vars = "Individual.ID", reduction.use = 'pca', project.dim = FALSE),
-  # hm_patient.rna_umap = RunUMAP(hm_patient.rna, dims = 2:30, reduction = 'harmony')
-
+  save_hm_rna_type = savePlot('output/batchEffect/hm_rna_type.png', hm_rna_type_p),
+  
+  # harmony on new category (lib+sub) ---
+  ## atac ----
+  mrgAtacLbSb = addLibSubcategory(mrgAtacDim),
+  saveh5_atac = save_h5ad(mrgAtacLbSb, save_path = atcMrgDir, save_name = 'atac_lbsb'),
+  hm_lbsb.atac = RunHarmony(mrgAtacLbSb, group.by.vars = 'lbsb', reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  hm_lbsb.atac_nb = FindNeighbors(object = hm_lbsb.atac, reduction = "harmony", k.param = 30),
+  hm_lbsb.atac_clus = FindClusters(hm_lbsb.atac_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
+  hm_lbsb.atac_umap = RunUMAP(hm_lbsb.atac_clus, dims = 2:30, reduction = 'harmony'),
+  hm_lbsb_atc_singr_p = DimPlot(hm_lbsb.atac_umap, group.by = 'singleR_labels', raster = FALSE, cols = my_cols),
+  save_hm_lbsb_atac_singr = savePlot(paste0(batchAtacHarmonyDir,'/hm_lbsb_atac_singr.png'), hm_lbsb_atc_singr_p),
+  hm_atac_lbsb_p = DimPlot(hm_lbsb.atac_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
+  save_hmrna_lib_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_rna_lib.png'), hm_atac_lbsb_p),
+  hm_atac_lbsb_type_p = DimPlot(hm_lbsb.atac_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
+  save_hm_atac_lbsb_type_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_rna_type.png'), hm_atac_lbsb_type_p),
+  
+  ## rna ----
+  mrgRnaLbSb = addLibSubcategory(rnaMrgSgr),
+  saveh5_rna = save_h5ad(mrgRnaLbSb, save_path = rnaMrgDir, save_name = 'rna_lbsb'),
+  hm_lbsb.rna = RunHarmony(mrgRnaLbSb, group.by.vars = 'lbsb', reduction.use = 'pca', project.dim = FALSE),
+  hm_lbsb.rna_nb = FindNeighbors(object = hm_lbsb.rna, reduction = "harmony", k.param = 30),
+  hm_lbsb.rna_clus = FindClusters(hm_lbsb.rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
+  hm_lbsb.rna_umap = RunUMAP(hm_lbsb.rna_clus, dims = 1:30, reduction = 'harmony'),
+  hm_lbsb_rna_singr_p = DimPlot(hm_lbsb.rna_umap, group.by = 'singleR_labels', raster = FALSE, cols = my_cols),
+  save_hm_lbsb_rna_singr = savePlot(paste0(batchRnaHarmonyDir,'/hm_lbsb_rna_singr.png'), hm_lbsb_rna_singr_p),
+  hm_rna_lbsb_p = DimPlot(hm_lbsb.rna_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
+  save_hmrna_lib_p = savePlot(paste0(batchRnaHarmonyDir,'/hm_rna_lib.png'), hm_rna_lbsb_p),
+  hm_rna_lbsb_type_p = DimPlot(hm_lbsb.rna_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
+  save_hm_rna_lbsb_type_p = savePlot(paste0(batchRnaHarmonyDir,'/hm_rna_type.png'), hm_rna_lbsb_type_p)
 
 )
 # convert seurat to anndata https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html 

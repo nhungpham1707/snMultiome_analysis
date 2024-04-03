@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=rna2scroshi
-#SBATCH --output=log_rna_harmony_infercnv_scroshi2.out
+#SBATCH --job-name=rnascroshi
+#SBATCH --output=log_rna_harmony_infercnv_scroshi.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

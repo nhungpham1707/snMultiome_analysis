@@ -79,11 +79,19 @@ atacnoRCellSngRFigDir <- paste0(cell_type_atac_fig_dir, '/singlerNoRelap')
 
 atacScroshiFigDir <- paste0(cell_type_atac_fig_dir, '/scROSHI')
 atacScroshiDir <- paste0(cell_type_atac_dir, '/scROSHI')
+
+
 hyperparameter_atac_dir <- paste0(atcMrgDir, '/hyperparameter')
 clustering_atac_dir <- paste0(atcMrgDir, '/cluster')
 batchDir <- paste0(output_dir, '/batchEffect')
 batchAtacDir <- paste0(batchDir, '/atac')
+batchAtacHarmonyDir <- paste0(batchAtacDir, '/harmony')
+batchAtacSysviDir <- paste0(batchAtacDir, '/sysvi')
+
 batchRnaDir <- paste0(batchDir, '/rna')
+batchRnaHarmonyDir <- paste0(batchRnaDir, '/harmony')
+batchRnaSysviDir <- paste0(batchRnaDir, '/sysvi')
+
 # create dir -----
 # figures
 dir.create("output/figures", recursive = TRUE)
@@ -136,6 +144,10 @@ dir.create(batchAtacDir, recursive = TRUE)
 dir.create(batchRnaDir, recursive = TRUE)
 dir.create(rnaInferInputDir, recursive = TRUE)
 dir.create(CellRnaScroshiDir, recursive = TRUE)
+dir.create(batchAtacSysviDir, recursive = TRUE)
+dir.create(batchAtacHarmonyDir, recursive = TRUE)
+dir.create(batchRnaHarmonyDir, recursive = TRUE)
+dir.create(batchRnaSysviDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=sysvi
-#SBATCH --output=log_sysvi.out
+#SBATCH --output=log_sysvi_atac.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=100G
@@ -12,4 +12,4 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 
 # process, merge and prep for infercnv
 conda activate scRNA_scATAC_env_copy
-python sysvi.py
+python sysvi_atac.py

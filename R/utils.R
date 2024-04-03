@@ -36,3 +36,14 @@ rowData(sce)$SYMBOL <- rownames(sce)
 colLabels(sce) <- sce$seurat_clusters
 return(sce)
 }
+
+addLibSubcategory <- function(sr){
+  sr$lbsb <- paste0(sr$library, '_', sr$Subtype)
+  return (sr)
+}
+
+save_h5ad <- function(sr, save_path, save_name){
+  save_h5 <- paste0(save_path, '/', save_name, '.h5Seurat')
+  SaveH5Seurat(sr, filename = save_h5 )
+  Convert(save_h5, dest = 'h5ad')
+}
