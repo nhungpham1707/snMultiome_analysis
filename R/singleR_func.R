@@ -59,6 +59,12 @@ plot_singler <- function(singler, sr, save_path){
 get_sgR_label <- function(sR,sr){
     labels <- sR$labels
     names(labels) <- rownames(sR)
+    # index <- which(colnames(sr@meta.data) == 'singleR_labels')
+    # if (length(index) == 0 ){
+    #     colname <- 'singleR_labels'
+    # } else {
+    #     colname <- paste0('singleR_labels_', save_name)
+    # }
     sr_sngr <- AddMetaData(sr, metadata=labels, col.name = 'singleR_labels')
 }
 

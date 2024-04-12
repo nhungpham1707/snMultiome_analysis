@@ -17,7 +17,7 @@ save_dir = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/batchEff
 print("save dir is", save_dir)
 
 # load data
-adata = sc.read('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_RNA/merge_all/rna.h5ad')
+adata = sc.read('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_RNA/merge_all/rna_lbsb.h5ad')
 print('adata is')
 adata
 
@@ -25,7 +25,7 @@ adata
 print('---------set up data for training------------')
 SysVI.setup_anndata(
     adata=adata,
-    batch_key="Individual.ID",
+    batch_key="lbsb",
     categorical_covariate_keys=["library"],
 )
 
@@ -33,21 +33,27 @@ SysVI.setup_anndata(
 print('-----------------train model-------------')
 model = SysVI(adata=adata)
 # Train
-max_epochs = 200
-# model.train(
-#     max_epochs=max_epochs,
-#     # Parameters used for checking losses
-#     log_every_n_steps=1,
-#     check_val_every_n_epoch=1,
-#     val_check_interval=1.0,
-# )
+max_epochs = 50
+model.train( plan_kwargs={
+        "loss_weights": {
+            "kl_weight": 0,
+            "z_distance_cycle_weight": 0
+            # Add additional parameters, such as number of epochs
+        }
+    },
+    max_epochs=max_epochs,
+    # Parameters used for checking losses
+    log_every_n_steps=1,
+    check_val_every_n_epoch=1,
+    val_check_interval=1.0,
+)
 
 # save model 
-# with open(save_dir+'rna_model.pkl', 'wb') as file:
-#     pickle.dump(model, file)
+with open(save_dir+'rnalbsb_50epo_kl0_model.pkl', 'wb') as file:
+    pickle.dump(model, file)
 
-with open(save_dir+'rna_model.pkl', 'rb') as file:
-    model = pickle.load(file)
+# with open(save_dir+'rna_model.pkl', 'rb') as file:
+#     model = pickle.load(file)
 
 print(model)
 # Plot loses
@@ -96,7 +102,7 @@ for ax_i, l_train in enumerate(losses):
         )
 
 # fig.tight_layout()
-fig.savefig(save_dir+'rna_losses.png')
+fig.savefig(save_dir+'rnalbsb_50epo_kl0_losses.png')
 
 # integrated embedding
 print('----integrate embedding-----')
@@ -105,24 +111,24 @@ print('----integrate embedding-----')
 embed = model.get_latent_representation(adata=adata)
 embed = sc.AnnData(embed, obs=adata.obs)
 
-unique_patients = embed.obs["Individual.ID"].unique()
+unique_patients = embed.obs["lbsb"].unique()
 patient_mapping = dict(zip(range(0, len(unique_patients)), unique_patients))
 
 
 # Make system categorical for plotting below
-embed.obs["Individual.ID"] = embed.obs["Individual.ID"].map(patient_mapping)
+embed.obs["lbsb"] = embed.obs["lbsb"].map(patient_mapping)
 
 # Compute UMAP
 print('----compute umap------')
 sc.pp.neighbors(embed, use_rep="X")
 sc.tl.umap(embed)
-with open(save_dir+'rna_embed.pkl', 'wb') as file:
+with open(save_dir+'rnalbsb_50epo_kl0_embed.pkl', 'wb') as file:
     pickle.dump(embed, file)
 
 # Plot UMAP embedding
 
 # Obs columns to color by
-cols = ["Individual.ID", "singler.pruned.labels", "Subtype"]
+cols = ["Individual.ID", "singler.pruned.labels", "Subtype", 'lbsb']
 
 # One plot per obs column used for coloring
 print('-----plot umap----')
@@ -138,6 +144,6 @@ for col, ax in zip(cols, axs):
         sort_order=False,
         frameon=False,
     )
-fig.savefig(save_dir+'umap.png')
+fig.savefig(save_dir+'lbsb_50epo_kl0_umap.png')
 
 print('finished!')

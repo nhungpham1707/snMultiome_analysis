@@ -65,7 +65,8 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(purrr)
   library(CellMixS)
-
+  library(SeuratDisk)
+  library(SCpubr)
   conflict_prefer('select', 'clusterProfiler')
   conflict_prefer('filter', 'clusterProfiler')
   

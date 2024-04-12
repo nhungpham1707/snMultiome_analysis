@@ -15,11 +15,7 @@ print("Last run with scvi-tools version:", scvi.__version__)
 
 save_dir = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/batchEffect/rna/sysvi/'
 print("save dir is", save_dir)
-max_epochs = 10
-kl_weight = 0
-data = 'rna'
-batch_key="Individual.ID"
-save_name = save_dir+ data + '_' + str(max_epochs) + '_' + str(kl_weight)+batch_key 
+
 # load data
 adata = sc.read('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output/sc_RNA/merge_all/rna.h5ad')
 print('adata is')
@@ -27,17 +23,21 @@ adata
 
 # Setup adata for training
 print('---------set up data for training------------')
+batch_key = 'library'
 SysVI.setup_anndata(
     adata=adata,
     batch_key=batch_key,
-    categorical_covariate_keys=["library"],
+    categorical_covariate_keys=["Subtype"],
 )
 
 # Initialise the model
 print('-----------------train model-------------')
 model = SysVI(adata=adata)
 # Train
-
+max_epochs = 10
+kl_weight = 0
+data = 'rna'
+save_name = save_dir+ data + '_' + str(max_epochs) + '_' + str(kl_weight) + '_' + batch_key
 model.train(
     plan_kwargs={
         "loss_weights": {

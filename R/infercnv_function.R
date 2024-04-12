@@ -59,7 +59,7 @@ run_infercnv <- function(res, outLink){
                              out_dir= outLbLink, 
                              cluster_by_groups=T,
                              denoise=T,
-                             HMM=F,
+                             HMM=T,
                              analysis_mode = "samples",
                              num_threads = 3,
                              output_format = "pdf",
@@ -70,3 +70,5 @@ run_infercnv <- function(res, outLink){
 
 message('finish infercnv without error')
 }
+
+# analyze infercnv output 
