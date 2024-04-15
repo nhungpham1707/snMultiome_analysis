@@ -517,8 +517,6 @@ batch_correction_plan <- drake_plan(
                   batch_factor = 'Individual.ID',
                   save_path = batchRnaHarmonyDir),
 
-
-
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
