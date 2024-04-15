@@ -146,4 +146,15 @@ assign_meta <- function(metadata, demul_meta, sr, save_name){
     return(sr_meta)
 }
 
+add_treatment_meta <- function(sr, meta){
+    columns <- setdiff(colnames(meta), colnames(sr@meta.data))
+    submeta <- meta[, c('sampleID',columns)]
+    bc_sample <- data.frame(bc = colnames(sr),
+                            sampleID = sr$sampleID)
+    meta_all <- merge(bc_sample, submeta, by = 'sampleID', all = 'T')
+    meta_to_add <- meta_all[, columns]
+    rownames(meta_to_add) <- meta_all$bc
+    sr_meta <- AddMetaData(sr, meta_to_add)
+    return(sr_meta)
+}
  

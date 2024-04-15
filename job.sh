@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=hm2_dynamic
-#SBATCH --output=log_harmony_dynamic2.out
+#SBATCH --job-name=hm3_dynamic
+#SBATCH --output=log_harmony_dynamic3.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

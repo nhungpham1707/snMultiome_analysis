@@ -12,9 +12,10 @@
 # specified by the user. If set to NULL, harmony will start lambda estimation mode to determine lambdas automatically and try to minimize overcorrection (Use with caution still in beta testing).
 
 harmony_n_plot <- function(sr, batch_factor, reduction = 'pca', assay = 'RNA', theta = 0, sigma = 0.1, lambda = 1,tau = 0, save_path){
-    save_name <- paste0('theta_', theta, '_sigma', sigma, '_tau', tau, '_lambda', lambda)
+    save_name <- paste0('assay_', assay, 'batch_factor_', batch_factor, 'theta_', theta, '_sigma_', sigma, '_tau_', tau, '_lambda_', lambda)
+    message(paste('run harmony for', save_name))
     message('run harmony -------')
-    hm = RunHarmony(sr, group.by.vars = batch_factor, reduction.use = reduction, project.dim = FALSE, theta = theta, sigma = sigma, assay.use = assay, .options = harmony_options(lambda = lambda, tau = tau))
+    hm = RunHarmony(sr, group.by.vars = batch_factor, reduction.use = reduction, project.dim = FALSE, theta = theta, sigma = sigma, assay.use = assay, lambda = lambda, .options = harmony_options(tau = tau))
     message('run find neighbor--------')
     hm = FindNeighbors(object = hm, reduction = "harmony", k.param = 30)
     message('run find cluster-------')
@@ -33,6 +34,10 @@ harmony_n_plot <- function(sr, batch_factor, reduction = 'pca', assay = 'RNA', t
     hm_sgr_p = DimPlot(hm, group.by = 'singleR_labels', raster = FALSE, pt.size = 0.1, cols = my_cols)
 
     savePlot(paste0(save_path,'/', save_name,'_sgr.png'), hm_sgr_p)
+
+    hm_treatment_p = DimPlot(hm, group.by = 'treatment', raster = FALSE, pt.size = 0.1)
+
+    savePlot(paste0(save_path,'/', save_name,'_treatment.png'), hm_treatment_p)
 
     return(hm)
  }

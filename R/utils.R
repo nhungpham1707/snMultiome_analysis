@@ -47,3 +47,9 @@ save_h5ad <- function(sr, save_path, save_name){
   SaveH5Seurat(sr, filename = save_h5 )
   Convert(save_h5, dest = 'h5ad')
 }
+
+# add extra metadata on the missing patient 
+add_missing_patient <- function(sr){
+  sr$Individual.ID[sr$Subtype == 'ecMRT_BrainMet'] <- 'PMCID499AAQ'
+  return (sr)
+}
