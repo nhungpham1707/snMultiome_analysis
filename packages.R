@@ -73,7 +73,9 @@ suppressPackageStartupMessages({
   conflict_prefer('intersect', 'base')
   conflict_prefer('setdiff', 'base')
   conflict_prefer('union', 'base')
+
 })
+  conflicts_prefer(base::unname)
 
 suppressPackageStartupMessages({
   library(harmony)

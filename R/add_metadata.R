@@ -157,4 +157,23 @@ add_treatment_meta <- function(sr, meta){
     sr_meta <- AddMetaData(sr, meta_to_add)
     return(sr_meta)
 }
- 
+
+# LX093_LX094 by mistake pooled together 2 samples with the same gender (female) and the same cancer type (ATRT_SHH). it can only be demultiplex by souporcell and arbitary assign sample IDs. This function is to match the sample ID between atac and rna 
+fix_special_lib_rna <- function(atac_sr, rna_sr, rna_demultiplex_sr){
+    # get which genotype is ATRT14 
+    s1_bc <- atac_sr$barcodes[grep('ATRT14',atac_sr$sampleID)]
+    s1_genotype <- unique(gexNoDb_specialLib$genotype[colnames(gexNoDb_specialLib) %in% s1_bc])
+
+    s2_bc <- atac_sr$barcodes[grep('ATRT04',atac_sr$sampleID)]
+    s2_genotype <- unique(gexNoDb_specialLib$genotype[colnames(gexNoDb_specialLib) %in% s2_bc])
+
+    # get rna bc 
+    s1_rna_bc <- paste0(colnames(rna_demultiplex_sr)[rna_demultiplex_sr$genotype == s1_genotype], '_', 'LX093_LX094_an_163')
+    s2_rna_bc <- paste0(colnames(rna_demultiplex_sr)[rna_demultiplex_sr$genotype == s2_genotype], '_', 'LX093_LX094_an_163')
+
+    # assign to rna 
+    lib_bc <- paste0(rna_sr$barcodes, '_', rna_sr$library)
+    rna_sr$sampleID[lib_bc %in% s1_rna_bc] <- 'ATRT14'
+    rna_sr$sampleID[lib_bc %in% s2_rna_bc] <- 'ATRT04'
+    return (rna_sr)
+}

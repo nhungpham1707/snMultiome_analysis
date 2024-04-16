@@ -59,7 +59,7 @@ run_infercnv <- function(res, outLink){
                              out_dir= outLbLink, 
                              cluster_by_groups=T,
                              denoise=T,
-                             HMM=T,
+                             HMM=F,
                              analysis_mode = "samples",
                              num_threads = 3,
                              output_format = "pdf",

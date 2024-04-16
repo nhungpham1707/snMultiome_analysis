@@ -53,3 +53,30 @@ add_missing_patient <- function(sr){
   sr$Individual.ID[sr$Subtype == 'ecMRT_BrainMet'] <- 'PMCID499AAQ'
   return (sr)
 }
+
+# check cell cycle genes 
+# code copied from 
+# https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/05-confounders/05-confounders.R 
+check_cell_cycle <- function(sr, save_path){
+data(cc.genes)
+
+## add cell cycle phase estimates
+sr <- CellCycleScoring(object = sr,
+        s.features =   cc.genes$s.genes,
+        g2m.features = cc.genes$g2m.genes,
+        assay='RNA') # make sure LogNormalized data is used!
+
+## show the UMAP with type and phase information
+p_type <-  DimPlot(sr, pt.size=1, group.by='Subtype', cols=my_cols)
+p_phase <- DimPlot(sr, pt.size=1, group.by='Phase')
+p_all <- p_type | p_phase
+save_plot(paste0(save_path, '/cellcycle_genes.png'), p_all)
+return (sr)
+}
+
+calculate_lisi_from_sr <- function(sr, batch){
+  X <- GetAssayData(sr, slot = 'counts')
+  metadata <- sr@meta.data[batch]
+  res <- compute_lisi(X, meta_data)
+  return (res)
+}

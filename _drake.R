@@ -326,24 +326,38 @@ process_plan <- drake_plan(
   rna_meta = assign_meta(metadata, gexDemulMeta,
   mrgRnaClu_noNOr, save_name = paste0(rnaMrgDir, '/mrgRna_meta.RDS')),
    # run singleR rna ----
+   ## run on each sample ----
+  rna_sgr = target(run_singleR(gexClus),
+                transform = map(gexClus,
+                                id_var = !!alID,
+                                .id = id_var)),
+  prna_sgr = target(plot_singler(rna_sgr, gexClus, save_path=rnaCellSngRFigDir),
+                 transform = map(rna_sgr,gexClus,
+                                 id_var = !!alID,
+                                 .id = id_var)),
+   ## run on merg rna ----
   rnaMrgNoNor_sgr = run_singleR(mrgRnaClu_noNOr),
   savernaSgR = saveRDS(rnaMrgNoNor_sgr, paste0(cellRNAsingRdir, '/mrgRna_noNOr_singleR.RDS')),
   rnaMrgSgr = get_sgR_label(rnaMrgNoNor_sgr, rna_meta),
+
   # prep rna for infercnv -----
   # prepare count matrix 
   preInferRna = target(make_anno_count_rna_mx(rnaMrgSgr, gexClus, save_path = rnaInferInputDir ),
                     transform = map(gexClus,
                   id.var = !!alID,
-                  .id = id.var))
-)
-
-cluster_behavior_plan <- drake_plan(
+                  .id = id.var)),
   # remove NA cells in rna ----
   rna_noNA = remove_na_cells(rna_meta),
+  rna_fix = fix_special_lib_rna(mrgAtacDim, rna_noNA, gexNoDb_specialLib),
+  rna_treatment = add_treatment_meta(rna_fix, treatment_meta),
+  rna_extra_meta = add_missing_patient(rna_treatment)
+)
+
+cluster_behavior_plan <- drake_plan( 
   # make atac sce ----
   atac.sce = make_sce(mrgAtacDim),
   # make rna sce -----
-  rna.sce = make_sce(rna_noNA),
+  rna.sce = make_sce(rna_extra_meta),
   # check cluster behavior ---- 
   ## Silhouette widths ------
   ### atac ----
@@ -409,6 +423,9 @@ batch_detection_plan <- drake_plan(
     atac_cms = calculate_n_plot_cms(atac.sce, save_path = batchAtacDir, neighbors = 200, save_name = 'dj', 'LSI'),
     ### rna ----
     rna_cms = calculate_n_plot_cms(rna.sce, save_path = batchRnaDir, save_name = 'no_correction', neighbors = 200, 'PCA'), 
+
+    ## check cell cycle ----
+    rna_cellCycle = check_cell_cycle(rna_extra_meta , save_path = batchRnaDir)
 )
 
 batch_correction_plan <- drake_plan(
@@ -428,21 +445,7 @@ batch_correction_plan <- drake_plan(
   # scpur_p_hmatac = scpur_p_hmatac_lib | scpur_p_hmatac_type, 
   # save_hmatac_lib =  savePlot(paste0(batchAtacHarmonyDir,'/hm_type_lib.png'), scpur_p_hmatac),
   ## rna ----
-  rna_treatment = add_treatment_meta(rna_noNA, treatment_meta),
-  rna_extra_meta = add_missing_patient(rna_treatment), 
-  # remove later from here
-  hm_lib.rna = RunHarmony(rnaMrgSgr, group.by.vars = 'library', reduction.use = 'pca', project.dim = FALSE),
-  hm_lib.rna_nb = FindNeighbors(object = hm_lib.rna, reduction = "harmony"),
-  hm_lib.rna_clus = FindClusters(hm_lib.rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
-  hm_lib.rna_umap = RunUMAP(hm_lib.rna_clus, dims = 1:30, reduction = 'harmony'),
-  hm_rna_singr_p = DimPlot(hm_lib.rna_umap, group.by = 'singleR_labels', raster = FALSE, cols = my_cols),
-  svae_hm_rna_singr = savePlot('output/batchEffect/hm_rna_singr.png', hm_rna_singr_p),
-  hm_rna_lib_p = DimPlot(hm_lib.rna_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
-  save_hmrna_lib = savePlot('output/batchEffect/hm_rna_lib.png', hm_rna_lib_p),
-  hm_rna_type_p = DimPlot(hm_lib.rna_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
-  save_hm_rna_type = savePlot('output/batchEffect/hm_rna_type.png', hm_rna_type_p),
-  # remove until here 
-  
+
   # harmony on new category (lib+sub) ---
   ## atac ----
   mrgAtacLbSb = addLibSubcategory(mrgAtacDim),
@@ -471,15 +474,19 @@ batch_correction_plan <- drake_plan(
   save_hmlbsbrna_lib_p = savePlot(paste0(batchRnaHarmonyDir,'/hmlbsb_rna_lib.png'), hm_rna_lbsb_p),
   hm_rna_lbsb_type_p = DimPlot(hm_lbsb.rna_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
   save_hm_rna_lbsb_type_p = savePlot(paste0(batchRnaHarmonyDir,'/hmlbsb_rna_type.png'), hm_rna_lbsb_type_p),
+
   ## rna harmony with change theta ----
   hm_rna_theta0 = harmony_n_plot(rna_extra_meta, batch_factor = 'library',theta = 0, save_path = batchRnaHarmonyDir),
+  lisi_hm_rna_theta0 = calculate_lisi_from_sr(hm_rna_theta0),
 
   hm_rna_theta0.3 = harmony_n_plot(rna_extra_meta, batch_factor = 'library',theta = 0.3, save_path = batchRnaHarmonyDir),
+  lisi_hm_rna_theta0.3 = calculate_lisi_from_sr(hm_rna_theta0.3),
 
   hm_rna_theta0.5 = harmony_n_plot(rna_extra_meta, batch_factor = 'library',theta = 0.5, save_path = batchRnaHarmonyDir),
+  lisi_hm_rna_theta0.5 = calculate_lisi_from_sr(hm_rna_theta0.5),
 
   hm_rna_theta1 = harmony_n_plot(rna_extra_meta, batch_factor = 'library',theta = 1, save_path = batchRnaHarmonyDir),
-
+  lisi_hm_rna_theta1 = calculate_lisi_from_sr(hm_rna_theta1),
   ## atac harmony with change theta, sigma, tau, lambda ------
   theta = seq(0, 1, by = 0.1),
   sigma = seq(0, 4, by = 0.1),
@@ -500,9 +507,9 @@ batch_correction_plan <- drake_plan(
 
   save_hm_atac_patient_treatment_singr = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_singr.png'), hm_atac_patient_treatment_singr_p),
 
-  hm_atac_patient_treatment_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
+  hm_atac_patient_lib_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
 
-  save_hm_atac_patient_treatment_lib_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_lib.png'), hm_atac_patient_treatment_p),
+  save_hm_atac_patient_treatment_lib_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_lib.png'), hm_atac_patient_lib_p),
 
   hm_atac_patient_treatment_type_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
 
