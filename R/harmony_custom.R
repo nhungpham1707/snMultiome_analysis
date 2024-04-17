@@ -39,6 +39,10 @@ harmony_n_plot <- function(sr, batch_factor, reduction = 'pca', assay = 'RNA', t
 
     savePlot(paste0(save_path,'/', save_name,'_treatment.png'), hm_treatment_p)
 
+    hm_sgr_group_p = DimPlot(hm, group.by = 'clean_sgr_labels', raster = FALSE, pt.size = 0.1)
+
+    savePlot(paste0(save_path,'/', save_name,'_group_sgr.png'), hm_sgr_group_p)
+
     return(hm)
  }
 

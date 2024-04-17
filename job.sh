@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=hm2_lisi
-#SBATCH --output=log_harmony_dynamic_lisi_scroshi_lambda2.out
+#SBATCH --job-name=5allSteps
+#SBATCH --output=log_allsteps5.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

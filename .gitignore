@@ -2,6 +2,8 @@ bavaria/data
 bavaria/bavaria-0.1.0
 bavaria/v0.1.0.zip
 
+output*/
+
 output/
 *.out
 # History files

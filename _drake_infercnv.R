@@ -25,9 +25,10 @@ idLst <- lbLst %>% map(splitName)
 # idLst <- c(idLst, 'merge')
 
 # define normal cells 
-normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
+# normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
 
-normal_cells_HM <- c('B_cell', 'Macrophage', 'Monocyte', 'NK_cell') # remove T cell as there is only 1 cell in LX049, cannot run HMM 
+# normal_cells_HM <- c('B_cell', 'Macrophage', 'Monocyte', 'NK_cell') # remove T cell as there is only 1 cell in LX049, cannot run HMM 
+normal_cells <- c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
 ## define plan ----
 inLink <- AtacnoRInferInputDir
 outLink <- cellAtacnoRInferDir 
@@ -35,7 +36,7 @@ rnaInLink <- rnaInferInputDir
 rnaOutLink <- cellRnaIcnvdir 
 geneOrderLink <- paste0(base_data_dir, '/gencode_v19_gene_pos.txt')
 
-infercnv_plan <- drake_plan(
+atac_infercnv_plan <- drake_plan(
     AtacnoRIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOrderLink, inLink),
                 transform = map(lib = !!lbLst,
                             id.vars = !!idLst,
@@ -48,7 +49,7 @@ infercnv_plan <- drake_plan(
 
 
 rna_infercnv_plan <- drake_plan(
-    rnaIfcnvOb= target(make_infercnvObj(lib, normal_cells_HM, geneOrderLink, rnaInLink),
+    rnaIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOrderLink, rnaInLink),
                 transform = map(lib = !!lbLst,
                             id.vars = !!idLst,
                             .id = id.vars)),
@@ -58,10 +59,11 @@ rna_infercnv_plan <- drake_plan(
                             .id = id.vars))
 )
 
+plan <- bind_plans(atac_infercnv_plan, rna_infercnv_plan)
 
-make(rna_infercnv_plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
-
+make(plan,lock_envir = TRUE, lock_cache = FALSE, verbose = 0)
+vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv_before.png', font_size = 20 )
 # options(clustermq.scheduler = "multicore") # nolint
 # make(infercnv_plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
 
-vis_drake_graph(infercnv_plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv.png', font_size = 20 )
+vis_drake_graph(infercnv_plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv_after.png', font_size = 20 )

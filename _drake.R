@@ -8,9 +8,9 @@ list_files_with_exts(functions_folder, 'R') %>%
   lapply(source) %>% invisible()
 
 ## read metadata ----
-filename <- '25012024_all_multiome_lib.csv'
+# filename <- '25012024_all_multiome_lib.csv'
+filename <- '15042024_add_treatment_metadata.csv'
 metadata <- getData(filename, delim = ',')
-treatment_meta <- getData('15042024_add_treatment_metadata.csv', delim = ',')
 ori_metadata <- metadata
 # get all library ID
 alLib <- unique(metadata$name)
@@ -182,7 +182,6 @@ process_special_lib_plan <- drake_plan(
                   transform = combine(gexSID,
                   id.var = !!mulId,
                   .id = id.var)),
-  saveGexDemulMeta = saveRDS(gexDemulMeta, paste0(rnaProcessDir, '/gex_demultiplex_metadata.RDS')),
   atacDemul = target(addMetAtac(gexSID,atacSgR),
                      transform = map(gexSID,atacSgR,
                                      id.var = !!mulId,
@@ -219,21 +218,21 @@ process_special_lib_plan <- drake_plan(
                                        id.var = !!snglId,
                                        .id = id_var)),
   ## run singler ---
-  sRsg = target(run_singleR(atacSrGeAsg),
+  atac_sRsg = target(run_singleR(atacSrGeAsg),
                 transform = map(atacSrGeAsg,
                                 id_var = !!snglId,
                                 .id = id_var)),
-  psRsg = target(plot_singler(sRsg, atacSrGeAsg, save_path=atacCellSngRFigDir),
-                 transform = map(sRsg,atacSrGeAsg,
+  p_atac_sRsg = target(plot_singler(atac_sRsg, atacSrGeAsg, save_path=atacCellSngRFigDir),
+                 transform = map(atac_sRsg,atacSrGeAsg,
                                  id_var = !!snglId,
                                  .id = id_var)),
-  atacsgSgR = target(get_sgR_label(sRsg, atacSrDimsg),
-                     transform = map(sRsg,atacSrDimsg,
+  atacsgSgR = target(get_sgR_label(atac_sRsg, atacSrDimsg),
+                     transform = map(atac_sRsg,atacSrDimsg,
                                      id_var = !!snglId,
                                      .id = id_var)),
   ## prep for infercnv ---
-  preInfersg = target(make_anno_count_mx(sRsg,atacSrGeAsg, save_path=AtacInferInputDir),
-                      transform = map(sRsg,atacSrGeAsg,
+  preInfersg = target(make_anno_count_mx(atac_sRsg,atacSrGeAsg, save_path=AtacInferInputDir),
+                      transform = map(atac_sRsg,atacSrGeAsg,
                                       id_var = !!snglId,
                                       .id = id_var)),
   ## add metadata ----
@@ -251,10 +250,10 @@ process_special_lib_plan <- drake_plan(
   mrgPtype = dimplot_w_nCell_label(mrgAtacDim, by = 'Subtype',atacMrgFigDir , col = my_cols2),
   mrgPsID = dimplot_w_nCell_label(mrgAtacDim, by = 'sampleID',atacMrgFigDir , col = my_cols2),
   atac_noNA = remove_na_cells(mrgAtacDim),
-  atac_extra_meta = add_treatment_meta(atac_noNA, treatment_meta),  # remove this at the end, by using the treatment_meta file everything will be added 
   # group singleR cell types ---
-  atac_group_sgr = group_singleR_labels(atac_extra_meta),
-  # # prep mrg atac for infercnv
+  atac_group_sgr = group_singleR_labels(atac_noNA),
+
+  # prep mrg atac for infercnv
   mrgGA = get_gene_activity(atac_group_sgr),
 
   ## process rna ------------------------------------------
@@ -295,29 +294,7 @@ process_special_lib_plan <- drake_plan(
               transform = map(gexClus, !!alLib,
                   id.var = !!alID,
                               .id = id.var)),
-
-  # # merge rna with normalized samples -----
-  mrgRna_all = target(merge_pairwise(c(gexClus), rnaMrgDir),
-            transform = combine(gexClus,
-            id.var = !!alID,
-            .id = id.var)),
-  mrgRnaNor_all = normalize_dim_plot_sr(mrgRna_all, rnaMrgFigDir, lib_name = 'merge'),
-  saverna_all = saveRDS(mrgRnaNor_all, paste0(rnaMrgDir, '/mrgRna.RDS')),
-  mrgRnaClu = clustering_rna_data(mrgRnaNor_all),
-  p_mrgRna_all = plot_cluster(mrgRnaClu, rnaMrgFigDir, save_name = 'merge' ),
-  saveplotmrgrna = savePlot(paste0(rnaMrgFigDir, '/mrgRNA.png'), p_mrgRna_all),
-
-   # merge rna without normalized samples ----
-  mrgRna_noNOr_all = target(merge_pairwise(c(gexFilt), rnaMrgDir),
-            transform = combine(gexFilt,
-            id.var = !!alID,
-            .id = id.var)),
-  mrgRnaNor_noNOr_all = normalize_dim_plot_sr(mrgRna_noNOr_all, rnaMrgFigDir, lib_name = 'merge'),
-  saverna_noNOr_all = saveRDS(mrgRnaNor_noNOr_all, paste0(rnaMrgDir, '/mrgRna_noNOr.RDS')),
-  mrgRnaClu_noNOr = clustering_rna_data(mrgRnaNor_noNOr_all),
-  saverna_noNOr_clu = saveRDS(mrgRnaClu_noNOr, paste0(rnaMrgDir, '/mrgRna_noNOrClu.RDS')),
-  rna_meta = assign_meta(metadata, gexDemulMeta,
-  mrgRnaClu_noNOr, save_name = paste0(rnaMrgDir, '/mrgRna_meta.RDS')),
+  
    # run singleR rna ----
    ## run on each sample ----
   rna_sgr = target(run_singleR(gexClus),
@@ -332,23 +309,25 @@ process_special_lib_plan <- drake_plan(
                 transform = map(rna_sgr, gexClus,
                             id_var = !!alID,
                             .id = id_var)),
-   ## run on merg rna ----
-  rnaMrgNoNor_sgr = run_singleR(mrgRnaClu_noNOr),
-  savernaSgR = saveRDS(rnaMrgNoNor_sgr, paste0(cellRNAsingRdir, '/mrgRna_noNOr_singleR.RDS')),
-  rnaMrgSgr = get_sgR_label(rnaMrgNoNor_sgr, rna_meta),
-
+  # merge rna ---
+   mrgRna_all = target(merge_pairwise(c(gexClusSgr), rnaMrgDir),
+            transform = combine(gexClusSgr,
+            id.var = !!alID,
+            .id = id.var)),
+  mrgRnaNor_all = normalize_dim_plot_sr(mrgRna_all, rnaMrgFigDir, lib_name = 'merge'),
+  mrgRnaClu = clustering_rna_data(mrgRnaNor_all),
+  rna_meta = assign_meta(metadata, gexDemulMeta,
+  mrgRnaClu, save_name = paste0(rnaMrgDir, '/mrgRna_meta.RDS')),
+  rna_noNA = remove_na_cells(rna_meta),
+  rna_fix = fix_special_lib_rna(mrgAtacDim, rna_noNA, gexNoDb_specialLib),
+  rna_group_sgr = group_singleR_labels(rna_fix),
   # prep rna for infercnv -----
   # prepare count matrix 
   preInferRna = target(make_anno_count_rna_mx(rnaMrgSgr, gexClus, save_path = rnaInferInputDir ),
                     transform = map(gexClus,
                   id.var = !!alID,
-                  .id = id.var)),
-  # remove NA cells in rna ----
-  rna_noNA = remove_na_cells(rna_meta),
-  rna_fix = fix_special_lib_rna(mrgAtacDim, rna_noNA, gexNoDb_specialLib),
-  rna_treatment = add_treatment_meta(rna_fix, treatment_meta),
-  rna_extra_meta = add_missing_patient(rna_treatment),
-  rna_group_sgr = group_singleR_labels(rna_extra_meta)
+                  .id = id.var))
+  
 )
 
 cluster_behavior_plan <- drake_plan( 
@@ -423,7 +402,7 @@ batch_detection_plan <- drake_plan(
     rna_cms = calculate_n_plot_cms(rna.sce, save_path = batchRnaDir, save_name = 'no_correction', neighbors = 200, 'PCA'), 
 
     ## check cell cycle ----
-    rna_cellCycle = check_cell_cycle(rna_extra_meta , save_path = batchRnaDir)
+    rna_cellCycle = check_cell_cycle(rna_group_sgr, save_path = batchRnaDir)
 )
 
 # ------------------------------------------------------
@@ -473,8 +452,8 @@ batch_correction_plan <- drake_plan(
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
-  gene_to_retain = setdiff(rownames(mrgRna_noNOr_all), genes_to_remove ),
-  rna_noCF = subset(mrgRna_noNOr_all, feature = gene_to_retain),
+  gene_to_retain = setdiff(rownames(rna_lbsb), genes_to_remove ),
+  rna_noCF = subset(rna_lbsb, feature = gene_to_retain),
   rna_noCF_nor = normalize_dim_plot_sr(rna_noCF, rnaMrgFigDir, lib_name = 'merge_noCF'),
   rna_noCF_nor_clu = clustering_rna_data(rna_noCF_nor),
   rna_noCF_meta = assign_meta(metadata, gexDemulMeta,
@@ -494,50 +473,7 @@ cell_annotation_plan <- drake_plan(
   # scroshi rna harmony ----
   # hm_rna_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_lib.rna_umap, cols = my_cols, pt = 1, save_name = 'rna_hm_lib_w_demo_marker', save_path = CellRnaScroshiDir)
 )
-  # singleR rna harmony ----
-#   rnaHm_sgres = run_singleR(hm_lib.rna_umap),
-#   rnaHmSgr = get_sgR_label(rnaHm_sgres, hm_lib.rna_umap)
-# )
-
-
-
-# convert seurat to anndata https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html 
-
-
+ 
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
 
-
-# options(clustermq.scheduler = "multicore") # nolint
-# make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE)
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
-# vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_cleancode_pipeline.png', font_size = 20 )
-
-# plot cms score
-
-# loadd(atac_cms)
-# loadd(rna_cms)
-# his_p <- visHist(atac_cms)
-# metric_p <- visMetric(atac_cms, metric_var = 'cms_smooth.date')
-# plot_grip(his_p, metric_p, ncol = 2)
-
-# names(colData(atac_cms))
-# cms_df <- data.frame(date = atac_cms$cms.dj_date_k200,
-#         smooth_date = atac_cms$cms_smooth.dj_date_k200,
-#         lib = atac_cms$cms.dj_lib_k200,
-#         smooth_lib = atac_cms$cms_smooth.dj_lib_k200,
-#         patient = atac_cms$cms.dj_patient_k200,
-#         smooth_patient = atac_cms$cms_smooth.dj_patient_k200 )
-
-# saveRDS(cms_df, paste0(batchAtacDir,'/cms_df.rds'))
-# his_p <- visHist(atac_cms, metric = 'cms.dj_date_k200' )
-# metric_p <- visMetric(atac_cms, metric_var = 'cms_smooth.dj_date_k200')
-# # p <- plot_grip(his_p, metric_p, ncol = 2)
-# savePlot(paste0(batchAtacDir, '/dj_date_hist.png'), his_p )
-# savePlot(paste0(batchAtacDir, '/dj_date_metric.png'), metric_p )
-# print('rna colnames')
-# names(colData(rna_cms))
-
-# his_rna <- visHist(rna_cms, metric = "cms.no_correction_patient_k200" )
-# savePlot(paste0(batchAtacDir, '/rna_patient_hist.png'), his_rna)
-# metric_rna <- visMetric(rna_cms, metric_var = "cms_smooth.no_correction_patient_k200")
-# savePlot(paste0(batchAtacDir, '/rna_patient_metric.png'), metric_rna)
