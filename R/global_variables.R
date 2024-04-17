@@ -48,7 +48,7 @@ cell_type_rna_dir <- paste0(cell_type_dir, '/sc_rna')
 cell_type_rna_fig_dir <- paste0(cell_type_fig_dir, '/sc_rna')
 
 cellRNAsingRdir <- paste0(cell_type_rna_dir, '/singler')
-cell_type_rna_singler_fig_dir <- paste0(cell_type_rna_fig_dir, '/singler')
+rnaCellSngRFigDir <- paste0(cell_type_rna_fig_dir, '/singler')
 
 cellRnaIcnvdir <- paste0(cell_type_rna_dir, '/infercnv')
 rnaInferInputDir <- paste0(cellRnaIcnvdir, '/input')
@@ -108,7 +108,7 @@ dir.create(cell_type_rna_fig_dir, recursive = TRUE)
 dir.create(cellRnaIcnvdir, recursive = TRUE)
 dir.create(cell_type_rna_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellRNAsingRdir, recursive = TRUE)
-dir.create(cell_type_rna_singler_fig_dir, recursive = TRUE)
+dir.create(rnaCellSngRFigDir, recursive = TRUE)
 dir.create(CellRnaScroshiDir, recursive = TRUE)
 # output for scATAC
 dir.create(atacProcessDir, recursive = TRUE)
@@ -171,6 +171,12 @@ stress_gene_list <- genelists$stress
 normal_cells <- c('Pre-B_cell_CD34-', 'Pro-B_cell_CD34+', 
                   'B_cell', 'T_cells', 'Macrophage', 
                   'Monocyte', 'Neutrophils', 'NK_cells') 
+
+# normal cells from literature https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9886402/
+
+nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
+immune_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
+
 # colors for plot
 my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
             "turquoise2", "skyblue", "steelblue",'#25aff5', "blue2", 
@@ -194,3 +200,16 @@ my_cols2 <- c('#25aff5', "blue2", "navyblue", "turquoise2", "skyblue",
              'lightsalmon', 'lightsalmon3',
              'lightsalmon4', 'pink4', 'peru', 'mediumpurple4', 
              'mediumpurple', 'lightblue4', 'aquamarine4', 'aquamarine' )
+
+# colors for scpurb
+colors <- c("ATRT_SHH" = "skyblue" ,                     
+            "ecMRT"  = "blue2",                       
+            "ecMRT_BrainMet"  = "navyblue",                 
+            "ATRT_TYR"     = "turquoise2",                   
+            "ATRT_MYC"  = '#25aff5',                      
+            "FN-eRMS" = "tan",                        
+            "SySa"    = "pink1",                         
+            "ATRT-MYC (replapse from ATRT21)"='maroon4', 
+            "FP-RMS (P3W)"  = "tan3",                  
+            "FP-RMS (P3F)" = "brown",                    
+            "FP-RMS" = "slateblue1")

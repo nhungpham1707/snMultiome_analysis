@@ -162,10 +162,10 @@ add_treatment_meta <- function(sr, meta){
 fix_special_lib_rna <- function(atac_sr, rna_sr, rna_demultiplex_sr){
     # get which genotype is ATRT14 
     s1_bc <- atac_sr$barcodes[grep('ATRT14',atac_sr$sampleID)]
-    s1_genotype <- unique(gexNoDb_specialLib$genotype[colnames(gexNoDb_specialLib) %in% s1_bc])
+    s1_genotype <- unique(rna_demultiplex_sr$genotype[colnames(rna_demultiplex_sr) %in% s1_bc])
 
     s2_bc <- atac_sr$barcodes[grep('ATRT04',atac_sr$sampleID)]
-    s2_genotype <- unique(gexNoDb_specialLib$genotype[colnames(gexNoDb_specialLib) %in% s2_bc])
+    s2_genotype <- unique(rna_demultiplex_sr$genotype[colnames(rna_demultiplex_sr) %in% s2_bc])
 
     # get rna bc 
     s1_rna_bc <- paste0(colnames(rna_demultiplex_sr)[rna_demultiplex_sr$genotype == s1_genotype], '_', 'LX093_LX094_an_163')

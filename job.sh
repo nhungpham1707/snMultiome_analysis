@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=hm_lisi
-#SBATCH --output=log_harmony_dynamic_lisi.out
+#SBATCH --job-name=hm2_lisi
+#SBATCH --output=log_harmony_dynamic_lisi_scroshi_lambda2.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
@@ -12,7 +12,9 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 
 # process, merge and prep for infercnv
 conda activate scRNA_scATAC_env_copy
-Rscript _drake.R
+
+# Rscript _drake.R
+Rscript r_make_job.R
 
 # run infercnv 
 conda activate r43_copy
