@@ -358,7 +358,7 @@ process_special_lib_plan <- drake_plan(
   rna_group_sgr = group_singleR_labels(rna_fix),
   # prep rna for infercnv -----
   # prepare count matrix 
-  preInferRna = target(make_anno_count_mx(gexClus, save_path = rnaInferInputDir ),
+  preInferRna = target(make_anno_count_rna_mx(gexClus, save_path = rnaInferInputDir ),
                     transform = map(gexClus,
                   id.var = !!alID,
                   .id = id.var))
@@ -511,4 +511,3 @@ cell_annotation_plan <- drake_plan(
  
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
 
-drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

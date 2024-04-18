@@ -158,13 +158,13 @@ add_treatment_meta <- function(sr, meta){
     return(sr_meta)
 }
 
-# LX093_LX094 by mistake pooled together 2 samples with the same gender (female) and the same cancer type (ATRT_SHH). it can only be demultiplex by souporcell and arbitary assign sample IDs. This function is to match the sample ID between atac and rna 
-fix_special_lib_rna <- function(atac_sr, rna_sr, rna_demultiplex_sr){
+# LX093_LX094 by mistake pooled together 2 samples with the same gender (female) and the same cancer type (ATRT_SHH). it can only be demultiplex by souporcell and arbitary assign sample IDs. This function is to match the sample ID between atac and rna. gexSID is the rna after demultiplex before processing  
+fix_special_lib_rna <- function(gexSID, rna_sr, rna_demultiplex_sr){
     # get which genotype is ATRT14 
-    s1_bc <- atac_sr$barcodes[grep('ATRT14',atac_sr$sampleID)]
+    s1_bc <- gexSID$barcodes[grep('ATRT14',gexSID$sampleID)]
     s1_genotype <- unique(rna_demultiplex_sr$genotype[colnames(rna_demultiplex_sr) %in% s1_bc])
 
-    s2_bc <- atac_sr$barcodes[grep('ATRT04',atac_sr$sampleID)]
+    s2_bc <- gexSID$barcodes[grep('ATRT04',gexSID$sampleID)]
     s2_genotype <- unique(rna_demultiplex_sr$genotype[colnames(rna_demultiplex_sr) %in% s2_bc])
 
     # get rna bc 

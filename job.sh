@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=5allSteps
-#SBATCH --output=log_allsteps5.out
+#SBATCH --job-name=10allSteps
+#SBATCH --output=log_allsteps10.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=350G
+#SBATCH --mem=100G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END

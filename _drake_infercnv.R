@@ -5,6 +5,8 @@ library(infercnv)
 library(drake)
 library(dplyr)
 library(purrr)
+library(ggplot2)
+library(futile.logger)
 ## Load your R files ----
 source('./R/global_variables_infercnv.R')
 source('./R/infercnv_function.R')
