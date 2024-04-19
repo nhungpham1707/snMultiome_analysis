@@ -28,39 +28,8 @@ aneuploidy_score <- function(adj_expr,
 
 
 
-library(infercnv)
-library(ggplot2)
-library(futile.logger)
-library(dplyr)
+
 
 
 infercnv_obj = readRDS(infercnv_obj_file)
 
-plot_tumor_vs_normal_chr_densities <- function(infercnv_obj, save_path){
-ref_group_cell_indices = infercnv:::get_reference_grouped_cell_indices(infercnv_obj)
-
-chrs = unique(infercnv_obj@gene_order$chr)
-
-
-for (chr in chrs) {
-        
-    gene_idx = which(infercnv_obj@gene_order$chr == chr)
-    
-    ref_data_pts = as.numeric(infercnv_obj@expr.data[gene_idx,ref_group_cell_indices])
-    
-    df = data.frame(class='normal', vals=ref_data_pts)
-    
-    for (tumor in names(infercnv_obj@observation_grouped_cell_indices) ) {
-        
-        tumor_cell_idx = infercnv_obj@observation_grouped_cell_indices[[ tumor ]]
-        tumor_data_pts = as.numeric(infercnv_obj@expr.data[gene_idx, tumor_cell_idx])
-        
-        df = rbind(df, data.frame(class=tumor, vals=tumor_data_pts))
-    }
-
-    flog.info(sprintf("Plotting data for chr: %s", chr))
-    
-    p = df %>% ggplot(aes(vals, fill=class)) + geom_density(alpha=0.3) + ggtitle(chr) # + scale_y_continuous(trans='log10', limits=c(1,NA))
-savePlot(paste0(save_path, '/tumor_vs_normal_chr_', chr, '.png'), p)
-    } 
-}

@@ -11,8 +11,14 @@
 
 annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_name, save_path){
     lib <- unique(sr$library)
-    if(missing(save_name)){
-    save_name <- lib
+    # if(missing(save_name)){
+    # save_name <- lib
+    # }
+
+    if (length(lib) > 1){
+        save_name <- save_name
+    } else {
+        save_name <- paste0(save_name, '_', lib)
     }
     sr.sce <- as.SingleCellExperiment(sr)
     rowData(sr.sce)$SYMBOL <- rownames(sr.sce) 
@@ -52,7 +58,7 @@ run_scROSHI_w_c8_data <- function(sr, cols, pt = 1, save_name, save_path){
     message('finish scROSHI w c8 with no error')
 }
 
-run_scROSHI_w_atrt_data <- function(sr, cols, pt = 1, save_name, save_path){
+run_scROSHI_w_cancer_marker <- function(sr, cols, pt = 1, save_name, save_path){
     ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
     ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
     ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')

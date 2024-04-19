@@ -98,6 +98,13 @@ process_special_lib_plan <- drake_plan(
   gexSID_specialLib = addMetaSoc(metadata, gexNoDb_specialLib),
   atacDemul_specialLib = addMetSocAtac(gexSID_specialLib,atacSgR_specialLib),
   atacMeta_specialLib = addMetaFromFile(metadata, atacDemul_specialLib)
+
+  # scroshi ----
+  # atacspeciallib_gScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta_specialLib, 
+  #       cols = my_cols, pt = 1,  save_name = 'w_demo_marker', save_path = atacScroshiDir)),
+  
+  # atacspeciallib_Scroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta_specialLib, 
+  #   cols = my_cols, pt = 1, save_name = 'w_cancer_marker', save_path = atacScroshiDir))
   )
 
 # ----------------------------------------------------------
@@ -219,7 +226,18 @@ process_special_lib_plan <- drake_plan(
                     transform = map(atacDemul,
                                     id.var = !!mulId,
                                     .id = id.var)),
-
+  # scroshi ---
+  # atacScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMeta,
+  #                       id.var = !!mulId,
+  #                       .id = id.var)),
+  
+  # atacScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMeta,
+  #                       id.var = !!mulId,
+  #                       .id = id.var)),
   # single libraries ----
   ## process ---
   atacSrsg = target(create_atacSr_w_disjoin(lb, metadata, allpeaksFilChr, hg38),
@@ -274,6 +292,17 @@ process_special_lib_plan <- drake_plan(
                       transform = map(atacsgSgR,
                                       id.var = !!snglId,
                                       .id = id.var)),
+  # atacSgScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMetasg, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMetasg,
+  #                       id.var = !!snglId,
+  #                       .id = id.var)),
+  
+  # atacSgScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMetasg, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMetasg,
+  #                       id.var = !!snglId,
+  #                       .id = id.var)),
   ## merge atac-----
   mrgAtac = target(merge_pairwise(c(atacMeta_specialLib, atacMeta, atacMetasg),atcMrgDir),
             transform = combine(atacMeta,atacMetasg,
@@ -358,10 +387,23 @@ process_special_lib_plan <- drake_plan(
   rna_group_sgr = group_singleR_labels(rna_fix),
   # prep rna for infercnv -----
   # prepare count matrix 
-  preInferRna = target(make_anno_count_mx(gexClus, save_path = rnaInferInputDir ),
-                    transform = map(gexClus,
+  preInferRna = target(make_anno_count_mx(gexClusSgr, save_path = rnaInferInputDir ),
+                    transform = map(gexClusSgr,
                   id.var = !!alID,
                   .id = id.var))
+  # scroshi rna ---
+  # rnaScroshi_demo = target(run_scROSHI_w_demo_data(sr = gexClusSgr, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = CellRnaScroshiDir),
+  #                     transform = map(gexClusSgr,
+  #                       id.var = !!alID,
+  #                       .id = id.var)),
+  
+  # rnaScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = gexClusSgr, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = CellRnaScroshiDir),
+  #                     transform = map(gexClusSgr,
+  #                       id.var = !!alID,
+  #                       .id = id.var))
+
   
 )
 
@@ -500,10 +542,10 @@ batch_correction_plan <- drake_plan(
 )
 
 cell_annotation_plan <- drake_plan(
-  # scroshi rna ---
+  # scroshi merg rna ---
   mrgRna_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_all_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  mrgRna_scroshi_atrt = run_scROSHI_w_atrt_data(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
+  mrgRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
 
   # scroshi rna harmony ----
   # hm_rna_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_lib.rna_umap, cols = my_cols, pt = 1, save_name = 'rna_hm_lib_w_demo_marker', save_path = CellRnaScroshiDir)

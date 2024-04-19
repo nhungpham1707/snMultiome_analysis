@@ -19,7 +19,9 @@ filename <- '30012024_remove_relapse.csv'
 
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
-specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166") # fail samples
+# specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166") # fail samples
+
+specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166", 'LX051_LX052_an_128') # fail samples w new normal cells
 nospecialMet <- metadata[!metadata$name %in% specialLib,]
 lbLst <- unique(nospecialMet$name) 
 idLst <- lbLst %>% map(splitName)
