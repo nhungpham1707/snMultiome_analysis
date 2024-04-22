@@ -67,6 +67,7 @@ run_scROSHI_w_cancer_marker <- function(sr, cols, pt = 1, save_name, save_path){
     ATRT_list[['ATRTTYR']] <- ATRT_TYR
     ATRT_list[['ATRTSHH']] <- ATRT_SHH
     ATRT_list[['ATRTMYC']] <- ATRT_MYC
+    
     ATRT_config <- data.frame(Major = names(ATRT_list),
      Subtype = c(rep('none', time = length(names(ATRT_list)))))
     marker_list <- ATRT_list

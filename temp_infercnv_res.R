@@ -25,11 +25,20 @@ aneuploidy_score <- function(adj_expr,
   apply(adj_expr, 2, .count_genes_in_runs, length=length, SDs=SDs)
 }  ## aneuploidy_score
 
+len <- 50 # also try e.g. 30 or 70
+SDs <- 1.3 # also try e.g. 1.5 or 2
+obsscore <-  aneuploidy_score(obs.scaled, length=len)
+refscore <-  aneuploidy_score(ref.scaled, SDs=SDs)
 
+ttest <- t.test(obsscore, refscore)
 
+p <- plot(density(obsscore), 
+      main=sprintf("Aneuploidy score length=%d SDs=%.1f",len, SDs),
+      xlab=sprintf("t=%.2f", ttest$statistic)) 
+rug(obsscore, ticksize=0.01) 
+rug(refscore, ticksize= -0.01, col='red') 
+lines(density(refscore), col='red') 
+legend(x="topright", legend=c('tumor', 'reference'), col=c('black','red'),
+       pch=NULL, lty=1, bty='n')
 
-
-
-
-infercnv_obj = readRDS(infercnv_obj_file)
-
+savePlot('lx49_aneuploid_score.png',p)

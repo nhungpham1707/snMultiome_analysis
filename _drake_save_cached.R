@@ -24,9 +24,15 @@ list_files_with_exts(functions_folder, 'R') %>%
 
 #
 
-Convert('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.h5ad', dest = 'h5seurat', overwrite = TRUE)
-sr <- LoadH5Seurat('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.h5seurat')
-message('save RDS---------------')
-saveRDS(sr, file = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.RDS')
+# Convert('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.h5ad', dest = 'h5seurat', overwrite = TRUE)
+# sr <- LoadH5Seurat('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.h5seurat')
+# message('save RDS---------------')
+# saveRDS(sr, file = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.RDS')
+
+loadd(gexClusSgr_LX049)
+gexClusSgr_LX049$gene_symbol <- rownames(gexClusSgr_LX049)
+save_h5ad(gexClusSgr_LX049, 'ikarus/', 'lx049')
+
+
 
 message('finished!')

@@ -19,9 +19,9 @@ filename <- '30012024_remove_relapse.csv'
 
 metadata <- getData(filename, delim = ',')
 ori_metadata <- metadata
-# specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166") # fail samples
+specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166") # fail samples
 
-specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166", 'LX051_LX052_an_128') # fail samples w new normal cells
+# specialLib <- c("LX189_LX190_an_325", "LX099_LX100_an_166", 'LX051_LX052_an_128') # fail samples w new normal cells
 nospecialMet <- metadata[!metadata$name %in% specialLib,]
 lbLst <- unique(nospecialMet$name) 
 idLst <- lbLst %>% map(splitName)
@@ -29,13 +29,13 @@ idLst <- lbLst %>% map(splitName)
 # idLst <- c(idLst, 'merge')
 
 # define normal cells 
-# normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
+normal_cells <- c('B_cell', 'T_cells', 'Macrophage', 'Monocyte', 'NK_cell')
 
 # normal_cells_HM <- c('B_cell', 'Macrophage', 'Monocyte', 'NK_cell') # remove T cell as there is only 1 cell in LX049, cannot run HMM 
-normal_cells <- c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
+# normal_cells <- c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
 ## define plan ----
-inLink <- AtacnoRInferInputDir
-outLink <- cellAtacnoRInferDir 
+inLink <- AtacInferInputDir
+outLink <- cellAtacInferDir 
 rnaInLink <- rnaInferInputDir
 rnaOutLink <- cellRnaIcnvdir 
 geneOrderLink <- paste0(base_data_dir, '/gencode_v19_gene_pos.txt')

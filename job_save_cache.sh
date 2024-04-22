@@ -20,3 +20,5 @@ Rscript _drake_save_cached.R
 # Rscript _drake_vis_infercnv.R
 
 # integrate infercnv res 
+conda activate ikarus 
+python ikarus/ikarus_tutorial.py

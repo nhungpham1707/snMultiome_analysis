@@ -97,14 +97,14 @@ process_special_lib_plan <- drake_plan(
   gexNoDb_specialLib = remove_soc_db_unknown(gexSoc_specialLib),
   gexSID_specialLib = addMetaSoc(metadata, gexNoDb_specialLib),
   atacDemul_specialLib = addMetSocAtac(gexSID_specialLib,atacSgR_specialLib),
-  atacMeta_specialLib = addMetaFromFile(metadata, atacDemul_specialLib),
+  atacMeta_specialLib = addMetaFromFile(metadata, atacDemul_specialLib)
 
   # scroshi ----
-  atacspeciallib_gScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta_specialLib, 
-        cols = my_cols, pt = 1,  save_name = 'w_demo_marker', save_path = atacScroshiDir)),
+  # atacspeciallib_gScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta_specialLib, 
+  #       cols = my_cols, pt = 1,  save_name = 'w_demo_marker', save_path = atacScroshiDir)),
   
-  atacspeciallib_Scroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta_specialLib, 
-    cols = my_cols, pt = 1, save_name = 'w_cancer_marker', save_path = atacScroshiDir))
+  # atacspeciallib_Scroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta_specialLib, 
+  #   cols = my_cols, pt = 1, save_name = 'w_cancer_marker', save_path = atacScroshiDir))
   )
 
 # ----------------------------------------------------------
@@ -227,17 +227,17 @@ process_special_lib_plan <- drake_plan(
                                     id.var = !!mulId,
                                     .id = id.var)),
   # scroshi ---
-  atacScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta, cols = my_cols, pt = 1, 
-                      save_name = 'w_demo_marker', save_path = atacScroshiDir),
-                      transform = map(atacMeta,
-                        id.var = !!mulId,
-                        .id = id.var)),
+  # atacScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMeta, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMeta,
+  #                       id.var = !!mulId,
+  #                       .id = id.var)),
   
-  atacScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta, cols = my_cols, pt = 1, 
-                      save_name = 'w_cancer_marker', save_path = atacScroshiDir),
-                      transform = map(atacMeta,
-                        id.var = !!mulId,
-                        .id = id.var)),
+  # atacScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMeta, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMeta,
+  #                       id.var = !!mulId,
+  #                       .id = id.var)),
   # single libraries ----
   ## process ---
   atacSrsg = target(create_atacSr_w_disjoin(lb, metadata, allpeaksFilChr, hg38),
@@ -292,17 +292,17 @@ process_special_lib_plan <- drake_plan(
                       transform = map(atacsgSgR,
                                       id.var = !!snglId,
                                       .id = id.var)),
-  atacSgScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMetasg, cols = my_cols, pt = 1, 
-                      save_name = 'w_demo_marker', save_path = atacScroshiDir),
-                      transform = map(atacMetasg,
-                        id.var = !!snglId,
-                        .id = id.var)),
+  # atacSgScroshi_demo = target(run_scROSHI_w_demo_data(sr = atacMetasg, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMetasg,
+  #                       id.var = !!snglId,
+  #                       .id = id.var)),
   
-  atacSgScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMetasg, cols = my_cols, pt = 1, 
-                      save_name = 'w_cancer_marker', save_path = atacScroshiDir),
-                      transform = map(atacMetasg,
-                        id.var = !!snglId,
-                        .id = id.var)),
+  # atacSgScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = atacMetasg, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = atacScroshiDir),
+  #                     transform = map(atacMetasg,
+  #                       id.var = !!snglId,
+  #                       .id = id.var)),
   ## merge atac-----
   mrgAtac = target(merge_pairwise(c(atacMeta_specialLib, atacMeta, atacMetasg),atcMrgDir),
             transform = combine(atacMeta,atacMetasg,
@@ -390,19 +390,19 @@ process_special_lib_plan <- drake_plan(
   preInferRna = target(make_anno_count_mx(gexClusSgr, save_path = rnaInferInputDir ),
                     transform = map(gexClusSgr,
                   id.var = !!alID,
-                  .id = id.var)),
+                  .id = id.var))
   # scroshi rna ---
-  rnaScroshi_demo = target(run_scROSHI_w_demo_data(sr = gexClusSgr, cols = my_cols, pt = 1, 
-                      save_name = 'w_demo_marker', save_path = CellRnaScroshiDir),
-                      transform = map(gexClusSgr,
-                        id.var = !!alID,
-                        .id = id.var)),
+  # rnaScroshi_demo = target(run_scROSHI_w_demo_data(sr = gexClusSgr, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_demo_marker', save_path = CellRnaScroshiDir),
+  #                     transform = map(gexClusSgr,
+  #                       id.var = !!alID,
+  #                       .id = id.var)),
   
-  rnaScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = gexClusSgr, cols = my_cols, pt = 1, 
-                      save_name = 'w_cancer_marker', save_path = CellRnaScroshiDir),
-                      transform = map(gexClusSgr,
-                        id.var = !!alID,
-                        .id = id.var))
+  # rnaScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = gexClusSgr, cols = my_cols, pt = 1, 
+  #                     save_name = 'w_cancer_marker', save_path = CellRnaScroshiDir),
+  #                     transform = map(gexClusSgr,
+  #                       id.var = !!alID,
+  #                       .id = id.var))
 
   
 )
@@ -488,7 +488,7 @@ batch_correction_plan <- drake_plan(
   # harmony ----------------------------------
   batch_factors = c('library', 'Individual.ID', 'lbsb'),
   theta = seq(0, 1, by = 0.1),
-  sigma = seq(0, 4, by = 0.1),
+  sigma = seq(0, 4, by = 1),
   ## atac -----------
   atac_lbsb = addLibSubcategory(atac_group_sgr), 
 
@@ -552,5 +552,4 @@ cell_annotation_plan <- drake_plan(
 )
  
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
-
 
