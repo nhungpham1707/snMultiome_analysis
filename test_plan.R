@@ -497,10 +497,10 @@ batch_correction_plan <- drake_plan(
   ## rna ----
   rna_lbsb = addLibSubcategory(rna_group_sgr),
 
-  hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), dynamic = cross(batch_factors, theta, sigma)),
+  hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
   
   ## atac harmony with patients + treatment as batch factor ---
-  hm_atac_patient_treatment = harmony_n_plot(atac_lbsb, batch_factor = c('Individual.ID', 'treatment')),
+  hm_atac_patient_treatment = harmony_n_plot(atac_lbsb, batch_factor = c('Individual.ID', 'treatment'), assay = 'peaks', reduction = 'lsi', theta = c(0,0), sigma = c(0,0)),
   
   # hm_atac_patient_treatment = RunHarmony(atac_extra_meta, group.by.vars = c('Individual.ID', 'treatment'), reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
 
@@ -543,13 +543,21 @@ batch_correction_plan <- drake_plan(
 
 cell_annotation_plan <- drake_plan(
   # scroshi merg rna ---
-  mrgRna_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_all_rna_w_demo_marker', save_path = CellRnaScroshiDir),
+  # mrgRna_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_all_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  mrgRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
+  # mrgRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
 
   # scroshi rna harmony ----
   # hm_rna_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_lib.rna_umap, cols = my_cols, pt = 1, save_name = 'rna_hm_lib_w_demo_marker', save_path = CellRnaScroshiDir)
+
+  # infercnv res intepretation ----
+  ## rna ---
+  # did not run for LX069, LX099, LX183, LX189 
+  # no clear difference w ref cells: LX 049, LX051, LX053, LX065, LX067, LX074, LX093, LX097, LX290
+  # cut off after inspect manually using plot_aneuploidy_score function 
+  cut_off = c(160, 100, 100, 120, 120, 100, 200),
+  lib_cut_off = c('LX078', 'LX080', 'LX095',
+                'LX101', 'LX103', 'LX185', 'LX187')
 )
  
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
-

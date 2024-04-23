@@ -70,4 +70,4 @@ vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv_
 # options(clustermq.scheduler = "multicore") # nolint
 # make(infercnv_plan, parallelism = "clustermq", jobs = 2, lock_cache = FALSE)
 
-vis_drake_graph(infercnv_plan, targets_only = TRUE, lock_cache = FALSE, file = 'infercnv_after.png', font_size = 20 )
+vis_drake_graph(plan, targets_only = TRUE, lock_cache = FALSE, file = 'vis_infercnv_after.png', font_size = 20 )

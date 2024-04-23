@@ -30,7 +30,6 @@ list_files_with_exts(functions_folder, 'R') %>%
 # saveRDS(sr, file = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/output_before_accident_cleanup/sc_RNA/merge_all/rna.RDS')
 
 loadd(gexClusSgr_LX049)
-gexClusSgr_LX049$gene_symbol <- rownames(gexClusSgr_LX049)
 save_h5ad(gexClusSgr_LX049, 'ikarus/', 'lx049')
 
 

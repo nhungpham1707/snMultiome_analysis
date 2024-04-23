@@ -488,7 +488,7 @@ batch_correction_plan <- drake_plan(
   # harmony ----------------------------------
   batch_factors = c('library', 'Individual.ID', 'lbsb'),
   theta = seq(0, 1, by = 0.1),
-  sigma = seq(0, 4, by = 1),
+  sigma = seq(0.1, 4, by = 0.2),
   ## atac -----------
   atac_lbsb = addLibSubcategory(atac_group_sgr), 
 
@@ -500,7 +500,7 @@ batch_correction_plan <- drake_plan(
   hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
   
   ## atac harmony with patients + treatment as batch factor ---
-  hm_atac_patient_treatment = harmony_n_plot(atac_lbsb, batch_factor = c('Individual.ID', 'treatment')),
+  # hm_atac_patient_treatment = harmony_n_plot(atac_lbsb, batch_factor = c('Individual.ID', 'treatment'), assay = 'peaks', reduction = 'lsi', theta = c(0,0), sigma = c(0,0)),
   
   # hm_atac_patient_treatment = RunHarmony(atac_extra_meta, group.by.vars = c('Individual.ID', 'treatment'), reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
 
@@ -538,7 +538,12 @@ batch_correction_plan <- drake_plan(
   dim_rna_noCF_lib = DimPlot(rna_noCF_meta, group.by = 'library', cols = my_cols, raster = FALSE,pt.size = 1),
   save_dim_rna_noCF_lib = savePlot(paste0(rnaMrgFigDir, '/noCF_lib.png'), dim_rna_noCF_lib),
   dim_rna_noCF_sub = DimPlot(rna_noCF_meta, group.by = 'Subtype', cols = my_cols, raster = FALSE,pt.size = 1),
-  save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub)
+  save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub),
+
+  # calculate lisi ----
+  ## before correction ----
+  lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library')
+
 )
 
 cell_annotation_plan <- drake_plan(

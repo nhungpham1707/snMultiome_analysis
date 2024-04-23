@@ -90,4 +90,5 @@ suppressPackageStartupMessages({
   library(CellMixS)
   library(bluster) # for clustering behavior 
   library(cowplot)
+  library(lisi)
 })

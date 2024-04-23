@@ -11,8 +11,8 @@
 # each covariate level group will be assigned the scalars
 # specified by the user. If set to NULL, harmony will start lambda estimation mode to determine lambdas automatically and try to minimize overcorrection (Use with caution still in beta testing).
 
-harmony_n_plot <- function(sr, batch_factor, reduction = 'pca', assay = 'RNA', theta = 0, sigma = 0.1, lambda = 1,tau = 0, save_path){
-    save_name <- paste0('assay_', assay, 'batch_factor_', batch_factor, 'theta_', theta, '_sigma_', sigma, '_tau_', tau, '_lambda_', lambda)
+harmony_n_plot <- function(sr, batch_factor, reduction = 'pca', assay = 'RNA', theta = 2, sigma = 0.1, lambda = 1,tau = 0, save_path){
+    save_name <- paste0('assay_', assay, '_batch_factor_', batch_factor, '_theta_', theta, '_sigma_', sigma, '_tau_', tau, '_lambda_', lambda)
     message(paste('run harmony for', save_name))
     message('run harmony -------')
     hm = RunHarmony(sr, group.by.vars = batch_factor, reduction.use = reduction, project.dim = FALSE, theta = theta, sigma = sigma, assay.use = assay, lambda = lambda, .options = harmony_options(tau = tau))

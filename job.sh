@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=2allSteps
-#SBATCH --output=log_allsteps2.out
+#SBATCH --job-name=5allSteps
+#SBATCH --output=log_allsteps5.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
