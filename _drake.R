@@ -542,7 +542,8 @@ batch_correction_plan <- drake_plan(
 
   # calculate lisi ----
   ## before correction ----
-  lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library')
+  # lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library'),
+  lisi_rna = calculate_lisi_from_sr(rna_lbsb, batch = 'library')
 
 )
 
@@ -560,9 +561,11 @@ cell_annotation_plan <- drake_plan(
   # did not run for LX069, LX099, LX183, LX189 
   # no clear difference w ref cells: LX 049, LX051, LX053, LX065, LX067, LX074, LX093, LX097, LX290
   # cut off after inspect manually using plot_aneuploidy_score function 
-  cut_off = c(160, 100, 100, 120, 120, 100, 200),
-  lib_cut_off = c('LX078', 'LX080', 'LX095',
-                'LX101', 'LX103', 'LX185', 'LX187')
+  atac_infercnv_cut_off = c(160, 100, 100, 120, 120, 100, 200),
+  atac_lib_cut_off = c('LX078', 'LX080', 'LX095',
+                'LX101', 'LX103', 'LX185', 'LX187'),
+  rna_infercnv_cutoff = c(500, 500, 500),
+  rna_lib_infercnv_cutoff = c('LX078', 'LX080', 'LX93')
 )
  
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)

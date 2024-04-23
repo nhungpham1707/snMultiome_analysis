@@ -88,20 +88,20 @@ aneuploidy_score <- function(adj_expr,
   apply(adj_expr, 2, .count_genes_in_runs, length=length, SDs=SDs)
 }  ## aneuploidy_score
 
-calculate_aneuploidy_ref_score <- function(infercnv_obj){
+calculate_aneuploidy_ref_score <- function(infercnv_obj, SDs = 1.5){
     refexp <- infercnv_obj@expr.data[ , unname(unlist(infercnv_obj@reference_grouped_cell_indices)) ]
     ref.scaled <- scale(refexp)
     refscore <-  aneuploidy_score(ref.scaled, SDs=SDs)
 
 }
-calculate_aneuploidy_obs_score <- function(infercnv_obj){
+calculate_aneuploidy_obs_score <- function(infercnv_obj, len = 50){
     obsexp <- infercnv_obj@expr.data[ , unname(unlist(infercnv_obj@observation_grouped_cell_indices)) ]
 
     ## now scale them so that SD is the 'unit' of Modif. Expression:
     obs.scaled <- scale(obsexp)
     obsscore <-  aneuploidy_score(obs.scaled, length=len)
 }
-plot_aneuploidy_score <- function(infercnv_obj){
+plot_aneuploidy_score <- function(infercnv_obj, len = 50, SDs = 1.5){
     refscore <- calculate_aneuploidy_ref_score(infercnv_obj)
     obsscore <- calculate_aneuploidy_obs_score(infercnv_obj)
     ttest <- t.test(obsscore, refscore)
