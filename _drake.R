@@ -492,39 +492,20 @@ batch_correction_plan <- drake_plan(
   ## atac -----------
   atac_lbsb = addLibSubcategory(atac_group_sgr), 
 
-  hm_atac = target(harmony_n_plot(atac_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), dynamic = cross(batch_factors, theta, sigma)),
+  # hm_atac = target(harmony_n_plot(atac_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), dynamic = cross(batch_factors, theta, sigma)),
   
   ## rna ----
   rna_lbsb = addLibSubcategory(rna_group_sgr),
 
-  hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
+  # hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
+  ## final hm ----
+  final_theta = 0,
+  final_sigma = 0.1, 
+  final_hm_rna = harmony_n_plot(rna_lbsb, batch_factor = 'library', theta = theta, sigma = sigma, 
+  save_path = batchRnaHarmonyDir),
+  final_hm_atac = harmony_n_plot(atac_lbsb, batch_factor = 'library', theta = theta, sigma = sigma,
+  save_path = batchAtacHarmonyDir),
   
-  ## atac harmony with patients + treatment as batch factor ---
-  # hm_atac_patient_treatment = harmony_n_plot(atac_lbsb, batch_factor = c('Individual.ID', 'treatment'), assay = 'peaks', reduction = 'lsi', theta = c(0,0), sigma = c(0,0)),
-  
-  # hm_atac_patient_treatment = RunHarmony(atac_extra_meta, group.by.vars = c('Individual.ID', 'treatment'), reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
-
-  # hm_atac_patient_treatment_nb = FindNeighbors(object = hm_atac_patient_treatment, reduction = "harmony", k.param = 30),
-
-  # hm_atac_patient_treatment_clus = FindClusters(hm_atac_patient_treatment_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
-
-  # hm_atac_patient_treatment_umap = RunUMAP(hm_atac_patient_treatment_clus, dims = 1:30, reduction = 'harmony'),
-
-  # hm_atac_patient_treatment_singr_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'singleR_labels', raster = FALSE, cols = my_cols),
-
-  # save_hm_atac_patient_treatment_singr = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_singr.png'), hm_atac_patient_treatment_singr_p),
-
-  # hm_atac_patient_lib_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'library', raster = FALSE, pt.size = 0.1, cols = my_cols),
-
-  # save_hm_atac_patient_treatment_lib_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_lib.png'), hm_atac_patient_lib_p),
-
-  # hm_atac_patient_treatment_type_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'Subtype', raster = FALSE, pt.size = 0.1, cols = my_cols),
-
-  # save_hm_atac_patient_treatment_type_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment_type.png'), hm_atac_patient_treatment_type_p),
-
-  # hm_atac_patient_treatment_p = DimPlot(hm_atac_patient_treatment_umap, group.by = 'treatment', raster = FALSE, pt.size = 0.1, cols = my_cols),
-
-  # save_hm_atac_patient_treatment_p = savePlot(paste0(batchAtacHarmonyDir,'/hm_atac_patient_treatment.png'), hm_atac_patient_treatment_p),
 
   # remove MHC genes and other confounding genes ----
   ## rna ---
