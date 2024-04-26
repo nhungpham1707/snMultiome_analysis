@@ -58,22 +58,44 @@ run_scROSHI_w_c8_data <- function(sr, cols, pt = 1, save_name, save_path){
     message('finish scROSHI w c8 with no error')
 }
 
+# run_scROSHI_w_cancer_marker <- function(sr, cols, pt = 1, save_name, save_path){
+#     ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
+#     ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
+#     ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
+
+#     ATRT_list <- c()
+#     ATRT_list[['ATRTTYR']] <- ATRT_TYR
+#     ATRT_list[['ATRTSHH']] <- ATRT_SHH
+#     ATRT_list[['ATRTMYC']] <- ATRT_MYC
+    
+#     ATRT_config <- data.frame(Major = names(ATRT_list),
+#      Subtype = c(rep('none', time = length(names(ATRT_list)))))
+#     marker_list <- ATRT_list
+#     config <- ATRT_config
+#     results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_path, save_name)
+#     message('finish scROSHI w atrt with no error')
+#     return(results_sr)
+# }
+
+
 run_scROSHI_w_cancer_marker <- function(sr, cols, pt = 1, save_name, save_path){
     ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
     ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
     ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
-
-    ATRT_list <- c()
-    ATRT_list[['ATRTTYR']] <- ATRT_TYR
-    ATRT_list[['ATRTSHH']] <- ATRT_SHH
-    ATRT_list[['ATRTMYC']] <- ATRT_MYC
-    
-    ATRT_config <- data.frame(Major = names(ATRT_list),
-     Subtype = c(rep('none', time = length(names(ATRT_list)))))
-    marker_list <- ATRT_list
-    config <- ATRT_config
+    RMS <- c('DESMIN', 'MYOG', 'MYOD1')
+    Sysa <- c('TLE1', 'BMP5', 'BMP7', 'TNFRS19')
+    cancer_list <- c()
+    cancer_list[['ATRTTYR']] <- ATRT_TYR
+    cancer_list[['ATRTSHH']] <- ATRT_SHH
+    cancer_list[['ATRTMYC']] <- ATRT_MYC
+    cancer_list[['RMS']] <- RMS
+    cancer_list[['Sysa']] <- Sysa
+    cancer_config <- data.frame(Major = names(cancer_list),
+     Subtype = c(rep('none', time = length(names(cancer_list)))))
+    marker_list <- cancer_list
+    config <- cancer_config
     results_sr <- annotate_w_scROSHI(sr, marker_list, config, pt = 1, cols, save_path, save_name)
-    message('finish scROSHI w atrt with no error')
+    message('finish scROSHI w cancer markers with no error')
     return(results_sr)
 }
 

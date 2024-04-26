@@ -172,10 +172,32 @@ normal_cells <- c('Pre-B_cell_CD34-', 'Pro-B_cell_CD34+',
                   'B_cell', 'T_cells', 'Macrophage', 
                   'Monocyte', 'Neutrophils', 'NK_cells') 
 
+# Define cell groups: (from primary human atlas)
+# ref https://phys.org/news/2021-07-cell-human-tissues.html
+immune_cells <- c("Monocyte", "T_cells", "Neutrophils", "Macrophage", "B_cell", "NK_cell", "DC", "Pro-B_cell_CD34+", "BM & Prog.", "CMP", "Erythroblast", "GMP", "Myelocyte" , "Pro-Myelocyte", "MEP", "HSC_CD34+", "HSC_-G-CSF", "Platelets", "Pre-B_cell_CD34-", "BM")
+brain_cells <- c("Astrocyte", "Neurons", "Neuroepithelial_cell")
+bone_cells <- c("Chondrocytes", "Osteoblasts")
+stem_cells <- c("Embryonic_stem_cells", "iPS_cells", "Tissue_stem_cells", "MSC", "Gametocytes")
+muscle_cells <- c("Fibroblasts", "Smooth_muscle_cells", "Endothelial_cells")
 # normal cells from literature https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9886402/
 
 nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
-immune_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
+# immune_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
+
+## markers ----
+
+ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
+ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
+ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
+RMS <- c('DESMIN', 'MYOG', 'MYOD1')
+rms_csc <- c("CD24", "CD44", "CD133", "ALDH1A1" ) # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9406733/
+rms_uri <- c("EPS8L2", "SPARC", "HLA-DRB1", "ACAN", "CILP") # https://clinicalproteomicsjournal.biomedcentral.com/articles/10.1186/s12014-023-09401-4
+Sysa <- c('TLE1', 'BMP5', 'BMP7', 'TNFRS19')
+t_nk <- c("CD3D", "CD8A", "GNLY")
+myeloid <- c("APOE", "CD14", "C1QB")
+b_cell <- c("PAX5", " MS4A1", "CD19")
+endo <- c("VWF", "PECAM1", "CLDN5")
+
 
 # colors for plot
 my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
@@ -190,26 +212,37 @@ my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
             'aquamarine4', 'aquamarine', 
             'cornsilk4', 'black', 'bisque4', 'darkred')
             
-my_cols2 <- c('#25aff5', "blue2", "navyblue", "turquoise2", "skyblue",
-              "steelblue", "wheat4", "tan", "tan3", "brown",
-             "pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
-             "orange", "tomato", "coral2", "palevioletred", "violetred", 
-             "red2", "springgreen2", "yellowgreen", "palegreen4", 
-             '#1fa195', "wheat2", "#d4d915", "yellow4", "yellow", 
-             "grey70", "grey30", 'maroon4', 'maroon2', 'maroon', 
+my_cols2 <- c('#25aff5',  "navyblue", 
+               "tan", "tan3", "brown",
+              "yellow", "slateblue1","violet", "purple3",
+             "orange", "tomato", "palevioletred", "violetred", "skyblue",
+             "red2", "blue2","springgreen2", '#ccb1f1',"yellowgreen", "palegreen4", 
+             '#1fa195', "wheat2",  "turquoise2","#d4d915", "coral2", "yellow4",  
+             "grey70", "grey30", 'maroon4', 'maroon2', "pink1",  "wheat4", "steelblue",'maroon', 
              'lightsalmon', 'lightsalmon3',
              'lightsalmon4', 'pink4', 'peru', 'mediumpurple4', 
              'mediumpurple', 'lightblue4', 'aquamarine4', 'aquamarine' )
 
 # colors for scpurb
-colors <- c("ATRT_SHH" = "skyblue" ,                     
+scpu_colors <- c("ATRT_SHH" = "skyblue" ,                     
             "ecMRT"  = "blue2",                       
-            "ecMRT_BrainMet"  = "navyblue",                 
+            "ecMRT_BrainMet"  = "#805100",                 
             "ATRT_TYR"     = "turquoise2",                   
-            "ATRT_MYC"  = '#25aff5',                      
+            "ATRT_MYC"  = '#a925f5',                      
             "FN-eRMS" = "tan",                        
             "SySa"    = "pink1",                         
             "ATRT-MYC (replapse from ATRT21)"='maroon4', 
             "FP-RMS (P3W)"  = "tan3",                  
             "FP-RMS (P3F)" = "brown",                    
             "FP-RMS" = "slateblue1")
+
+scpu_colors2 = c( "ATRT_MYC" = "pink1",
+            "ATRT_SHH" = '#ccb1f1', 
+            "ATRT_TYR" = "violet", 
+            "ATRT-MYC (replapse from ATRT21)" = "slateblue1", 
+            "ecMRT" = "purple3",
+            "ecMRT_BrainMet" = "turquoise2", "FN-eRMS" = "skyblue", 
+            'FP-RMS' = "steelblue",
+            "FP-RMS (P3F)" = '#25aff5', 
+            "FP-RMS (P3W)" = "blue2", 
+            "SySa" = "navyblue")

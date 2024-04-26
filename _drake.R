@@ -486,9 +486,9 @@ batch_detection_plan <- drake_plan(
 # ------------------------------------------------------
 batch_correction_plan <- drake_plan(
   # harmony ----------------------------------
-  batch_factors = c('library', 'Individual.ID', 'lbsb'),
-  theta = seq(0, 1, by = 0.1),
-  sigma = seq(0.1, 4, by = 0.2),
+  batch_factors = c('library', 'Individual.ID'),
+  theta = seq(0, 0.5, by = 0.1),
+  sigma = seq(0.1, 1, by = 0.2),
   ## atac -----------
   atac_lbsb = addLibSubcategory(atac_group_sgr), 
 
@@ -497,16 +497,15 @@ batch_correction_plan <- drake_plan(
   ## rna ----
   rna_lbsb = addLibSubcategory(rna_group_sgr),
 
-  # hm_rna = target(harmony_n_plot(rna_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
+  hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
   ## final hm ----
   final_theta = 0,
   final_sigma = 0.1, 
-  final_hm_rna = harmony_n_plot(rna_lbsb, batch_factor = 'library', theta = theta, sigma = sigma, 
-  save_path = batchRnaHarmonyDir),
-  final_hm_atac = harmony_n_plot(atac_lbsb, batch_factor = 'library', theta = theta, sigma = sigma,
-  save_path = batchAtacHarmonyDir),
+  final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
+   sigma = final_sigma, save_path = batchRnaHarmonyDir),
+  final_hm_atac = harmony_n_plot(atac_lbsb, batch_factor = 'library', theta = final_theta, 
+  sigma = final_sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'),
   
-
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
@@ -520,23 +519,28 @@ batch_correction_plan <- drake_plan(
   save_dim_rna_noCF_lib = savePlot(paste0(rnaMrgFigDir, '/noCF_lib.png'), dim_rna_noCF_lib),
   dim_rna_noCF_sub = DimPlot(rna_noCF_meta, group.by = 'Subtype', cols = my_cols, raster = FALSE,pt.size = 1),
   save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub),
+  hm_rna_noCF = harmony_n_plot(rna_noCF, batch_factor = 'library', theta = final_theta,
+   sigma = final_sigma, save_path = batchRnaHarmonyDir)
+ 
 
   # calculate lisi ----
   ## before correction ----
-  # lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library'),
-  lisi_rna = calculate_lisi_from_sr(rna_lbsb, batch = 'library')
+  # # lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library'),
+  # lisi_rna = calculate_lisi_from_sr(rna_lbsb, batch = 'library'),
+  # lisi_hm_rna = calculate_lisi_from_sr(final_hm_rna, batch = 'library')
 
 )
 
 cell_annotation_plan <- drake_plan(
   # scroshi merg rna ---
-  # mrgRna_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_all_rna_w_demo_marker', save_path = CellRnaScroshiDir),
+  hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  # mrgRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = rna_lbsb, cols = my_cols, pt = 1, save_name = 'merge_rna_w_atrt', save_path = CellRnaScroshiDir)
+  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
 
-  # scroshi rna harmony ----
-  # hm_rna_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_lib.rna_umap, cols = my_cols, pt = 1, save_name = 'rna_hm_lib_w_demo_marker', save_path = CellRnaScroshiDir)
-
+  # scroshi merg atac ---
+  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = CellAtacScroshiDir),
+  
+  # hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = CellAtacScroshiDir),
   # infercnv res intepretation ----
   ## rna ---
   # did not run for LX069, LX099, LX183, LX189 
@@ -546,7 +550,20 @@ cell_annotation_plan <- drake_plan(
   atac_lib_cut_off = c('LX078', 'LX080', 'LX095',
                 'LX101', 'LX103', 'LX185', 'LX187'),
   rna_infercnv_cutoff = c(500, 500, 500),
-  rna_lib_infercnv_cutoff = c('LX078', 'LX080', 'LX93')
+  rna_lib_infercnv_cutoff = c('LX078', 'LX080', 'LX93'),
+  # calculate markers ---
+   rna_markers = FindAllMarkers(object = final_hm_rna, only.pos = T, logfc.threshold = 0.25),
+   atac_markers = FindAllMarkers(object = final_hm_atac, only.pos = T, logfc.threshold = 0.25),
+   # group cell types ---
+   rna_gr_sgr = group_singleR_labels2(final_hm_rna),
+   atac_gr_sgr = group_singleR_labels2(final_hm_atac)
+   ## show it visually:
+# DoHeatmap(subset(srat, downsample = 50),
+#           features = top10$gene,
+#           group.colors=cluster.colors,
+#           assay='RNA',
+          # slot='scale.data'
+          # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
  
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)

@@ -96,12 +96,22 @@ plot_mrg_singler <- function(singler, sr, save_path, save_name){
     dev.off()
 }
 
+# # group_singleR_labels <- function(sr){
+#     malignant_cells <- setdiff(sr$singleR_labels, nonMalignant_cells)
+#     sr$clean_sgr_labels <- sr$singleR_labels
+#     sr$clean_sgr_labels[sr$clean_sgr_labels %in% malignant_cells] <- 'maybe_tumors'
+#     sr$clean_sgr_labels[sr$clean_sgr_labels %in% immune_cells] <- 'immune_cells'
+#     sr$clean_sgr_labels[sr$clean_sgr_labels]
+#     sr$clean_sgr_labels[sr$clean_sgr_labels %in% nonMalignant_cells] <- 'others'
+#     return(sr)
+# }
+
 group_singleR_labels <- function(sr){
-    malignant_cells <- setdiff(sr$singleR_labels, nonMalignant_cells)
-    sr$clean_sgr_labels <- sr$singleR_labels
-    sr$clean_sgr_labels[sr$clean_sgr_labels %in% malignant_cells] <- 'maybe_tumors'
-    sr$clean_sgr_labels[sr$clean_sgr_labels %in% immune_cells] <- 'immune_cells'
-    sr$clean_sgr_labels[sr$clean_sgr_labels]
-    sr$clean_sgr_labels[sr$clean_sgr_labels %in% nonMalignant_cells] <- 'others'
+    sr$group_sgr_labels <- sr$singleR_labels
+    sr$group_sgr_labels[sr$group_sgr_labels %in% brain_cells] <- 'brain_cells'
+    sr$group_sgr_labels[sr$group_sgr_labels %in% immune_cells] <- 'immune_cells'
+    sr$group_sgr_labels[sr$group_sgr_labels %in% stem_cells] <- 'stem_cells'
+    sr$group_sgr_labels[sr$group_sgr_labels %in% bone_cells] <- 'bone_cells'
+    sr$group_sgr_labels[sr$group_sgr_labels %in% muscle_cells] <- 'muscle_cells'
     return(sr)
 }

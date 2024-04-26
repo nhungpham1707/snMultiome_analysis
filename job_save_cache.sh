@@ -3,7 +3,7 @@
 #SBATCH --output=log_savecache.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=100G
+#SBATCH --mem=350G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END
@@ -20,5 +20,5 @@ Rscript _drake_save_cached.R
 # Rscript _drake_vis_infercnv.R
 
 # integrate infercnv res 
-conda activate ikarus 
-python ikarus_tutorial.py
+# conda activate ikarus 
+# python ikarus_tutorial.py
