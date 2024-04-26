@@ -126,6 +126,20 @@ add_aneuploidy_score_to_seurat <- function(infercnv_obj, srat, cutoff){
     srat <- AddMetaData(srat, col.name='is_aneuploid', aneuploid) 
 }
 
+# infercnv cut off is a dataframe with cut_off and lib columns
+analyze_infercnv_res <- function(srat_list, infercnv_cut_off){
+    for (i in 1:length(srat_list)){
+        srat <- srat_list[i]
+        lib <- unique(srat$library)
+        if (lib %in% infercnv_cut_off$lib){
+        infercnv_obj <- ReadRDS(paste0(outlink,lib,'/run.final.infercnv_obj'))
+        sr <- add_aneuploidy_score_to_seurat(infercnv_obj, srat, infercnv_cut_off$cut_off[which(infercnv_cut_off$lib == lib)])
+        return(sr)}
+        else {
+            print(paste(lib, 'has no clear infercnv -- skipped!'))
+        }
+    }
+}
 
 
 

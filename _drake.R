@@ -546,11 +546,26 @@ cell_annotation_plan <- drake_plan(
   # did not run for LX069, LX099, LX183, LX189 
   # no clear difference w ref cells: LX 049, LX051, LX053, LX065, LX067, LX074, LX093, LX097, LX290
   # cut off after inspect manually using plot_aneuploidy_score function 
-  atac_infercnv_cut_off = c(160, 100, 100, 120, 120, 100, 200),
-  atac_lib_cut_off = c('LX078', 'LX080', 'LX095',
-                'LX101', 'LX103', 'LX185', 'LX187'),
-  rna_infercnv_cutoff = c(500, 500, 500),
-  rna_lib_infercnv_cutoff = c('LX078', 'LX080', 'LX93'),
+  atac_infercnv_cut_off = data.frame(cut_off = c(160, 100, 100, 120, 120, 100, 200),
+                                      lib = c('LX078_LX079_an_161', 'LX080_LX081_an_162', 'LX095_LX096_an_164',
+                                      'LX101_LX102_an_167', 'LX103_LX104_an_168', 
+                                      'LX185_LX186_an_323', 'LX187_LX188_an_324')),
+  atac_infer = target(analyze_infercnv_res(srat_list = c(atacMeta_specialLib, atacMeta, atacMetasg),
+                                            infercnv_cut_off = atac_infercnv_cut_off, outlink = cellAtacInferDir ),
+                                            transform = combine(atacMeta,atacMetasg,
+                                            id.var = !!c(mulLib, sngLib),
+                                            .id = id.var))),
+
+  rna_infercnv_cutoff = data.frame(cut_off = c(500, 500, 500),
+                                  lib = c('LX078_LX079_an_161', 'LX080_LX081_an_162', 'LX093_LX094_an_163')),
+  rna_infer = target(analyze_infercnv_res(srat = c(gexClusSgr),
+                                            infercnv_cut_off = rna_infercnv_cutoff, 
+                                            outlink = cellRnaIcnvdir ),
+                                            transform = combine(gexClusSgr,
+                                                        id.var = !!alID,
+                                                        .id = id.var)),
+                                                                                        
+
   # calculate markers ---
    rna_markers = FindAllMarkers(object = final_hm_rna, only.pos = T, logfc.threshold = 0.25),
    atac_markers = FindAllMarkers(object = final_hm_atac, only.pos = T, logfc.threshold = 0.25),
