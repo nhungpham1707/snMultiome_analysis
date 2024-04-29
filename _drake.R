@@ -501,11 +501,22 @@ batch_correction_plan <- drake_plan(
   ## final hm ----
   final_theta = 0,
   final_sigma = 0.1, 
-  final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
-   sigma = final_sigma, save_path = batchRnaHarmonyDir),
-  final_hm_atac = harmony_n_plot(atac_lbsb, batch_factor = 'library', theta = final_theta, 
-  sigma = final_sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'),
+  # final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
+  #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
   
+  final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0),
+  final_hm_rna_nb = FindNeighbors(object = hm, reduction = "harmony", k.param = 30),
+  final_hm_rna_clus = FindClusters(final_hm_rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
+  final_hm_rna_umap = RunUMAP(final_hm_rna_clus, dims = 1:30, reduction = 'harmony'),
+  hm_rna_p = DimPlot(final_hm_rna_umap, group.by = 'Subtype', cols = my_colors),
+  save_hm_rna_p = savePlot(paste0(batchRnaHarmonyDir, '/final_hm_subtype.png'), hm_rna_p),
+
+  final_hm_atac = RunHarmony(atac_group_sgr, group.by.vars = 'library', theta = 0, reduction.use = 'lsi',  assay.use = 'peaks'),
+  final_hm_atac_nb = hm = FindNeighbors(object = hm, reduction = "harmony", k.param = 30),
+  final_hm_atac_clus = FindClusters(final_hm_atac_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
+  final_hm_atac_umap = RunUMAP(final_hm_atac_clus, dims = 1:30, reduction = 'harmony'),
+  hm_atac_p = DimPlot(final_hm_atac_umap, group.by = 'Subtype', cols = my_colors),
+  save_hm_atac_p = savePlot(paste0(batchAtacHarmonyDir, '/final_hm_subtype.png'), hm_atac_p),
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
@@ -550,20 +561,18 @@ cell_annotation_plan <- drake_plan(
                                       lib = c('LX078_LX079_an_161', 'LX080_LX081_an_162', 'LX095_LX096_an_164',
                                       'LX101_LX102_an_167', 'LX103_LX104_an_168', 
                                       'LX185_LX186_an_323', 'LX187_LX188_an_324')),
-  atac_infer = target(analyze_infercnv_res(srat_list = c(atacMeta_specialLib, atacMeta, atacMetasg),
-                                            infercnv_cut_off = atac_infercnv_cut_off, outlink = cellAtacInferDir ),
-                                            transform = combine(atacMeta,atacMetasg,
-                                            id.var = !!c(mulLib, sngLib),
-                                            .id = id.var))),
-
+  # atac_infer = target(analyze_infercnv_res(c(atacMeta_specialLib, atacMeta, atacMetasg),infercnv_cut_off = atac_infercnv_cut_off, outlink = cellAtacInferDir),
+  #           transform = combine(atacMeta,atacMetasg,
+  #                   id.var = !!c(mulLib, sngLib),
+  #                   .id = id.var)),
   rna_infercnv_cutoff = data.frame(cut_off = c(500, 500, 500),
                                   lib = c('LX078_LX079_an_161', 'LX080_LX081_an_162', 'LX093_LX094_an_163')),
-  rna_infer = target(analyze_infercnv_res(srat = c(gexClusSgr),
-                                            infercnv_cut_off = rna_infercnv_cutoff, 
-                                            outlink = cellRnaIcnvdir ),
-                                            transform = combine(gexClusSgr,
-                                                        id.var = !!alID,
-                                                        .id = id.var)),
+  # rna_infer = target(analyze_infercnv_res(srat = c(gexClusSgr),
+  #                                           infercnv_cut_off = rna_infercnv_cutoff, 
+  #                                           outlink = cellRnaIcnvdir ),
+  #                                           transform = combine(gexClusSgr,
+  #                                                       id.var = !!alID,
+  #                                                       .id = id.var)),
                                                                                         
 
   # calculate markers ---
