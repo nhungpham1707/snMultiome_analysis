@@ -177,3 +177,13 @@ fix_special_lib_rna <- function(gexSID, rna_sr, rna_demultiplex_sr){
     rna_sr$sampleID[lib_bc %in% s2_rna_bc] <- 'ATRT04'
     return (rna_sr)
 }
+
+# fix sample location
+# in the metadata, 'location' column is curated sample location from Marian, so use it. for sample without info in 'location', use the topography.labels from disqover 
+
+add_missing_sample_location <- function(sr){
+    sr$location[is.na(sr$location)] <- ''
+    index <- which(sr$location == '')
+    sr$location[index] <- sr$Topography.label[index]
+    return (sr)
+}

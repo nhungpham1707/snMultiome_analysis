@@ -101,7 +101,9 @@ calculate_aneuploidy_obs_score <- function(infercnv_obj, len = 50){
     obs.scaled <- scale(obsexp)
     obsscore <-  aneuploidy_score(obs.scaled, length=len)
 }
-plot_aneuploidy_score <- function(infercnv_obj, len = 50, SDs = 1.5){
+plot_aneuploidy_score <- function(lib, infercnvlink, len = 50, SDs = 1.5){
+    message(paste('plot aneuploid score for', lib))
+    infercnv_obj <- readRDS(paste0(infercnvlink,'/',lib,'/run.final.infercnv_obj'))
     refscore <- calculate_aneuploidy_ref_score(infercnv_obj)
     obsscore <- calculate_aneuploidy_obs_score(infercnv_obj)
     ttest <- t.test(obsscore, refscore)
@@ -127,18 +129,20 @@ add_aneuploidy_score_to_seurat <- function(infercnv_obj, srat, cutoff){
 }
 
 # infercnv cut off is a dataframe with cut_off and lib columns
-analyze_infercnv_res <- function(srat_list, infercnv_cut_off){
+
+analyze_infercnv_res <- function(srat_list, infercnv_cut_off, lib_to_check, infercnvlink){
     for (i in 1:length(srat_list)){
         srat <- srat_list[i]
         lib <- unique(srat$library)
-        if (lib %in% infercnv_cut_off$lib){
-        infercnv_obj <- ReadRDS(paste0(outlink,lib,'/run.final.infercnv_obj'))
+        if (grep(lib_to_check, lib)){
+        infercnv_obj <- readRDS(paste0(infercnvlink,'/',lib,'/run.final.infercnv_obj'))
         sr <- add_aneuploidy_score_to_seurat(infercnv_obj, srat, infercnv_cut_off$cut_off[which(infercnv_cut_off$lib == lib)])
-        return(sr)}
+        return(sr) }
         else {
             print(paste(lib, 'has no clear infercnv -- skipped!'))
         }
     }
+    
 }
 
 

@@ -222,7 +222,16 @@ my_cols2 <- c('#25aff5',  "navyblue",
              'lightsalmon', 'lightsalmon3',
              'lightsalmon4', 'pink4', 'peru', 'mediumpurple4', 
              'mediumpurple', 'lightblue4', 'aquamarine4', 'aquamarine' )
-
+my_cols3 <- c("grey",'#25aff5',  "navyblue", 
+               "tan", "tan3", "brown",
+              "yellow", "slateblue1","violet", "purple3",
+             "orange", "tomato", "palevioletred", "violetred", "skyblue",
+             "red2", "blue2","springgreen2", '#ccb1f1',"yellowgreen", "palegreen4", 
+             '#1fa195', "wheat2",  "turquoise2","#d4d915", "coral2", "yellow4",  
+             "grey70",  'maroon4', 'maroon2', "pink1",  "wheat4", "steelblue",'maroon', 
+             'lightsalmon', 'lightsalmon3',
+             'lightsalmon4', 'pink4', 'peru', 'mediumpurple4', 
+             'mediumpurple', 'lightblue4', 'aquamarine4', 'aquamarine' )
 # colors for scpurb
 scpu_colors <- c("ATRT_SHH" = "skyblue" ,                     
             "ecMRT"  = "blue2",                       
