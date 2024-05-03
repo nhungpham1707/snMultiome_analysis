@@ -80,14 +80,7 @@ message('finish!')
 # add to merge sr 
 rna_infer_res <- read.csv('output/')
 
-assign_infer_res_to_sr <- function(infer_res, sr){
-    infer_res$lib_bc <- paste0(infer_res$lib, '_', infer_res$barcode)
-    sr_bc <- data.frame(lib_bc = paste0(sr$library, '_', sr$barcodes))
-    meta <- merge(infer_res, sr_bc, by= 'lib_bc')
-    meta_to_add <- meta[,c('is_aneuploid', 'aneuploidy_score')]
-    rownames(meta_to_add) <- meta$lib_bc
-    sr <- AddMetaData(sr, meta_to_add)
-}
+
 rna_infer_res$lib_bc <- paste0(rna_infer_res$lib, '_', rna_infer_res$barcode)
 mrg_bc <- paste0(mrg_rna$library, "_", mrg_rna$barcodes)
 meta <- merge(rna_infer_res, m_bc, by.x = 'lib_bc')
