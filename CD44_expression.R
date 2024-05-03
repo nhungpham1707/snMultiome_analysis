@@ -1,0 +1,10 @@
+source('test_plan.R')
+loadd(final_hm_rna_nb)
+final_hm_rna_clus = FindClusters(final_hm_rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1))
+final_hm_rna_umap = RunUMAP(final_hm_rna_clus, dims = 1:30, reduction = 'harmony')
+p_type <- DimPlot(final_hm_rna_umap, group.by = 'Subtype', cols = my_cols, raster = FALSE)
+savePlot('output/figures/sc_RNA/final_hm.png', p_type)
+p <- FeaturePlot(final_hm_rna_umap, features = 'CD44')
+savePlot('output/figures/sc_RNA/cd44.png', p)
+
+message('finished!')

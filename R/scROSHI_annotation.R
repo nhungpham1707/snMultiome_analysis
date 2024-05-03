@@ -30,9 +30,9 @@ annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_name,
                          type_config = config,
                          count_data = 'counts')
     results_sr <- as.Seurat(results)
-    DimPlot(results_sr, group.by = 'celltype_final', cols = cols, pt.size = pt, raster = FALSE, raster.dpi = c(512, 512))
-    ggsave(file = paste0(save_path, '/', save_name,"scROSHI_cell_type_annotation.png"), 
-        width = 1200 * reso/72, height = 700 * reso/72, units ="px", dpi = reso)
+    # DimPlot(results_sr, group.by = 'celltype_final', cols = cols, pt.size = pt, raster = FALSE, raster.dpi = c(512, 512))
+    # ggsave(file = paste0(save_path, '/', save_name,"scROSHI_cell_type_annotation.png"), 
+    #     width = 1200 * reso/72, height = 700 * reso/72, units ="px", dpi = reso)
     summary_res <- table(results_sr@meta.data$celltype_final)
     write.csv(summary_res, paste0(report_dir, '/scROSHI_cell_annotation_', save_name, '.csv'))
     return(results_sr)
@@ -79,11 +79,11 @@ run_scROSHI_w_c8_data <- function(sr, cols, pt = 1, save_name, save_path){
 
 
 run_scROSHI_w_cancer_marker <- function(sr, cols, pt = 1, save_name, save_path){
-    ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
-    ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
-    ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
-    RMS <- c('DESMIN', 'MYOG', 'MYOD1')
-    Sysa <- c('TLE1', 'BMP5', 'BMP7', 'TNFRS19')
+    # ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
+    # ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
+    # ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
+    # RMS <- c('DESMIN', 'MYOG', 'MYOD1')
+    # Sysa <- c('TLE1', 'BMP5', 'BMP7', 'TNFRS19')
     cancer_list <- c()
     cancer_list[['ATRTTYR']] <- ATRT_TYR
     cancer_list[['ATRTSHH']] <- ATRT_SHH

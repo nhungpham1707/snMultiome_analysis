@@ -486,25 +486,25 @@ batch_detection_plan <- drake_plan(
 # ------------------------------------------------------
 batch_correction_plan <- drake_plan(
   # harmony ----------------------------------
-  batch_factors = c('library', 'Individual.ID'),
-  theta = seq(0, 0.5, by = 0.1),
-  sigma = seq(0.1, 1, by = 0.2),
+  batch_factors = c('library'),
+  theta = c(0, 0.1, 0.2, 0.5, 1),
+  sigma = 0.1,
   ## atac -----------
-  atac_lbsb = addLibSubcategory(atac_group_sgr), 
-
-  # hm_atac = target(harmony_n_plot(atac_lbsb, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), dynamic = cross(batch_factors, theta, sigma)),
+  hm_atac = target(harmony_n_plot(atac_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), 
+        transform = map(theta, 
+                        id.var = !!theta,
+                        .id = id.var)),
   
   ## rna ----
-  rna_lbsb = addLibSubcategory(rna_group_sgr),
-
-  hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
+  hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), 
+      transform = map(theta,
+                  id.var = !!theta,
+                  .id = id.var)),
   ## final hm ----
-  final_theta = 0,
-  final_sigma = 0.1, 
   # final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
   #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
   
-  final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0),
+  final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0.5),
   final_hm_rna_nb = FindNeighbors(object = final_hm_rna, reduction = "harmony", k.param = 30, dims = 1:30),
   final_hm_rna_clus = FindClusters(final_hm_rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
   final_hm_rna_umap = RunUMAP(final_hm_rna_clus, dims = 1:30, reduction = 'harmony'),
@@ -515,13 +515,13 @@ batch_correction_plan <- drake_plan(
   final_hm_atac_nb = FindNeighbors(object = final_hm_atac, reduction = "harmony", k.param = 30),
   final_hm_atac_clus = FindClusters(final_hm_atac_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
   final_hm_atac_umap = RunUMAP(final_hm_atac_clus, dims = 1:30, reduction = 'harmony'),
-  hm_atac_p = DimPlot(final_hm_atac_umap, group.by = 'Subtype', cols = my_colors),
+  hm_atac_p = DimPlot(final_hm_atac_umap, group.by = 'Subtype', cols = my_cols),
   save_hm_atac_p = savePlot(paste0(batchAtacHarmonyDir, '/final_hm_subtype.png'), hm_atac_p),
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
-  gene_to_retain = setdiff(rownames(rna_lbsb), genes_to_remove ),
-  rna_noCF = subset(rna_lbsb, feature = gene_to_retain),
+  gene_to_retain = setdiff(rownames(rna_group_sgr), genes_to_remove ),
+  rna_noCF = subset(rna_group_sgr, feature = gene_to_retain),
   rna_noCF_nor = normalize_dim_plot_sr(rna_noCF, rnaMrgFigDir, lib_name = 'merge_noCF'),
   rna_noCF_nor_clu = clustering_rna_data(rna_noCF_nor),
   rna_noCF_meta = assign_meta(metadata, gexDemulMeta,
@@ -537,62 +537,36 @@ batch_correction_plan <- drake_plan(
   # calculate lisi ----
   ## before correction ----
   # # lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library'),
-  # lisi_rna = calculate_lisi_from_sr(rna_lbsb, batch = 'library'),
+  # lisi_rna = calculate_lisi_from_sr(rna_group_sgr, batch = 'library'),
   # lisi_hm_rna = calculate_lisi_from_sr(final_hm_rna, batch = 'library')
 
 )
 
 cell_annotation_plan <- drake_plan(
-  # scroshi merg rna ---
-  hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
-  
-  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
-
-  # scroshi merg atac ---
-  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = CellAtacScroshiDir),
-  
-  # hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = CellAtacScroshiDir),
   # infercnv res intepretation ----
   ## rna ---
-  # did not run for LX069, LX099, LX183, LX189 
-  # no clear difference w ref cells: LX 049, LX051, LX053, LX065, LX067, LX074, LX093, LX097, LX290
-  # cut off after inspect manually using plot_aneuploidy_score function 
-  atac_infercnv_cutoff = data.frame(cut_off = c(500, 300),
-                                  lib = c('LX078_LX079_an_161', 'LX093_LX094_an_163')),
-  # atac_infer = target(analyze_infercnv_res(c(atacMeta_specialLib, atacMeta, atacMetasg),infercnv_cut_off = atac_infercnv_cut_off, outlink = cellAtacInferDir),
-  #           transform = combine(atacMeta,atacMetasg,
-  #                   id.var = !!c(mulLib, sngLib),
-  #                   .id = id.var)),
+  # infer_res was generated manually from get_infercnv_result.R
+  atac_infer_res = read.csv(paste0(cellAtacInferDir, '/atac_infer_res.csv')),
+  atac_infer = assign_infer_res_to_sr(atac_infer_res, final_hm_atac_umap),
+ 
+ rna_infer_res = read.csv(paste0(cellRnaIcnvdir, '/rna_infer_res.csv')),
+ rna_infer = assign_infer_res_to_sr(rna_infer_res, final_hm_rna_umap),
+ # scroshi merg rna ---
+  hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
+  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
 
-  rna_infercnv_cutoff = data.frame(cut_off = c(25,100,100,110,200,25,120,120,25,120),
-    lib = c("LX093_LX094_an_163", 
-            "LX290_LX291_an_423",  
-            "LX065_LX066_an_155",
-            "LX103_LX104_an_168", 
-            "LX078_LX079_an_161", 
-            "LX097_LX098_an_165", 
-            "LX095_LX096_an_164", 
-            "LX051_LX052_an_128", 
-            "LX071_LX072_an_132",
-            "LX080_LX081_an_162")),
-  rna_infer_res_LX093 = target(analyze_infercnv_res(srat = c(gexClusSgr), rna_infercnv_cutoff,
-  infercnvlink = cellRnaIcnvdir, lib_to_check = "LX093_LX094_an_163"),
-  transform = combine(gexClusSgr)),
-  # rna_infer = target(analyze_infercnv_res(srat = c(gexClusSgr),
-  #                                           infercnv_cut_off = rna_infercnv_cutoff, 
-  #                                           outlink = cellRnaIcnvdir ),
-  #                                           transform = combine(gexClusSgr,
-  #                                                       id.var = !!alID,
-  #                                                       .id = id.var)),
-                                                                                        
+  # scroshi merg atac ---
+  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac_umap, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = CellAtacScroshiDir),
+  
+  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = CellAtacScroshiDir),
 
   # calculate markers ---
-   rna_markers = FindAllMarkers(object = final_hm_rna, only.pos = T, logfc.threshold = 0.25),
-   atac_markers = FindAllMarkers(object = final_hm_atac, only.pos = T, logfc.threshold = 0.25),
-   # group cell types ---
-   rna_gr_sgr = group_singleR_labels2(final_hm_rna),
-   atac_gr_sgr = group_singleR_labels2(final_hm_atac)
+  # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
+   rna_markers = FindAllMarkers(object = final_hm_rna_umap, only.pos = T, logfc.threshold = 0.25),
+   atac_markers = FindAllMarkers(object = final_hm_atac_umap, only.pos = T, logfc.threshold = 0.25),
+  ## find markers that distinguish clusters from the same cancer type to others
+  # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
    ## show it visually:
 # DoHeatmap(subset(srat, downsample = 50),
 #           features = top10$gene,

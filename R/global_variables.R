@@ -189,7 +189,7 @@ nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrop
 ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
 ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
 ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
-RMS <- c('DESMIN', 'MYOG', 'MYOD1')
+RMS <- c('DESMIN', 'MYOG', 'MYOD1',"CD24", "CD44", "CD133", "ALDH1A1")
 rms_csc <- c("CD24", "CD44", "CD133", "ALDH1A1" ) # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9406733/
 rms_uri <- c("EPS8L2", "SPARC", "HLA-DRB1", "ACAN", "CILP") # https://clinicalproteomicsjournal.biomedcentral.com/articles/10.1186/s12014-023-09401-4
 Sysa <- c('TLE1', 'BMP5', 'BMP7', 'TNFRS19')

@@ -497,7 +497,7 @@ batch_correction_plan <- drake_plan(
   ## rna ----
   rna_lbsb = addLibSubcategory(rna_group_sgr),
 
-  hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
+  # hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), dynamic = cross(batch_factors, theta, sigma)),
   ## final hm ----
   final_theta = 0,
   final_sigma = 0.1, 
@@ -544,12 +544,12 @@ batch_correction_plan <- drake_plan(
 
 cell_annotation_plan <- drake_plan(
   # scroshi merg rna ---
-  hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
+  hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
+  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
 
   # scroshi merg atac ---
-  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = CellAtacScroshiDir),
+  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac_umap, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = CellAtacScroshiDir),
   
   # hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = CellAtacScroshiDir),
   # infercnv res intepretation ----
@@ -576,13 +576,9 @@ cell_annotation_plan <- drake_plan(
             "LX051_LX052_an_128", 
             "LX071_LX072_an_132",
             "LX080_LX081_an_162")),
- 
-  # mrgRna_all = target(merge_pairwise(c(gexClusSgr), rnaMrgDir),
-  #           transform = combine(gexClusSgr,
-  #           id.var = !!alID,
-  #           .id = id.var)),
-
-
+  # rna_infer_res_LX093 = target(analyze_infercnv_res(srat = c(gexClusSgr), rna_infercnv_cutoff,
+  # infercnvlink = cellRnaIcnvdir, lib_to_check = "LX093_LX094_an_163"),
+  # transform = combine(gexClusSgr)),
   # rna_infer = target(analyze_infercnv_res(srat = c(gexClusSgr),
   #                                           infercnv_cut_off = rna_infercnv_cutoff, 
   #                                           outlink = cellRnaIcnvdir ),
@@ -594,9 +590,7 @@ cell_annotation_plan <- drake_plan(
   # calculate markers ---
    rna_markers = FindAllMarkers(object = final_hm_rna, only.pos = T, logfc.threshold = 0.25),
    atac_markers = FindAllMarkers(object = final_hm_atac, only.pos = T, logfc.threshold = 0.25),
-   # group cell types ---
-   rna_gr_sgr = group_singleR_labels2(final_hm_rna),
-   atac_gr_sgr = group_singleR_labels2(final_hm_atac)
+
    ## show it visually:
 # DoHeatmap(subset(srat, downsample = 50),
 #           features = top10$gene,

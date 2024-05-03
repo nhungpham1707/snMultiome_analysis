@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=4hm_scroshi
-#SBATCH --output=log_hm_scroshi4.out
-#SBATCH --time=96:0:0
+#SBATCH --job-name=hm_scroshi
+#SBATCH --output=log_hm_scroshi.out
+#SBATCH --time=24:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
 #SBATCH --cpus-per-task=1

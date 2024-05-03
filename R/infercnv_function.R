@@ -145,7 +145,15 @@ analyze_infercnv_res <- function(srat_list, infercnv_cut_off, lib_to_check, infe
     
 }
 
-
+assign_infer_res_to_sr <- function(infer_res, sr){
+    infer_res$lib_bc <- paste0(infer_res$lib, '_', infer_res$barcode)
+    sr_bc <- data.frame(lib_bc = paste0(sr$library, '_', sr$barcodes),
+    mrg_bc = colnames(sr))
+    meta <- merge(infer_res, sr_bc, by= 'lib_bc')
+    meta_to_add <- meta[,c('is_aneuploid', 'aneuploidy_score')]
+    rownames(meta_to_add) <- meta$mrg_bc
+    sr <- AddMetaData(sr, meta_to_add)
+}
 
 
 
