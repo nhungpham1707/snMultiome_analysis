@@ -491,15 +491,14 @@ batch_correction_plan <- drake_plan(
   sigma = 0.1,
   ## atac -----------
   hm_atac = target(harmony_n_plot(atac_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchAtacHarmonyDir, assay = 'peaks', reduction = 'lsi'), 
-        transform = map(theta, 
-                        id.var = !!theta,
-                        .id = id.var)),
+        transform = map(
+          theta = !!c(0,0.1,0.2,0.5,1))),
   
   ## rna ----
   hm_rna = target(harmony_n_plot(rna_group_sgr, batch_factor = batch_factors,theta = theta, sigma = sigma, save_path = batchRnaHarmonyDir), 
-      transform = map(theta,
-                  id.var = !!theta,
-                  .id = id.var)),
+      transform = map(
+          theta = !!c(0,0.1,0.2,0.5,1))),
+                  
   ## final hm ----
   # final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
   #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
@@ -531,8 +530,19 @@ batch_correction_plan <- drake_plan(
   dim_rna_noCF_sub = DimPlot(rna_noCF_meta, group.by = 'Subtype', cols = my_cols, raster = FALSE,pt.size = 1),
   save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub),
   hm_rna_noCF = harmony_n_plot(rna_noCF, batch_factor = 'library', theta = final_theta,
-   sigma = final_sigma, save_path = batchRnaHarmonyDir)
- 
+   sigma = final_sigma, save_path = batchRnaHarmonyDir),
+
+   # remove CF genes before running infercnv ---
+  genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
+  gene_to_retain = setdiff(rownames(rna_group_sgr), genes_to_remove ),
+  gex_noCF = target(subset(gexClusSgr, feature = gene_to_retain),
+            transform = map(gexClusSgr,
+                          id.var = !!alID,
+                          .id = id.var)),
+  preInferRna = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
+                    transform = map(gex_noCF,
+                  id.var = !!alID,
+                  .id = id.var))
 
   # calculate lisi ----
   ## before correction ----

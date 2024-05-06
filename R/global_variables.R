@@ -178,7 +178,7 @@ immune_cells <- c("Monocyte", "T_cells", "Neutrophils", "Macrophage", "B_cell", 
 brain_cells <- c("Astrocyte", "Neurons", "Neuroepithelial_cell")
 bone_cells <- c("Chondrocytes", "Osteoblasts")
 stem_cells <- c("Embryonic_stem_cells", "iPS_cells", "Tissue_stem_cells", "MSC", "Gametocytes")
-muscle_cells <- c("Fibroblasts", "Smooth_muscle_cells", "Endothelial_cells")
+stroma_cells <- c("Fibroblasts", "Endothelial_cells", "Keratinocytes", "Smooth_muscle_cells" )
 # normal cells from literature https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9886402/
 
 nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
@@ -197,7 +197,8 @@ t_nk <- c("CD3D", "CD8A", "GNLY")
 myeloid <- c("APOE", "CD14", "C1QB")
 b_cell <- c("PAX5", " MS4A1", "CD19")
 endo <- c("VWF", "PECAM1", "CLDN5")
-
+sysa_fusion_targets <- c('SS18', 'SSX1', 'SSX2')
+rms_fusion_targets <- c('PAX3')
 
 # colors for plot
 my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
