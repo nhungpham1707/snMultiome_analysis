@@ -530,8 +530,17 @@ batch_correction_plan <- drake_plan(
   dim_rna_noCF_sub = DimPlot(rna_noCF_meta, group.by = 'Subtype', cols = my_cols, raster = FALSE,pt.size = 1),
   save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub),
   hm_rna_noCF = harmony_n_plot(rna_noCF, batch_factor = 'library', theta = final_theta,
-   sigma = final_sigma, save_path = batchRnaHarmonyDir)
- 
+   sigma = final_sigma, save_path = batchRnaHarmonyDir),
+
+   # remove CF genes before running infercnv ---
+  gex_noCF = target(subset(gexClusSgr, feature = gene_to_retain),
+            transform = map(gexClusSgr,
+                          id.var = !!alID,
+                          .id = id.var)),
+  preInferRna_noCF = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
+                    transform = map(gex_noCF,
+                  id.var = !!alID,
+                  .id = id.var))
 
   # calculate lisi ----
   ## before correction ----
@@ -562,8 +571,8 @@ cell_annotation_plan <- drake_plan(
 
   # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
-   rna_markers = FindAllMarkers(object = final_hm_rna_umap, only.pos = T, logfc.threshold = 0.25),
-   atac_markers = FindAllMarkers(object = final_hm_atac_umap, only.pos = T, logfc.threshold = 0.25),
+   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25),
+   atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
   ## find markers that distinguish clusters from the same cancer type to others
   # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
    ## show it visually:

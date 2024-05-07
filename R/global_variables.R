@@ -44,16 +44,16 @@ rnaFigDir <- paste0(output_dir, '/figures/sc_RNA/processing')
 rnaMrgDir <- paste0(output_dir,'/sc_RNA/merge_all')
 rnaMrgFigDir <- paste0(output_dir,'/figures/sc_RNA/merge_all')
 sc_rna_demultiplex_fig_dir <- paste0(output_dir,'/figures/sc_RNA/demultiplex')
-cell_type_rna_dir <- paste0(cell_type_dir, '/sc_rna')
-cell_type_rna_fig_dir <- paste0(cell_type_fig_dir, '/sc_rna')
+cellRnaDir <- paste0(cell_type_dir, '/sc_rna')
+cellRnaFigDir <- paste0(cell_type_fig_dir, '/sc_rna')
+cellRnaMarkerDir <- paste0(cellRnaDir, '/markers')
+cellRNAsingRdir <- paste0(cellRnaDir, '/singler')
+rnaCellSngRFigDir <- paste0(cellRnaFigDir, '/singler')
 
-cellRNAsingRdir <- paste0(cell_type_rna_dir, '/singler')
-rnaCellSngRFigDir <- paste0(cell_type_rna_fig_dir, '/singler')
-
-cellRnaIcnvdir <- paste0(cell_type_rna_dir, '/infercnv')
+cellRnaIcnvdir <- paste0(cellRnaDir, '/infercnv')
 rnaInferInputDir <- paste0(cellRnaIcnvdir, '/input')
-cell_type_rna_infercnv_fig_dir <- paste0(cell_type_rna_fig_dir, '/infercnv')
-CellRnaScroshiDir<- paste0(cell_type_rna_dir, '/scROSHI')
+cell_type_rna_infercnv_fig_dir <- paste0(cellRnaFigDir, '/infercnv')
+CellRnaScroshiDir<- paste0(cellRnaDir, '/scROSHI')
 
 atacProcessDir<-paste0(output_dir,'/sc_atac/processing') 
 atacProcessFigDir <- paste0(output_dir,'/figures/sc_atac/processing')
@@ -103,8 +103,8 @@ dir.create(cell_type_fig_dir, recursive = TRUE)
 dir.create(rnaProcessDir, recursive = TRUE)
 dir.create(rnaFigDir, recursive = TRUE)
 dir.create(sc_rna_demultiplex_fig_dir, recursive = TRUE)
-dir.create(cell_type_rna_dir, recursive = TRUE)
-dir.create(cell_type_rna_fig_dir, recursive = TRUE)
+dir.create(cellRnaDir, recursive = TRUE)
+dir.create(cellRnaFigDir, recursive = TRUE)
 dir.create(cellRnaIcnvdir, recursive = TRUE)
 dir.create(cell_type_rna_infercnv_fig_dir, recursive = TRUE)
 dir.create(cellRNAsingRdir, recursive = TRUE)
@@ -150,6 +150,7 @@ dir.create(batchRnaHarmonyDir, recursive = TRUE)
 dir.create(batchRnaSysviDir, recursive = TRUE)
 dir.create(batchAtacScanormaDir, recursive = TRUE)
 dir.create(batchRnaScanoramaDir , recursive = TRUE)
+dir.create(cellRnaMarkerDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 
@@ -200,6 +201,15 @@ endo <- c("VWF", "PECAM1", "CLDN5")
 sysa_fusion_targets <- c('SS18', 'SSX1', 'SSX2')
 rms_fusion_targets <- c('PAX3')
 
+# fibroblast is one of the most abundant stroma cells
+# it also in the microenvironment of the tumor. 
+# fibroblast associate w tumor can be 
+# identified with these markers https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5983719/
+fibroblast <- c('PDGFRA','PDGFRB', "SMA", 'FAP', 'FSP1', 'S100A4')
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7719961/
+fibroblast_2 <- c('ACTA2', 'PDGFRA', 'PDGFRB', 'ASPN', 'DCN')
+hepatocyte_malig <- c('ALB', 'EPCAM', 'KRT19', 'ALDH1A1', 'CD24')
+endothelial <- c('PECAM1', 'VWF', 'ENG', 'CDH5', 'RAMP3')
 # colors for plot
 my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
             "turquoise2", "skyblue", "steelblue",'#25aff5', "blue2", 

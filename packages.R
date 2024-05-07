@@ -91,4 +91,5 @@ suppressPackageStartupMessages({
   library(bluster) # for clustering behavior 
   library(cowplot)
   library(lisi)
+  library(EnsDb.Hsapiens.v86)
 })

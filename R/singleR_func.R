@@ -112,6 +112,6 @@ group_singleR_labels <- function(sr){
     sr$group_sgr_labels[sr$group_sgr_labels %in% immune_cells] <- 'immune_cells'
     sr$group_sgr_labels[sr$group_sgr_labels %in% stem_cells] <- 'stem_cells'
     sr$group_sgr_labels[sr$group_sgr_labels %in% bone_cells] <- 'bone_cells'
-    sr$group_sgr_labels[sr$group_sgr_labels %in% muscle_cells] <- 'muscle_cells'
+    sr$group_sgr_labels[sr$group_sgr_labels %in% stroma_cells] <- 'stroma_cells'
     return(sr)
 }
