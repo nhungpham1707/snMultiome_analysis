@@ -391,6 +391,15 @@ process_special_lib_plan <- drake_plan(
   #                   transform = map(gexClusSgr,
   #                 id.var = !!alID,
   #                 .id = id.var))
+   # remove CF genes before running infercnv ---
+  gex_noCF = target(subset(gexClusSgr, feature = gene_to_retain),
+            transform = map(gexClusSgr,
+                          id.var = !!alID,
+                          .id = id.var)),
+  preInferRna_noCF = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
+                    transform = map(gex_noCF,
+                  id.var = !!alID,
+                  .id = id.var))
   # scroshi rna ---
   # rnaScroshi_demo = target(run_scROSHI_w_demo_data(sr = gexClusSgr, cols = my_cols, pt = 1, 
   #                     save_name = 'w_demo_marker', save_path = CellRnaScroshiDir),
@@ -519,7 +528,7 @@ batch_correction_plan <- drake_plan(
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
-  gene_to_retain = setdiff(rownames(rna_group_sgr), genes_to_remove ),
+  gene_to_retain = setdiff(rownames(rna_group_sgr), genes_to_remove )
   # rna_noCF = subset(rna_group_sgr, feature = gene_to_retain),
   # rna_noCF_nor = normalize_dim_plot_sr(rna_noCF, rnaMrgFigDir, lib_name = 'merge_noCF'),
   # rna_noCF_nor_clu = clustering_rna_data(rna_noCF_nor),
@@ -532,15 +541,7 @@ batch_correction_plan <- drake_plan(
   # hm_rna_noCF = harmony_n_plot(rna_noCF, batch_factor = 'library', theta = final_theta,
   #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
 
-   # remove CF genes before running infercnv ---
-  gex_noCF = target(subset(gexClusSgr, feature = gene_to_retain),
-            transform = map(gexClusSgr,
-                          id.var = !!alID,
-                          .id = id.var)),
-  preInferRna_noCF = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
-                    transform = map(gex_noCF,
-                  id.var = !!alID,
-                  .id = id.var))
+  
 
   # calculate lisi ----
   ## before correction ----
