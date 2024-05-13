@@ -62,8 +62,8 @@ combine_peak_plan <- drake_plan(
 # - normalize, dim reduc
 # - get gene activity to run single r and infercnv
 # - run singler
-# - prep for infercnv: generate gene matrix and annotation
-#    file for infercnv 
+# - prep for infercnv: generate gene matrix 
+# and annotation file for infercnv 
 # - sample demultiplex using souporcell
 # - assign metadata
 # ----------------------------------------------------------
@@ -574,8 +574,8 @@ cell_annotation_plan <- drake_plan(
 
   # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
-   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25),
-   atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
+   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25)
+  #  atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
   ## find markers that distinguish clusters from the same cancer type to others
   # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
    ## show it visually:

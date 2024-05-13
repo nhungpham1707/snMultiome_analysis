@@ -33,8 +33,8 @@ annotate_w_scROSHI <- function(sr, marker_list, config, pt = 1, cols, save_name,
     # DimPlot(results_sr, group.by = 'celltype_final', cols = cols, pt.size = pt, raster = FALSE, raster.dpi = c(512, 512))
     # ggsave(file = paste0(save_path, '/', save_name,"scROSHI_cell_type_annotation.png"), 
     #     width = 1200 * reso/72, height = 700 * reso/72, units ="px", dpi = reso)
-    summary_res <- table(results_sr@meta.data$celltype_final)
-    write.csv(summary_res, paste0(report_dir, '/scROSHI_cell_annotation_', save_name, '.csv'))
+    # summary_res <- table(results_sr@meta.data$celltype_final)
+    # write.csv(summary_res, paste0(report_dir, '/scROSHI_cell_annotation_', save_name, '.csv'))
     return(results_sr)
 }
 
