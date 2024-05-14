@@ -25,10 +25,6 @@ assign_scroshi_cancer_score <- function(sr){
     return(sr)
 }
 
-assign_cancer_marker_score <- function(sr){
-
-}
-
 finalize_cancer_score <- function(sr){
     sr <- add_cancer_score_meta_cols(sr)
     sr <- assign_sgr_cancer_score(sr)

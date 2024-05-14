@@ -117,7 +117,7 @@ savePlot('output/cell_type/sc_rna/5.w_sysa_markers.png',p)
 
 # w SMARCB1 expression 
 
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(4,7,24,25,12,15,32,5,19, 9)] <- 'tumor'
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(4,5,9,12,15,19,21,24,25,27,32)] <- 'tumor'
 p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
 p
 savePlot('output/cell_type/sc_rna/6.w_no_SMARCB1_expression.png',p)
