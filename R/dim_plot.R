@@ -31,14 +31,16 @@ add_metadata_n_plot_w_new_label <- function(sr, by, new_label_metadata, save_pat
                         col.name = paste0(by,'_cell_counts')) 
   p <- DimPlot(new_sr, group.by = paste0(by,'_cell_counts'), raster = FALSE, pt.size = 1, cols = col)
   savePlot(filename = paste0(save_path, '/', by, '_w_cell_counts.png'), p)
+  return(new_sr)
 }
 
 dimplot_w_nCell_label <- function(sr, by, save_path, col = hue_pal()(100)){
   count <- get_number_of_cell(sr, by)
   new_label <- change_label( by, count)
   new_label_metadata <- generate_new_label_metadata(sr, new_label, by)
-  add_metadata_n_plot_w_new_label(sr, by, new_label_metadata, save_path, col = col)
+  new_sr <- add_metadata_n_plot_w_new_label(sr, by, new_label_metadata, save_path, col = col)
   message (paste('-----finish plotting', by, 'with cell counts -----'))
+  return (new_sr)
 }
 
 dimplotnSave <- function(sr, save_path,save_name, col = hue_pal()(100)){
