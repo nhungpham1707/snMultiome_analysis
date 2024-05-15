@@ -12,3 +12,5 @@ known_db <- soc$status == 'doublet'
 sce = scDblFinder(lx49, knownDoublets = known_db)
 # sce <- scDblFinder(atac.sce, samples = "sampleID", 
 #         BPPARAM=MulticoreParam(2))
+
+db <- scDblFinder(atac.sce, samples = "library")

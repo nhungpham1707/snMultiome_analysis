@@ -41,12 +41,12 @@ rnaOutLink <- cellRnaIcnvdir
 geneOrderLink <- paste0(base_data_dir, '/gencode_v19_gene_pos.txt')
 
 atac_infercnv_plan <- drake_plan(
-    AtacnoRIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOrderLink, inLink),
+    AtacIfcnvOb= target(make_infercnvObj(lib, normal_cells, geneOrderLink, inLink),
                 transform = map(lib = !!lbLst,
                             id.vars = !!idLst,
                             .id = id.vars)),
-    AtacnoRIfcnvRes = target(run_infercnv(AtacnoRIfcnvOb, outLink),
-                transform = map(AtacnoRIfcnvOb,
+    AtacnIfcnvRes = target(run_infercnv(AtacIfcnvOb, outLink),
+                transform = map(AtacIfcnvOb,
                             id.vars = !!idLst,
                             .id = id.vars))
 )

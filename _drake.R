@@ -399,7 +399,20 @@ process_special_lib_plan <- drake_plan(
   preInferRna_noCF = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
                     transform = map(gex_noCF,
                   id.var = !!alID,
-                  .id = id.var))
+                  .id = id.var)),
+  
+  # reanalyze unknown and unassign cells from souporcells and gender demultiplex ---
+  unknown_cells = target(get_unknown_unassign_cells(gexNoDb),   transform = map(gexNoDb,
+            id.var = !!mulId,
+            .id = id.var)),
+  unknown_bcs = target(get_bc_in_mrg(rna_group_sgr, unknown_cells, lib = mulId),
+          transform = map(unknown_cells, mulId,
+          id.var = !!mulId,
+          .id = id.var)),
+  all_unknown = target(c(unknown_bcs), 
+            transform = combine(unknown_bcs, 
+            id.var  = !!mulId,
+            .id = id.var))
   
 )
 
@@ -560,7 +573,7 @@ cell_annotation_plan <- drake_plan(
 
   hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = atacScroshiDir),
   
-  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hmAtac_scroshi_demo, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
+  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
 
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html

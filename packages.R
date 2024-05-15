@@ -92,4 +92,5 @@ suppressPackageStartupMessages({
   library(cowplot)
   library(lisi)
   library(EnsDb.Hsapiens.v86)
+  library(scDblFinder)
 })

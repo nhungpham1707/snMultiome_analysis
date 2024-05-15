@@ -5,6 +5,9 @@
 # 4. inferCNV, if cells have known abnormal chromosome structure, they are potential tumor 
 # 5. for ATRT & MRT: if they express SMARCB1, they may not be tumor cells 
 # 6. for Sysa and RMS: check expression of marker genes and fusion target genes. 
+
+# Nhung 14 05 2024
+
 loadd(hmRna_scroshi_atrt)
 # add score columns ---
 rna <- add_cancer_score_meta_cols(hmRna_scroshi_atrt)

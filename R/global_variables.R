@@ -186,7 +186,7 @@ nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrop
 # immune_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
 
 ## markers ----
-
+# ref https://academic.oup.com/neuro-oncology/article/22/5/613/5691191
 ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
 ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
 ATRT_MYC <- c('HOXC10', 'CCND3', 'MYC')
