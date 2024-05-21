@@ -1,10 +1,11 @@
 # various strategies were used for tumor cell identification.
 # 1. singleR cell annotation. If cells are immune cells or stroma cells, they are not tumor cells
 # 2. scROSHI with immune markers. similarly if cells are immune cells, they are not tumor cells. 
-# 3. scROSHI with cancer markers.
+# 3. scROSHI with cancer markers. 
 # 4. inferCNV, if cells have known abnormal chromosome structure, they are potential tumor 
-# 5. for ATRT & MRT: if they express SMARCB1, they may not be tumor cells 
+# 5. for ATRT & MRT: if they do not express SMARCB1, they maybe tumor cells 
 # 6. for Sysa and RMS: check expression of marker genes and fusion target genes. 
+# for each strategy, cells will get a score of 1 if they are classified as tumor, 0 if otherwise. These score will be summed up. In the end cells with the highest score will be most likely tumor cells. For example, if cells are classified as tumor in both singleR, scROSHi w immune markers, scroshi with cancer markers, infercnv and cancer specific markers, they will have a score of 5. 
 
 # Nhung 14 05 2024
 

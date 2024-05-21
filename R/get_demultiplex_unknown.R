@@ -29,14 +29,17 @@ get_unknown_unassign_cells <- function(sr){
   unknown_sex_mgenotype_cells <- cells[unknown_sex_mgenotype_index]
 
   all_unknown <- c(unknown_sex_fgenotype_cells, unknown_sex_mgenotype_cells, unassigned_male_genotype_cells, unassign_fgenotype_cells )
+  message(paste('there are', length(all_unknown), 'unknown cells'))
   return (all_unknown)
 }
 
 
 get_bc_in_mrg <- function(mrg_sr, bc, lib){
+    message(paste('library is', lib))
     lib_in_mrg <- mrg_sr$barcodes[grep(lib, mrg_sr$library)]
     bc_in_mrg <- lib_in_mrg[lib_in_mrg %in% bc]
     bc_in_mrg <- names(bc_in_mrg)
+    message(paste('there are', length(bc_in_mrg), 'unknowns cells in', lib))
     return (bc_in_mrg)
 }
 

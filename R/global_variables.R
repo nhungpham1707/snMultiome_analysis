@@ -199,8 +199,12 @@ myeloid <- c("APOE", "CD14", "C1QB")
 b_cell <- c("PAX5", " MS4A1", "CD19")
 endo <- c("VWF", "PECAM1", "CLDN5")
 sysa_fusion_targets <- c('SS18', 'SSX1', 'SSX2')
-rms_fusion_targets <- c('PAX3')
+rms_fusion <- c('PAX3')
 
+# ref https://ar.iiarjournals.org/content/33/5/2029/tab-article-info
+pf3_targets <- c('GREM1', 'DAPK1', 'MYOD1')
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6278278/
+pf3_targets2 <- c('FGFR4', 'MYCN', 'ALK', 'MET')
 # fibroblast is one of the most abundant stroma cells
 # it also in the microenvironment of the tumor. 
 # fibroblast associate w tumor can be 

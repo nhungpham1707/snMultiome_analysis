@@ -1,11 +1,17 @@
 # for some reason, drake combine gave error
 # for now assign infercnv res manually and then add to drake again later 
-
+source('test_plan.R')
 # get cutoff -----
 # the cutoff was retrieved manually from plot_aneuploid_score function 
 
-source('test_plan.R')
-  
+infercnvlink <- cellRnaIcnvdir 
+lib <- 'LX049_LX050_an_127' # do the same for all libraries. cutoff is where distribution of reference and tumor can be separated
+plot_aneuploidy_score(lib, infercnvlink, len = 50, SDs = 1.5)
+
+
+
+
+# cutoff before removing confounding genes (HL6 genes, stress, cycle and hemoglobin genes)  
 rna_infercnv_cutoff = data.frame(cut_off = c(25,100,100,110,200,25,120,120,25,120),
     lib = c("LX093_LX094_an_163", 
             "LX290_LX291_an_423",  
@@ -17,7 +23,18 @@ rna_infercnv_cutoff = data.frame(cut_off = c(25,100,100,110,200,25,120,120,25,12
             "LX051_LX052_an_128", 
             "LX071_LX072_an_132",
             "LX080_LX081_an_162"))
-
+# cutoff after removing cf genes 
+rna_infercnv_cutoff = data.frame(cut_off = c(25, 100, 100, 100, 175, 25, 130, 25, 120, 150),
+    lib = c("LX093_LX094_an_163", 
+            "LX290_LX291_an_423",  
+            "LX065_LX066_an_155",
+            "LX103_LX104_an_168", 
+            "LX078_LX079_an_161", 
+            "LX097_LX098_an_165", 
+            "LX095_LX096_an_164", 
+            "LX071_LX072_an_132",
+            "LX080_LX081_an_162",
+            "LX067_LX068_an_156"))
 
 # assign the cutoff to srat -----
 ## rna ----
@@ -40,8 +57,8 @@ for (i in 1:length(rnaID)){
 }
 
 message('write rna_infer_res csv----')
-write.csv(rna_infer_res, file = paste0(cellRnaIcnvdir, '/rna_infer_res.csv'), row.names = F)
-
+# write.csv(rna_infer_res, file = paste0(cellRnaIcnvdir, '/rna_infer_res.csv'), row.names = F)
+write.csv(rna_infer_res, file = paste0(cellRnaIcnvdir, '/rna_remove_cf_infer_res.csv'), row.names = F)
 ## atac ----
 
 atac_infercnv_cutoff = data.frame(cut_off = c(500, 300),
@@ -78,11 +95,11 @@ write.csv(atac_infer_res, file = paste0(cellAtacInferDir, '/atac_infer_res.csv')
 message('finish!')
 
 # add to merge sr 
-rna_infer_res <- read.csv('output/')
+# rna_infer_res <- read.csv('output/')
 
 
-rna_infer_res$lib_bc <- paste0(rna_infer_res$lib, '_', rna_infer_res$barcode)
-mrg_bc <- paste0(mrg_rna$library, "_", mrg_rna$barcodes)
-meta <- merge(rna_infer_res, m_bc, by.x = 'lib_bc')
-rownames(meta) <- colnames(mrg_rna)
-sr <- AddMetaData(mrg_rna, meta)
+# rna_infer_res$lib_bc <- paste0(rna_infer_res$lib, '_', rna_infer_res$barcode)
+# mrg_bc <- paste0(mrg_rna$library, "_", mrg_rna$barcodes)
+# meta <- merge(rna_infer_res, m_bc, by.x = 'lib_bc')
+# rownames(meta) <- colnames(mrg_rna)
+# sr <- AddMetaData(mrg_rna, meta)

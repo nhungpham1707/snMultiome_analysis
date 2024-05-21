@@ -62,8 +62,8 @@ combine_peak_plan <- drake_plan(
 # - normalize, dim reduc
 # - get gene activity to run single r and infercnv
 # - run singler
-# - prep for infercnv: generate gene matrix and annotation
-#    file for infercnv 
+# - prep for infercnv: generate gene matrix 
+# and annotation file for infercnv 
 # - sample demultiplex using souporcell
 # - assign metadata
 # ----------------------------------------------------------
@@ -319,7 +319,7 @@ process_special_lib_plan <- drake_plan(
   atac_group_sgr = group_singleR_labels(atac_noNA),
 
   # prep mrg atac for infercnv
-  mrgGA = get_gene_activity(atac_group_sgr),
+  # mrgGA = get_gene_activity(atac_group_sgr),
 
   ## process rna ------------------------------------------
   h5Link_all = target(get_h5_link(lb, metadata),
@@ -399,87 +399,87 @@ process_special_lib_plan <- drake_plan(
   preInferRna_noCF = target(make_anno_count_mx(gex_noCF, save_path = rnaInferInputDir ),
                     transform = map(gex_noCF,
                   id.var = !!alID,
-                  .id = id.var))
-  # scroshi rna ---
-  # rnaScroshi_demo = target(run_scROSHI_w_demo_data(sr = gexClusSgr, cols = my_cols, pt = 1, 
-  #                     save_name = 'w_demo_marker', save_path = CellRnaScroshiDir),
-  #                     transform = map(gexClusSgr,
-  #                       id.var = !!alID,
-  #                       .id = id.var)),
+                  .id = id.var)),
   
-  # rnaScroshi_atrt = target(run_scROSHI_w_cancer_marker(sr = gexClusSgr, cols = my_cols, pt = 1, 
-  #                     save_name = 'w_cancer_marker', save_path = CellRnaScroshiDir),
-  #                     transform = map(gexClusSgr,
-  #                       id.var = !!alID,
-  #                       .id = id.var))
-
+  # reanalyze unknown and unassign cells from souporcells and gender demultiplex ---
+  unknown_cells = target(get_unknown_unassign_cells(gexNoDb),   transform = map(gexNoDb,
+            id.var = !!mulId,
+            .id = id.var)),
+  unknown_bcs = target(get_bc_in_mrg(rna_group_sgr, unknown_cells, lib = mulId),
+          transform = map(unknown_cells, !!mulId,
+          id.var = !!mulId,
+          .id = id.var)),
+  all_unknown = target(c(unknown_bcs), 
+            transform = combine(unknown_bcs, 
+            id.var  = !!mulId,
+            .id = id.var))
   
 )
 
 cluster_behavior_plan <- drake_plan( 
   # make atac sce ----
-#   atac.sce = make_sce(atac_group_sgr),
-#   # make rna sce -----
-#   rna.sce = make_sce(rna_group_sgr),
-#   # check cluster behavior ---- 
-#   ## Silhouette widths ------
-#   ### atac ----
-#   sil.atac = calculate_silhouette(atac.sce, reduce_method = 'LSI'),
-#   sil.atac.p =  ggplot(sil.atac, aes(x=cluster, y=width, colour=closest)) +
-#     ggbeeswarm::geom_quasirandom(method="smiley") 
-#   + scale_colour_manual(values = my_cols) + 
-#     theme( panel.background = element_blank(), 
-#           axis.line = element_line(colour = "black"),
-#           text = element_text(size =20), 
-#           axis.title.y = element_text(size = 20)), 
-#   save_silAtac_p = savePlot('output/batchEffect/atac_cluster_behavior.png', sil.atac.p),
-#   silAtac_tab = table(Cluster=colLabels(atac.sce), sil.atac$closest),  # cluster 0, 1 and 4 have many cells that can easily mix with other clusters
-#   ### rna -----
-#   sil.rna = calculate_silhouette(rna.sce, reduce_method = 'PCA'),
-#   sil.rna.p = ggplot(sil.rna, aes(x=cluster, y=width, colour=closest)) +
-#     ggbeeswarm::geom_quasirandom(method="smiley") +
-#     theme( panel.background = element_blank(), 
-#           axis.line = element_line(colour = "black"),
-#           text = element_text(size =20), 
-#           axis.title.y = element_text(size = 20)),
-#   save_sil.rna.p = savePlot('output/batchEffect/rna_silhouette_cluster_behavior.png', sil.rna.p),
-#   table(Cluster=colLabels(rna.sce), sil.rna$closest),
-#   # cluster 7 & 23 have many cells that can easily mix with other clusters
-#   ## cluster purity ------
-#   ### atac ----
-#   pure.atac = calculate_purity(atac.sce, reduce_method = 'LSI'),
-#   pure.atac.p = ggplot(pure.atac , aes(x=cluster, y=purity, colour=maximum)) +
-#     ggbeeswarm::geom_quasirandom(method="smiley") +
-#   scale_colour_manual(values = my_cols) + 
-#     theme( panel.background = element_blank(), 
-#           axis.line = element_line(colour = "black"),
-#           text = element_text(size =20), 
-#           axis.title.y = element_text(size = 20)),
-#   save_pure.atac.p = savePlot('output/batchEffect/atac_cluster_purity.png', pure.atac.p),
-#   # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
-#    ### rna ----
-#   pure.rna = calculate_purity(rna.sce, 'PCA'),
-#   pure.rna.p = ggplot(pure.rna, aes(x=cluster, y=purity, colour=maximum)) +
-#     ggbeeswarm::geom_quasirandom(method="smiley") + 
-#     theme( panel.background = element_blank(), 
-#           axis.line = element_line(colour = "black"),
-#           text = element_text(size =20), 
-#           axis.title.y = element_text(size = 20)),
-#   save_pure.rna.p = savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
+  atac.sce = make_sce(atac_group_sgr),
+  # make rna sce -----
+  rna.sce = make_sce(rna_group_sgr),
+  # check cluster behavior ---- 
+  ## Silhouette widths ------
+  ### atac ----
+  sil.atac = calculate_silhouette(atac.sce, reduce_method = 'LSI'),
+  sil.atac.p =  ggplot(sil.atac, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") 
+  + scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)), 
+  save_silAtac_p = savePlot('output/batchEffect/atac_cluster_behavior.png', sil.atac.p),
+  silAtac_tab = table(Cluster=colLabels(atac.sce), sil.atac$closest),  # cluster 0, 1 and 4 have many cells that can easily mix with other clusters
+  ### rna -----
+  sil.rna = calculate_silhouette(rna.sce, reduce_method = 'PCA'),
+  sil.rna.p = ggplot(sil.rna, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_sil.rna.p = savePlot('output/batchEffect/rna_silhouette_cluster_behavior.png', sil.rna.p),
+  table(Cluster=colLabels(rna.sce), sil.rna$closest),
+  # cluster 7 & 23 have many cells that can easily mix with other clusters
+  ## cluster purity ------
+  ### atac ----
+  pure.atac = calculate_purity(atac.sce, reduce_method = 'LSI'),
+  pure.atac.p = ggplot(pure.atac , aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+  scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.atac.p = savePlot('output/batchEffect/atac_cluster_purity.png', pure.atac.p),
+  # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
+   ### rna ----
+  pure.rna = calculate_purity(rna.sce, 'PCA'),
+  pure.rna.p = ggplot(pure.rna, aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.rna.p = savePlot('output/batchEffect/rna_cluster_purity.png', pure.rna.p)
 )
 
 batch_detection_plan <- drake_plan(
   ## visualize batch ----
   # ### atac ---
-  #   atac_visBatchDate = plotBatchVis(atac.sce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
-  #   atac_visBatchLib = plotBatchVis(atac.sce, batch = 'library', save_path = batchAtacDir, col = my_cols),
-  #   atac_visBatchSample = plotBatchVis(atac.sce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
-  #   atac_visBatchGender = plotBatchVis(atac.sce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
-  # ### rna -----
-  #   rna_VisBatchDate = plotBatchVis(rna.sce, batch = "Date.of.Library", save_path = batchRnaDir, col = my_cols),
-  #   rna_VisBatchLib = plotBatchVis(rna.sce, batch = 'library', save_path = batchRnaDir, col = my_cols),
-  #   rna_VisBatchSample = plotBatchVis(rna.sce, batch = 'sampleID', save_path = batchRnaDir, col = my_cols),
-  #   rna_VisBatchGender = plotBatchVis(rna.sce, batch = 'Gender', save_path = batchRnaDir, col = my_cols),
+    atac_visBatchDate = plotBatchVis(atac.sce, batch = "Date.of.Library", save_path = batchAtacDir, col = my_cols),
+    atac_visBatchLib = plotBatchVis(atac.sce, batch = 'library', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchSample = plotBatchVis(atac.sce, batch = 'sampleID', save_path = batchAtacDir, col = my_cols),
+    atac_visBatchGender = plotBatchVis(atac.sce, batch = 'Gender', save_path = batchAtacDir, col = my_cols),
+  ### rna -----
+    rna_VisBatchDate = plotBatchVis(rna.sce, batch = "Date.of.Library", save_path = batchRnaDir, col = my_cols),
+    rna_VisBatchLib = plotBatchVis(rna.sce, batch = 'library', save_path = batchRnaDir, col = my_cols),
+    rna_VisBatchSample = plotBatchVis(rna.sce, batch = 'sampleID', save_path = batchRnaDir, col = my_cols),
+    rna_VisBatchGender = plotBatchVis(rna.sce, batch = 'Gender', save_path = batchRnaDir, col = my_cols)
 
   #   ## calculate cms ---
   #   ### atac ----
@@ -512,19 +512,20 @@ batch_correction_plan <- drake_plan(
   # final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
   #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
   
-  final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0.5),
+  final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0.8),
   final_hm_rna_nb = FindNeighbors(object = final_hm_rna, reduction = "harmony", k.param = 30, dims = 1:30),
   final_hm_rna_clus = FindClusters(final_hm_rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
   final_hm_rna_umap = RunUMAP(final_hm_rna_clus, dims = 1:30, reduction = 'harmony'),
   hm_rna_p = DimPlot(final_hm_rna_umap, group.by = 'Subtype', cols = my_cols),
   save_hm_rna_p = savePlot(paste0(batchRnaHarmonyDir, '/final_hm_subtype.png'), hm_rna_p),
 
-  final_hm_atac = RunHarmony(atac_group_sgr, group.by.vars = 'library', theta = 0, reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
+  final_hm_atac = RunHarmony(atac_group_sgr, group.by.vars = 'library', theta = 0.2, reduction.use = 'lsi',  assay.use = 'peaks', project.dim = FALSE),
   final_hm_atac_nb = FindNeighbors(object = final_hm_atac, reduction = "harmony", k.param = 30),
   final_hm_atac_clus = FindClusters(final_hm_atac_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
   final_hm_atac_umap = RunUMAP(final_hm_atac_clus, dims = 1:30, reduction = 'harmony'),
   hm_atac_p = DimPlot(final_hm_atac_umap, group.by = 'Subtype', cols = my_cols),
   save_hm_atac_p = savePlot(paste0(batchAtacHarmonyDir, '/final_hm_subtype.png'), hm_atac_p),
+  
   # remove MHC genes and other confounding genes ----
   ## rna ---
   genes_to_remove = unique(c(genelists$chr6HLAgenes, genelists$hemo, genelists$stress, genelists$ribo)), 
@@ -565,17 +566,19 @@ cell_annotation_plan <- drake_plan(
  # scroshi merg rna ---
   hmRna_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_rna_umap, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
+  hmRna_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hmRna_scroshi_demo, cols = my_cols, pt = 1, save_name = 'hm_rna_w_atrt', save_path = CellRnaScroshiDir),
 
-  # scroshi merg atac ---
-  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = final_hm_atac_umap, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = atacScroshiDir),
+  # # scroshi merg atac ---
+  hm_atacGA = get_gene_activity(final_hm_atac_umap),
+
+  hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = atacScroshiDir),
   
-  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = final_hm_atac, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
+  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
 
-  # calculate markers ---
+  # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
-   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25),
-   atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
+   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25)
+  #  atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
   ## find markers that distinguish clusters from the same cancer type to others
   # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
    ## show it visually:
@@ -586,7 +589,60 @@ cell_annotation_plan <- drake_plan(
           # slot='scale.data'
           # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
- 
-plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan)
+
+cluster_behavior_after_correction_plan <- drake_plan( 
+  # make atac sce ----
+  hmatac.sce = make_sce(final_hm_atac_umap),
+  # make rna sce -----
+  hmrna.sce = make_sce(final_hm_rna_umap),
+  # check cluster behavior ---- 
+  ## Silhouette widths ------
+  ### atac ----
+  sil.hmatac = calculate_silhouette(hmatac.sce, reduce_method = 'LSI'),
+  sil.hmatac.p =  ggplot(sil.hmatac, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") 
+  + scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)), 
+  save_silhmAtac_p = savePlot('output/batchEffect/hmatac_cluster_behavior.png', sil.hmatac.p),
+  silhmAtac_tab = table(Cluster=colLabels(hmatac.sce), sil.hmatac$closest),  # cluster 0, 1 and 4 have many cells that can easily mix with other clusters
+  ### rna -----
+  sil.hmrna = calculate_silhouette(hmrna.sce, reduce_method = 'PCA'),
+  sil.hmrna.p = ggplot(sil.hmrna, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_sil.hmrna.p = savePlot('output/batchEffect/hmrna_silhouette_cluster_behavior.png', sil.hmrna.p),
+  sil.hmrna_tab = table(Cluster=colLabels(hmrna.sce), sil.hmrna$closest),
+  # cluster 7 & 23 have many cells that can easily mix with other clusters
+  ## cluster purity ------
+  ### atac ----
+  pure.hmatac = calculate_purity(hmatac.sce, reduce_method = 'LSI'),
+  pure.hmatac.p = ggplot(pure.hmatac , aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+  scale_colour_manual(values = my_cols) + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.hmatac.p = savePlot('output/batchEffect/hmatac_cluster_purity.png', pure.hmatac.p),
+  # To determine which clusters contaminate each other, we can identify the cluster with the most neighbors for each cell. In the table below, each row corresponds to one cluster; large off-diagonal counts indicate that its cells are easily confused with those from another cluster.
+   ### rna ----
+  pure.hmrna = calculate_purity(hmrna.sce, 'PCA'),
+  pure.hmrna.p = ggplot(pure.hmrna, aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.hmrna.p = savePlot('output/batchEffect/hmrna_cluster_purity.png', pure.hmrna.p)
+)
+
+
+plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
