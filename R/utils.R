@@ -80,3 +80,8 @@ calculate_lisi_from_sr <- function(sr, batch){
   res <- compute_lisi(X, meta_data)
   return (res)
 }
+
+change_indent <- function(sr, by){
+  Idents(sr) <- by
+  return(sr)
+}

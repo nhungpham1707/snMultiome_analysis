@@ -187,3 +187,21 @@ add_missing_sample_location <- function(sr){
     sr$location[index] <- sr$Topography.label[index]
     return (sr)
 }
+
+# generate general subtype labels 
+# RT includes ATRT and MRT
+#  RMS includes FP-RMS and FN-RMS
+# Sysa 
+generalize_subtype <- function(sr, healthy_clusters, cluster_col = 'RNA_snn_res.0.8'){
+    general_subtype <- sr$Subtype
+    general_subtype[grep('RT', general_subtype)] <- 'RT'
+    general_subtype[grep('RMS', general_subtype)] <- 'RMS'
+
+    names(general_subtype) <- colnames(sr)
+
+    healthy_index <- which(sr@meta.data[,cluster_col] %in% healthy_clusters)
+    general_subtype[healthy_index] <- 'healthy'
+
+    sr <- AddMetaData(sr, metadata = general_subtype, col.name = 'general_subtype')
+    return(sr)
+}

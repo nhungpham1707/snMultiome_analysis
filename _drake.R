@@ -409,10 +409,8 @@ process_special_lib_plan <- drake_plan(
           transform = map(unknown_cells, !!mulId,
           id.var = !!mulId,
           .id = id.var)),
-  all_unknown = target(c(unknown_bcs), 
-            transform = combine(unknown_bcs, 
-            id.var  = !!mulId,
-            .id = id.var))
+  # all_unknown is generated manually by loadding all unknown_bcs and combine in a lsit 
+
   
 )
 
@@ -539,16 +537,8 @@ batch_correction_plan <- drake_plan(
   # save_dim_rna_noCF_lib = savePlot(paste0(rnaMrgFigDir, '/noCF_lib.png'), dim_rna_noCF_lib),
   # dim_rna_noCF_sub = DimPlot(rna_noCF_meta, group.by = 'Subtype', cols = my_cols, raster = FALSE,pt.size = 1),
   # save_dim_rna_noCF_sub = savePlot(paste0(rnaMrgFigDir, '/noCF_sub.png'), dim_rna_noCF_sub),
-  # hm_rna_noCF = harmony_n_plot(rna_noCF, batch_factor = 'library', theta = final_theta,
-  #  sigma = final_sigma, save_path = batchRnaHarmonyDir),
 
   
-
-  # calculate lisi ----
-  ## before correction ----
-  # # lisi_atac = calculate_lisi_from_sr(atac_lbsb, batch = 'library'),
-  # lisi_rna = calculate_lisi_from_sr(rna_group_sgr, batch = 'library'),
-  # lisi_hm_rna = calculate_lisi_from_sr(final_hm_rna, batch = 'library')
 
 )
 
@@ -580,6 +570,7 @@ cell_annotation_plan <- drake_plan(
   
   hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
 
+  
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
    rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25)
@@ -644,7 +635,44 @@ cluster_behavior_after_correction_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_pure.hmrna.p = savePlot('output/batchEffect/hmrna_cluster_purity.png', pure.hmrna.p)
+  save_pure.hmrna.p = savePlot('output/batchEffect/hmrna_cluster_purity.png', pure.hmrna.p),
+
+  # remove potential doublets ---
+  # scdblFinder did not find doublets, manually inspect clusters. If a cluster contain a majority of cells from RMS samples and some from ATRT or MRT, these MRT and ATRT maybe potential doublets. 
+  # these cells were identified manually from clean_contaminated_cells.R
+  potential_db =  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv'),
+  potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db),
+  rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_no_db),
+  rna_wo_db_p = DimPlot(rna_wo_db, group.by = 'Subtype', cols = my_cols),
+  save_rna_wo_db_p = savePlot(paste0(cleanUnknownRnaDir/'subtype_after_cleaning.png'), rna_wo_db_p),
+  rna_wo_db_ident = change_indent(rna_wo_db, 'RNA_snn_res.0.8'),
+  # add general subtype metadata ---
+  healthy_clusters = c( 8, 18, 20, 21, 13, 29, 28, 26 ),
+  rna_wo_db_general_sub = generalize_subtype(rna_wo_db_ident, healthy_clusters, cluster_col = 'RNA_snn_res.0.8'),  
+
+  # check cluster tree ---
+  rna_wo_db_tree = change_tree_label(rna_wo_db_general_sub, by = 'general_subtype',save_name = 'output/cell_type/sc_rna/clean_unknown/tree_after_cleaning_general_subtype.png',assay.name = 'RNA', dims= 1:30, reduction.method = 'HARMONY', cluster.col = 'RNA_snn_res.0.8'),
+
+  # check cluster sil and purity after removign doublet ---
+  ### rna -----
+  hmrna_wodb.sce = make_sce(rna_wo_db_general_sub),
+  sil.hmrnawodb = calculate_silhouette(hmrna_wodb.sce, reduce_method = 'HARMONY'),
+  sil.hmrnawodb.p = ggplot(sil.hmrnawodb, aes(x=cluster, y=width, colour=closest)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") +
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_sil.hmrnawodb.p = savePlot('output/batchEffect/hmrna_wodb_silhouette_cluster_behavior.png', sil.hmrnawodb.p),
+  ## purity ---
+  pure.hmrna_wodb = calculate_purity(hmrna_wodb.sce, 'HARMONY'),
+  pure.hmrna_wodb.p = ggplot(pure.hmrna_wodb, aes(x=cluster, y=purity, colour=maximum)) +
+    ggbeeswarm::geom_quasirandom(method="smiley") + 
+    theme( panel.background = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text = element_text(size =20), 
+          axis.title.y = element_text(size = 20)),
+  save_pure.hmrna_wodb.p = savePlot('output/batchEffect/hmrna_wodb_cluster_purity.png', pure.hmrna_wodb.p)
 )
 
 

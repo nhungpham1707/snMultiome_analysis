@@ -2,6 +2,8 @@
 # check with scdblFinder did not confirm that they are doublet. 
 # hence, in this script, I check each cluster manually, if these contaminated cells have unknown (in gender addmodulescore) or unassigned )in souporcell) from demultiplexing step, remove them. 
 
+# 21 05 2024, Nhung 
+
 # all unknown cells: 
 all_unknown <- read.csv('output/cell_type/sc_rna/clean_unknown/all_unknown_bcs_manual.csv') # this file was generated manually 
 
@@ -17,7 +19,7 @@ healthy_clusters <- c( 8, 18, 20, 21, 13, 29, 28, 26 )
 tumor_clusters <- setdiff(clusters, healthy_clusters)
 
 # get the majority tumor type per cluster 
-i = 15
+i = 25
 cluster_index <- rna$RNA_snn_res.0.8 == tumor_clusters[i]
 tumor_type <- data.frame(table(rna$Subtype[cluster_index]))
 tumor_type
@@ -89,12 +91,49 @@ cluster11_remove <- setdiff(cluster_bc, fn_rms)
 sysa <- cluster_bc[grep('SySa', rna$Subtype[cluster_index])]
 cluster3_remove <- setdiff(cluster_bc, sysa)
 
+# 22-05-2024
+# cluster19: 659 unknown cells out of 1220 cells. most are sysa 
+sysa <- cluster_bc[grep('SySa', rna$Subtype[cluster_index])]
+cluster19_remove <- setdiff(cluster_bc, sysa)
+# cluster 23: 307 unknown cells out of 504 cells. most are ATRT-TYR 
+atrt_tyr <- cluster_bc[grep('ATRT_TYR', rna$Subtype[cluster_index])]
+cluster23_remove <- setdiff(cluster_bc, atrt_tyr)
+
+# cluster4: 3282 unknown cells out of 6691 cells. most are FN-eRMS. a weird cluster, fn-erms also in clusters with mrt and atrt
+fn_erms <- cluster_bc[grep('FN-eRMS', rna$Subtype[cluster_index])]
+cluster4_remove <- setdiff(cluster_bc, fn_erms)
+
+# cluster 14: 356 unknown cells out of 2574 cells. most are rms 
+rms <- cluster_bc[grep('RMS', rna$Subtype[cluster_index])]
+cluster14_remove <- setdiff(cluster_bc, rms)
+# cluster 24: 163 unknown cells out of 397 cells. only atrt_shh and mrt. no need to remove 
+# cluster 0: 4669 unknown cells out of 8541 cells. most are sysa 
+sysa <- cluster_bc[grep('SySa', rna$Subtype[cluster_index])]
+cluster0_remove <- setdiff(cluster_bc, sysa)
+
+# cluster 30: 92 unknown cells out of 113 cells. only ecMRT. no need to remove 
+# cluster 25: 26 unknown cells out of 285 cells. most are mrt
+mrt <- cluster_bc[grep('ecMRT', rna$Subtype[cluster_index])]
+cluster30_remove <- setdiff(cluster_bc, mrt)
+
+# cluster 27: 114 unknown cells out of 176 cells. sysa. no need to remove 
+
+# cluster 32: 4 unknown cells out of 77 cells. only fn-erms, no need to remove  
+combine_remove <- c(cluster19_remove, cluster23_remove, cluster4_remove,cluster14_remove, cluster0_remove, cluster30_remove)
+
 
 
 all_remove <- c(cluster12_remove, cluster15_remove, cluster17_remove, cluster1_remove, cluster2_remove, cluster31_remove, cluster5_remove, cluster7_remove, cluster9_remove, cluster22_remove, cluster16_remove, cluster10_remove, cluster6_remove, cluster11_remove, cluster3_remove)
 write.csv(file  = 'output/cell_type/sc_rna/clean_unknown/cluster12-17-15-1-2-31-5-7-9-22-16-10-6-11-3-remove.csv', all_remove, row.names = F)
 
-to_keep <- setdiff(colnames(rna), unknown_in_cluster)
+
+half_remove <- read.csv('output/cell_type/sc_rna/clean_unknown/cluster12-17-15-1-2-31-5-7-9-22-16-10-6-11-3-remove.csv')
+
+all_remove <- c(combine_remove, half_remove$x) # 9301 cells 
+write.csv(file  = 'output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv', all_remove, row.names = F)
+
+
+to_keep <- setdiff(colnames(rna), all_remove)
 sub_rna <- subset(rna, subset = m_barcode %in% to_keep)
 
 DimPlot(sub_rna, group.by = 'Subtype', cols = my_cols)

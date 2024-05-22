@@ -92,6 +92,7 @@ batchRnaDir <- paste0(batchDir, '/rna')
 batchRnaHarmonyDir <- paste0(batchRnaDir, '/harmony')
 batchRnaSysviDir <- paste0(batchRnaDir, '/sysvi')
 batchRnaScanoramaDir <- paste0(batchRnaDir, '/scanorama')
+cleanUnknownRnaDir <- paste0(cellRnaDir, '/clean_unknown')
 # create dir -----
 # figures
 dir.create("output/figures", recursive = TRUE)
@@ -151,6 +152,7 @@ dir.create(batchRnaSysviDir, recursive = TRUE)
 dir.create(batchAtacScanormaDir, recursive = TRUE)
 dir.create(batchRnaScanoramaDir , recursive = TRUE)
 dir.create(cellRnaMarkerDir, recursive = TRUE)
+dir.create(cleanUnknownRnaDir, recursive = TRUE)
 # define variable that will be used in all analysis 
 reso <- 300 # figures resolution
 
