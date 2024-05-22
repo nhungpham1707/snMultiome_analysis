@@ -9,69 +9,132 @@
 
 # Nhung 14 05 2024
 
-loadd(hmRna_scroshi_atrt)
+# loadd(hmRna_scroshi_atrt)
+loadd(rna_nodb_infer)
+rna <- rna_nodb_infer
 # add score columns ---
-rna <- add_cancer_score_meta_cols(hmRna_scroshi_atrt)
+rna <- add_cancer_score_meta_cols(rna)
+
+lib_p <- DimPlot(rna, group.by = 'library', cols = my_cols)
+savePlot('output/cell_type/sc_rna/wodb_library.png',lib_p)
+
+sub_p <- DimPlot(rna, group.by = 'Subtype', cols = my_cols)
+savePlot('output/cell_type/sc_rna/wodb_subtype.png',sub_p)
+
+clus_p <- DimPlot(rna, group.by = 'RNA_snn_res.0.8', label = T, cols = my_cols)
+savePlot('output/cell_type/sc_rna/wodb_cluster.png',clus_p)
+
 
 # 1. assign score from singleR cell annotation ---
 rna <- assign_sgr_cancer_score(rna)
+DimPlot(rna, group.by = 'sgr_cancer_score')| DimPlot(rna, group.by = 'Subtype', cols  = my_cols)
+p <- DimPlot(rna,group.by = 'sgr_cancer_score', cols = c('grey', 'red') )
+p
+savePlot('output/cell_type/sc_rna/1.wodb_sgr_score.png',p)
 
-# 2. assign score from scroshi ---
+sgr_p <- DimPlot(rna,group.by = 'singleR_labels', cols = my_cols )
+
+savePlot('output/cell_type/sc_rna/wodb_sgr.png',sgr_p)
+
+sgr_gr_p <- DimPlot(rna,group.by = 'group_sgr_labels', cols = c('grey', 'black', 'green', 'yellow', 'blue', 'purple', 'salmon') )
+
+savePlot('output/cell_type/sc_rna/wodb_group_sgr.png',sgr_gr_p)
+# 1b. assign score from scroshi ---
 # this step is done manually by visualizing the umap and compare immune cells from singleR and scROSHI, if they assign to different cells in the same cluster --> that cluster contain immune cells
 
-# 3. assign score from scroshi for cancer marker ---
+healthy_clusters <- c(28,26,8,18,29,13,21,20)
+# 2. assign score from scroshi for cancer marker ---
 rna <- assign_scroshi_cancer_score(rna)
-
-# 4. assign score from infercnv res --- 
+DimPlot(rna, group.by = 'scroshi_cancer_score')
+scroshi_p <- DimPlot(rna, group.by = 'celltype_final', cols = c('blue', 'red', 'black', 'grey'), pt.size = 1)
+scroshi_p
+savePlot('output/cell_type/sc_rna/2.wodbscroshi_cancer.png',scroshi_p)
+scroshi_clusters <- 9 
+# 3. assign score from infercnv res --- 
 rna <- assign_infercnv_cancer_score(rna)
+infer_p <- DimPlot(rna, group.by = 'infer_cancer_score', cols = c('grey', 'red'), pt.size = 1)
+savePlot('output/cell_type/sc_rna/3.wodb_infer.png', infer_p)
+infer_clusters <-c(4) 
 
-# 5. check SMARCB1 expression ---
+# 4. check SMARCB1 expression for ATRT and MRT---
 Idents(rna) <- 'RNA_snn_res.0.8'
-DotPlot(rna, feature = 'SMARCB1')
+smarcb1_p <- DotPlot(rna, feature = 'SMARCB1')
+savePlot('output/cell_type/sc_rna/4.wodb_smarcb1.png', smarcb1_p)
 # manually infer the expression and assign expression as 0,1 to cluster 
 # ATRT clusters: 
-#     - 4,7: still have a bit of expression 
-#     - 26: more SMARCB1 than others —> need to exclude 
-#     - 24, 25: no 
+# 1,24, 9, 23 : no expression
 # MRT clusters: 
-#     - 12,15, 32, 18: a bit expression 
-#     - 21: more SMARCB1 than other art clusters, could be healthy liver cells? 
-#     - 5, 19, 9, 12: no 
+# 12,15,5,7 : no expression
+#     - 20: more SMARCB1 than other art clusters, more confident that it is healthy liver cells 
+smarcb1_clusters <- c(1,24,9,23,12,15,5,7)
 
 rna$smarcb1 <- NA
-rna$smarcb1[rna$RNA_snn_res.0.8 %in% c(4,7,24,25,12,15,32,18,5,19,9,12)] <- 1 # 1 for tumor cells because did not express smarcb1
-rna$smarcb1[rna$RNA_snn_res.0.8 %in% c(26, 21)]  <- 0 # 0 for not tumor cell
-DimPlot(rna, group.by = 'smarcb1')
-# 6. check cancer markers for ATRT, RMS and Sysa ---
-rna <- calculate_marker(rna, marker = ATRT_SHH, name = 'atrt_shh')
+rna$smarcb1[rna$RNA_snn_res.0.8 %in% c( 1,24,9,23,12,15,5,7)] <- 1 # 1 for tumor cells because did not express smarcb1
+smarcb1_dim_p <- DimPlot(rna, group.by = 'smarcb1', pt.size = 1, cols = c('red', 'grey'))
+savePlot('output/cell_type/sc_rna/4.wodb_smarcb1_dim.png', smarcb1_dim_p)
 
+# 5. check cancer markers for ATRT, RMS and Sysa ---
+rna <- calculate_marker(rna, marker = ATRT_SHH, name = 'atrt_shh')
+FeaturePlot(rna, features = 'atrt_shh1')
+FeaturePlot(rna, features = ATRT_SHH)
 rna <- calculate_marker(rna, marker = ATRT_TYR, name = 'atrt_tyr')
-# strong signal for atrt-tyr
+p <- FeaturePlot(rna, features = 'atrt_tyr1', pt.size = 1)
+savePlot('output/cell_type/sc_rna/4.wodb_atrt_tyr_markers.png', p)
+
+# strong signal for atrt-tyr. more confident for atrt_tyr cluster 
+atrt_tyr_cluster <- 9
+
 rna <- calculate_marker(rna, marker = ATRT_MYC, name = 'atrt_myc')
-p <- FeaturePlot(rna, features = 'myc1', label = T)
-p <- FeaturePlot(rna, features = 'atrt_myc1', label = T)
+p <- FeaturePlot(rna, features = 'atrt_myc1', pt.size = 1)
 p # no clear signal
-savePlot('output/cell_type/sc_rna/markers/atrt_myc.png', p)
+savePlot('output/cell_type/sc_rna/4.wodb_atrt_myc_markers.png', p)
 
 rna <- calculate_marker(rna, marker = RMS, name = 'rms')
-p <- FeaturePlot(rna, features = 'rms1', label = T)
+p <- FeaturePlot(rna, features = 'rms1', pt.size = 1)
 p # no clear signal
-savePlot('output/cell_type/sc_rna/markers/rms.png', p)
-rna <- calculate_marker(rna, marker = Sysa, name = 'sysa')
-p <- FeaturePlot(rna, features = 'sysa1', label = T)
-p
-savePlot('output/cell_type/sc_rna/markers/sysa.png', p)
-rna <- calculate_marker(rna, marker = sysa_fusion_targets, name = 'sysa_target')
-p <- FeaturePlot(rna, features = 'sysa_target1', label = T)
-p # clear signal for sysa
-rna <- calculate_marker(rna, marker = rms_fusion_targets, name = 'rms_target')
-p <- FeaturePlot(rna, features = 'rms_target1', label = T)
-p
-savePlot('output/cell_type/sc_rna/markers/rms_target.png', p)
+FeaturePlot(rna, features = RMS)
 
+savePlot('output/cell_type/sc_rna/4.wodb_rms_markers.png', p)
+rna <- calculate_marker(rna, marker = Sysa, name = 'sysa')
+p <- FeaturePlot(rna, features = 'sysa1',pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/4.wodb_sysa_markers.png', p)
+p # clear signal for sysa
+sysa_clusters <- c(3,16, 0, 27)
 # manually inspect the feature plots and identify clusters that express markers for each cancer 
 # 6: atrt_tyr, 2,15,0: sysa, 5: rms 
-rna$marker_score[rna$RNA_snn_res.0.8 %in% c(6,2,15,0,5)] <- 1
+rna$marker_score[rna$RNA_snn_res.0.8 %in% c(sysa_clusters, atrt_tyr_cluster)] <- 1
+
+# check fusion target ---
+## sysa fusion --- 
+# ref https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8817899/
+sysa_fusion_targets <- read.csv('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/sysa_fusion_targets_NIHMS1727124.csv', sep = ';')
+sysa_target_up <- sysa_fusion_targets$Direct.targets_up
+sysa_target_up <- sysa_target_up[nchar(sysa_target_up) > 0]
+rna <- calculate_marker(rna, marker = sysa_target_up, name = 'sysa_target')
+p <- FeaturePlot(rna, features = 'sysa_target1', pt.size = 1)
+p # not clear signal 
+
+
+sysa_markers <- read.csv('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/markers/NIHMS1727124-s3a.csv', sep = ';')
+
+sysa_epi <- sysa_markers$Epithelial
+sysa_mes <- sysa_markers$Mesenchymal 
+rna <- calculate_marker(rna, marker = sysa_epi, name = 'sysa_epi')
+p <- FeaturePlot(rna, features = 'sysa_epi1', pt.size = 1)
+p 
+
+
+rna <- calculate_marker(rna, marker = sysa_mes, name = 'sysa_mes')
+p_mes <- FeaturePlot(rna, features = 'sysa_mes1', pt.size = 1)
+p | p_mes
+
+# rms target ---
+rms_target <- read.csv('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/PAX3FOXO_targets.csv', sep = ';', header = F)
+rna <- calculate_marker(rna, marker = rms_target[,1], name = 'rms_target')
+p <- FeaturePlot(rna, features = 'rms_target1', pt.size = 1)
+p
+
 
 # summary all scores -----
 score_df <- data.frame(
@@ -84,28 +147,42 @@ rna$final_cancer_score <- rowSums(score_df, na.rm = T)
 tumor_colors <- c('grey', '#ADE8F4','#48CAE4','#0096C7','#0077B6','#03045E')
  DimPlot(rna, group.by = 'final_cancer_score', cols = tumor_colors, pt =1)
 
-# look weird, why cluster 2 with sysa has many cells with 0 score 
 
-# add score manually ---
+
+# add score manually ---------------------
 rna$manual_tumor <- 'unknown'
-DimPlot(rna, group.by = 'manual_tumor', cols = tumor_colors)
-
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(8,18,13)] <- 'healthy'
-p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'grey'))
+tumormap_p <- DimPlot(rna, group.by = 'manual_tumor', cols = tumor_colors, pt.size = 1)
+savePlot('output/cell_type/sc_rna/tumor_map.png', tumormap_p)
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% healthy_clusters] <- 'healthy'
+p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'grey'), pt.size = 1)
 p
-savePlot('output/cell_type/sc_rna/1.w_sngr.png',p)
+savePlot('output/cell_type/sc_rna/1.nodb_healthy.png',p)
 
 # w scroshi cancer markers 
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(7)] <- 'tumor'
-p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% scroshi_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'), pt.size = 1)
 p
-savePlot('output/cell_type/sc_rna/2.w_scroshi.png',p)
+savePlot('output/cell_type/sc_rna/2.nobd_w_scroshi.png',p)
 
 # w infercnv 
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(2)] <- 'tumor'
-p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% infer_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'), pt.size = 1)
 p
 savePlot('output/cell_type/sc_rna/3.w_infercnv.png',p)
+
+# w sysa markers 
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% sysa_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'), pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/4.wodb_w_sysa_markers.png',p)
+
+# w SMARCB1 expression 
+
+rna$manual_tumor[rna$RNA_snn_res.0.8 %in% 
+smarcb1_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'), pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/4.nodb_w_no_SMARCB1_expression.png',p)
 
 # w rms target PAX3
 rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(6)] <- 'tumor'
@@ -113,15 +190,6 @@ p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
 p
 savePlot('output/cell_type/sc_rna/4.w_rms_markers.png',p)
 
-# w sysa markers 
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(0,16,1)] <- 'tumor'
-p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
-p
-savePlot('output/cell_type/sc_rna/5.w_sysa_markers.png',p)
 
-# w SMARCB1 expression 
 
-rna$manual_tumor[rna$RNA_snn_res.0.8 %in% c(4,5,9,12,15,19,21,24,25,27,32)] <- 'tumor'
-p <- DimPlot(rna, group.by = 'manual_tumor', cols = c('orange', 'blue', 'grey'))
-p
-savePlot('output/cell_type/sc_rna/6.w_no_SMARCB1_expression.png',p)
+

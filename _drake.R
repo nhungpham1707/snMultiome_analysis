@@ -644,12 +644,15 @@ cluster_behavior_after_correction_plan <- drake_plan(
   potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db),
   rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_no_db),
   rna_wo_db_p = DimPlot(rna_wo_db, group.by = 'Subtype', cols = my_cols),
-  save_rna_wo_db_p = savePlot(paste0(cleanUnknownRnaDir/'subtype_after_cleaning.png'), rna_wo_db_p),
+  save_rna_wo_db_p = savePlot(paste0(cleanUnknownRnaDir,'/subtype_after_cleaning.png'), rna_wo_db_p),
   rna_wo_db_ident = change_indent(rna_wo_db, 'RNA_snn_res.0.8'),
   # add general subtype metadata ---
   healthy_clusters = c( 8, 18, 20, 21, 13, 29, 28, 26 ),
   rna_wo_db_general_sub = generalize_subtype(rna_wo_db_ident, healthy_clusters, cluster_col = 'RNA_snn_res.0.8'),  
-
+  # add infercnv result ---
+   # infer_res was generated manually from get_infercnv_result.R
+  rna_nocf_infer_res = read.csv('output/cell_type/sc_rna/infercnv/rna_remove_cf_infer_res.csv'),
+  rna_nodb_infer = assign_infer_res_to_sr(rna_nocf_infer_res, rna_wo_db_general_sub),
   # check cluster tree ---
   rna_wo_db_tree = change_tree_label(rna_wo_db_general_sub, by = 'general_subtype',save_name = 'output/cell_type/sc_rna/clean_unknown/tree_after_cleaning_general_subtype.png',assay.name = 'RNA', dims= 1:30, reduction.method = 'HARMONY', cluster.col = 'RNA_snn_res.0.8'),
 
@@ -672,7 +675,12 @@ cluster_behavior_after_correction_plan <- drake_plan(
           axis.line = element_line(colour = "black"),
           text = element_text(size =20), 
           axis.title.y = element_text(size = 20)),
-  save_pure.hmrna_wodb.p = savePlot('output/batchEffect/hmrna_wodb_cluster_purity.png', pure.hmrna_wodb.p)
+  save_pure.hmrna_wodb.p = savePlot('output/batchEffect/hmrna_wodb_cluster_purity.png', pure.hmrna_wodb.p),
+
+  # scroshi after removing db--
+  hmRna_wodb_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_wo_db_general_sub, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_demo_marker', save_path = CellRnaScroshiDir),
+  
+  hmRna_wodb_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hmRna_wodb_scroshi_demo, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_atrt', save_path = CellRnaScroshiDir)
 )
 
 
