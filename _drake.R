@@ -568,22 +568,8 @@ cell_annotation_plan <- drake_plan(
 
   hmAtac_scroshi_demo = run_scROSHI_w_demo_data(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_demo_marker', save_path = atacScroshiDir),
   
-  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir),
-
+  hmAtac_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hm_atacGA, cols = my_cols, pt = 1, save_name = 'hm_atac_w_atrt', save_path = atacScroshiDir) 
   
-  # # calculate markers ---
-  # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
-   rna_markers = FindAllMarkers(object = rna_group_sgr, only.pos = T, logfc.threshold = 0.25)
-  #  atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
-  ## find markers that distinguish clusters from the same cancer type to others
-  # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
-   ## show it visually:
-# DoHeatmap(subset(srat, downsample = 50),
-#           features = top10$gene,
-#           group.colors=cluster.colors,
-#           assay='RNA',
-          # slot='scale.data'
-          # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
 
 cluster_behavior_after_correction_plan <- drake_plan( 
@@ -641,7 +627,7 @@ cluster_behavior_after_correction_plan <- drake_plan(
   # scdblFinder did not find doublets, manually inspect clusters. If a cluster contain a majority of cells from RMS samples and some from ATRT or MRT, these MRT and ATRT maybe potential doublets. 
   # these cells were identified manually from clean_contaminated_cells.R
   potential_db =  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv'),
-  potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db),
+  potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db[,1]),
   rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_no_db),
   rna_wo_db_p = DimPlot(rna_wo_db, group.by = 'Subtype', cols = my_cols),
   save_rna_wo_db_p = savePlot(paste0(cleanUnknownRnaDir,'/subtype_after_cleaning.png'), rna_wo_db_p),
@@ -683,7 +669,21 @@ cluster_behavior_after_correction_plan <- drake_plan(
   hmRna_wodb_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hmRna_wodb_scroshi_demo, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_atrt', save_path = CellRnaScroshiDir)
 )
 
-
-plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan)
+marker_plan <- drake_plan(
+  # # calculate markers ---
+  # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
+   rna_markers = FindAllMarkers(object = rna_nodb_infer, only.pos = T, logfc.threshold = 0.25)
+  #  atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
+  ## find markers that distinguish clusters from the same cancer type to others
+  # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
+   ## show it visually:
+# DoHeatmap(subset(srat, downsample = 50),
+#           features = top10$gene,
+#           group.colors=cluster.colors,
+#           assay='RNA',
+          # slot='scale.data'
+          # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
+)
+plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

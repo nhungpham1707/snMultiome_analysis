@@ -166,3 +166,25 @@ rna_cluster <- subset(rna, subset = RNA_snn_res.0.8 == tumor_clusters[i])
 # rna_rm <- subset(hmRna_scroshi_atrt, subset = m_barcode %in% to_keep)
 
 # DimPlot(hmRna_scroshi_atrt, group.by = 'Subtype', cols = my_cols)| DimPlot(rna_rm, group.by = 'Subtype', cols = my_cols)
+
+
+## after identifying tumor cells (identify_tumor_cells.R), it seems there are still contaminated cells 
+# check again. for each cluster, get library list, if the same library has both cells from both tumor type in the same cluster, they are probably doublet 
+rna <- rna_nodb_infer
+
+healthy_clusters <- c( 8, 18, 20, 21, 13, 29, 28, 26 )
+tumor_clusters <- setdiff(unique(rna$RNA_snn_res.0.8), healthy_clusters)
+
+i = 1
+cluster_index <- rna$RNA_snn_res.0.8 == tumor_clusters[i]
+tumor_type <- data.frame(table(rna$Subtype[cluster_index]))
+tumor_type
+lib_l <- data.frame(table(rna$library[cluster_index]))
+lib_l
+main_tumor_type <- tumor_type$Var1[tumor_type$Freq == max(tumor_type$Freq)]
+main_tumor_type
+cluster_bc <- colnames(rna)[cluster_index]
+# unknown cells in the cluster 
+unknown_in_cluster <- intersect(all_unknown$x, cluster_bc) 
+print(paste('there are', length(unknown_in_cluster), 'unknown cells out of', length(cluster_bc), 'cells in cluster', tumor_clusters[i]))
+DimPlot(rna, cells.highlight= unknown_in_cluster)|DimPlot(rna, group.by = 'RNA_snn_res.0.8', cols = my_cols, label = T)

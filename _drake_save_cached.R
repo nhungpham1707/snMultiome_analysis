@@ -32,12 +32,14 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(gexClusSgr_LX049)
 # save_h5ad(gexClusSgr_LX049, 'ikarus/', 'lx049')
 
-loadd(rna_group_sgr)
-final_hm_rna <- harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = 0,
-   sigma = 0.1, save_path = "output/batchEffect/rna/harmony/test_final_hm")
-p <- DimPlot(final_hm_rna, group.by = 'Subtype',
-cols = my_cols)
-savePlot('output/batchEffect/rna/harmony/test_final_hm/hm_rna_subtype.png')
+# loadd(rna_group_sgr)
+# final_hm_rna <- harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = 0,
+#    sigma = 0.1, save_path = "output/batchEffect/rna/harmony/test_final_hm")
+# p <- DimPlot(final_hm_rna, group.by = 'Subtype',
+# cols = my_cols)
+# savePlot('output/batchEffect/rna/harmony/test_final_hm/hm_rna_subtype.png')
 
+loadd(rna_nodb_infer)
+saveRDS(file = 'output/sc_RNA/merge_all/rna_nodb_infer.RDS', rna_nodb_infer)
 
 message('finished!')

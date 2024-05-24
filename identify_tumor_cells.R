@@ -191,5 +191,45 @@ p
 savePlot('output/cell_type/sc_rna/4.w_rms_markers.png',p)
 
 
+healthy_clusters <- c(28,26,8,18,29,13,21,20)
+immune_clusters <- c(8,26,28,18)
+t_clusters <- c(18,28, 26 )
+macro_clusters <- 8
+epi_clusters <- 21
+liver_clusters <- 20
+endo_clusters <- c(13,29)
+fn_rms_clusters <-c(4) 
+atrt_shh_clusters <- c(1,24)
+atrt_tyr_clusters <- c(23,9)
+mrt_clusters <- c(12,15,5,7)
+sysa_clusters <- c(3,16, 0, 27)
+maybe_rms_p3f_clusters <- c(14, 10)
+maybe_rms_p3w_clusters <- 6
+maybe_fn_rms_clusters <- 11
+maybe_sysa_clusters <- c(2, 19)
 
 
+rna$cluster_labels <- 'unknown'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% t_clusters] <- 'T_cells'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% macro_clusters] <- 'macrophage/monocyte'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% epi_clusters] <- 'epithelial'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% liver_clusters] <- 'liver'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% endo_clusters] <- 'endothelial'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% fn_rms_clusters] <- 'FN_RMS'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% atrt_shh_clusters] <- 'ATRT_SHH'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% atrt_tyr_clusters] <- 'ATRT_TYR'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% mrt_clusters] <- 'MRT'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% sysa_clusters] <- 'SySa'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% maybe_rms_p3f_clusters] <- 'maybe_P3F_RMS'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% maybe_rms_p3w_clusters] <- 'maybe_P3W_RMS'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% maybe_fn_rms_clusters] <- 'maybe_FN_RMS'
+rna$cluster_labels[rna$RNA_snn_res.0.8 %in% maybe_sysa_clusters] <- 'maybe_sysa'
+
+# investigate markers ---
+Idents(rna) <- 'cluster_labels'
+markers <- c('DES', 'MYOD1', 'MYOG', 'CD3D', 'CD8A', 'GNLY', 'APOE', 'CD14', 'C1QB', 'PAX5', 'MS4A1', 'CD19', 'VWF', 'PECAM1', 'CLDN5', 'SMARCB1')
+DotPlot(rna, features= markers) + theme(axis.text.x = element_text(angle = 90))
+
+# look like there are still contaminated cells in clusters
+
+# check for each cluster again 
