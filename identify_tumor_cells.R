@@ -43,6 +43,7 @@ savePlot('output/cell_type/sc_rna/wodb_group_sgr.png',sgr_gr_p)
 # this step is done manually by visualizing the umap and compare immune cells from singleR and scROSHI, if they assign to different cells in the same cluster --> that cluster contain immune cells
 
 healthy_clusters <- c(28,26,8,18,29,13,21,20)
+
 # 2. assign score from scroshi for cancer marker ---
 rna <- assign_scroshi_cancer_score(rna)
 DimPlot(rna, group.by = 'scroshi_cancer_score')
@@ -233,3 +234,73 @@ DotPlot(rna, features= markers) + theme(axis.text.x = element_text(angle = 90))
 # look like there are still contaminated cells in clusters
 
 # check for each cluster again 
+
+# RMS markers with only DES, MYOD1, and MYOG 
+
+## maybe_FN_RMS cluster: 
+unique(rna$Individual.ID[rna$cluster_labels == 'maybe_FN_RMS'])
+
+## [1] "PMCID545AAO" 38 cells chr8 amp in cbioportal 
+# "PMCID464AAA" 55 cells  chr8 amp in cbioportal 
+# "PMCID665AAP" 90 cells no
+# "PMCID155AAO" 724 yes chr8 
+# "PMCID959AAM" 2796 yes chr8
+# [6] "PMCID433AAN" 34 cells no chr8
+
+# check infercnv LX187 for PMCID959AAM, heatmap show some amplification for chr8. aneuplidy score plot is weird. maybe cells above 200? not sure. for now don't take this infercnv. there were cells with abnormal infercnv from LX187 in cluster 4
+Idents(rna) <- 'cluster_labels'
+# genes from cbioportal for PMCID959AAM
+DotPlot(rna, features = c('FANCC','CAMTA1'))
+DotPlot(rna, features = c('UBR5','BAALC','AGO2','HEY1','NDRG1','PCM1','TONSL','RECQL4'))
+
+# look for unique genes with CNV from cbioportal for FN-RMS compare to the other tumor : too much manual work 
+
+# check other markers for fn-rms 
+# HGA2 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5657295/
+# dotplot show strong expression in maybe-fn-rms but also in mrt and atrt-tyr 
+
+DotPlot(rna, features = c('EPHA2', 'EED', "NELF", "CBS" , 'EPB41L4B'))
+
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10772578/
+DotPlot(rna, features = c('GPC3', 'FGFR4', 'IGF2', 'IGF1R', 'DUSP6', 'MYCN'))
+DotPlot(rna, features = c('PAX7', 'MYOD1', 'TTN', 'MYL1',  'MYH3'))
+### check tumor by cluster resolution 1
+rna <- rna_nodb_infer 
+rna <- FindNeighbors(rna, dims = 1:30, assay = 'RNA', reduction='PCA')
+rna <- FindClusters(rna, resolution = 1)
+
+immune_res1 <- c(41,39,3,22)
+liver_res1 <- c(29)
+epi_res1 <- c(35)
+endo_res1 <- c(47,45,11,40,46)
+rna$tumor_labels <- 'potential_tumor'
+rna$tumor_labels[rna$RNA_snn_res.1 %in% immune_res1] <- 'immune'
+rna$tumor_labels[rna$RNA_snn_res.1 %in% liver_res1] <- 'liver'
+rna$tumor_labels[rna$RNA_snn_res.1 %in% epi_res1] <- 'epithelial'
+rna$tumor_labels[rna$RNA_snn_res.1 %in% endo_res1] <- 'endothelial'
+
+
+# check epithelial cluster near MRT clusters 
+rna_tree <- change_tree_label(rna, by = 'tumor_labels', save_name = 'output/cell_type/sc_rna/res1_tumor_tree.png', reduction.method = "PCA", assay.name = 'RNA', dims = 1:30, cluster.col = 'RNA_snn_res.1')
+
+rna_tree <- change_tree_label(rna, by = 'cluster_labels', save_name = 'output/cell_type/sc_rna/res1_cluster_label_tree.png', reduction.method = "PCA", assay.name = 'RNA', dims = 1:30, cluster.col = 'RNA_snn_res.1')
+
+# it seems cluster 27 is closer to healthy and cluster 38 too 
+healthy_clusters_res1 <- c(40,11,47,45,46, 35,29,22,3,39,41, 27, 38)
+rna$tumor_res1 <- 'unknown'
+rna$tumor_res1[rna$RNA_snn_res.1 %in% healthy_clusters_res1] <- 'healthy'
+p <- DimPlot(rna, group.by = 'tumor_res1', cols = c('orange', 'grey'), pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/1.wo_db_healthy_res1.png',p)
+
+rna$tumor_res1[rna$RNA_snn_res.0.8 %in% scroshi_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'tumor_res1', cols = c('orange','blue', 'grey'), pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/2.wo_db_scroshi_res1.png',p)
+
+rna$tumor_res1[rna$RNA_snn_res.0.8 %in% infer_clusters] <- 'tumor'
+p <- DimPlot(rna, group.by = 'tumor_res1', cols = c('orange','blue', 'grey'), pt.size = 1)
+p
+savePlot('output/cell_type/sc_rna/3.wo_db_infercnv_res1.png',p)
+
+

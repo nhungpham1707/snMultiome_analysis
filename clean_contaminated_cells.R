@@ -176,11 +176,14 @@ healthy_clusters <- c( 8, 18, 20, 21, 13, 29, 28, 26 )
 tumor_clusters <- setdiff(unique(rna$RNA_snn_res.0.8), healthy_clusters)
 
 i = 1
+message(paste('investigate cluster', tumor_clusters[i]))
 cluster_index <- rna$RNA_snn_res.0.8 == tumor_clusters[i]
 tumor_type <- data.frame(table(rna$Subtype[cluster_index]))
 tumor_type
 lib_l <- data.frame(table(rna$library[cluster_index]))
 lib_l
+
+table(rna$library[cluster_index], rna$Subtype[cluster_index])
 main_tumor_type <- tumor_type$Var1[tumor_type$Freq == max(tumor_type$Freq)]
 main_tumor_type
 cluster_bc <- colnames(rna)[cluster_index]
