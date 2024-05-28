@@ -36,3 +36,5 @@ db_res <- colnames(db_0.5_sr)[db_0.5_sr$scDblFinder.class == 'doublet']
 length(intersect(db_res, suspect_cells))
 
 DimPlot(db_0.5_sr, cells.highlight= intersect(db_res, suspect_cells))
+
+db_0.2 <- scDblFinder(rna.sce, samples = 'library', dbr = 0.2)

@@ -312,5 +312,14 @@ unique(rna$Subtype[cluster10_remove_index])
 cluster14_remove_index <-  which(rna$RNA_snn_res.0.8 == 14 & rna$Subtype != 'FN-eRMS')
 unique(rna$Subtype[cluster14_remove_index])
 
-all_remove <- c(cluster1_remove_index, cluster5_remove_index, cluster15_remove_index, cluster7_remove_index, cluster24_remove_index, cluster10_remove_index, cluster14_remove_index, cluster6_remove_index, 
+all_remove_index <- c(cluster1_remove_index, cluster5_remove_index, cluster15_remove_index, cluster7_remove_index, cluster24_remove_index, cluster10_remove_index, cluster14_remove_index, cluster6_remove_index, 
 cluster9_remove_index)
+to_remove <- colnames(rna)[all_remove_index]
+to_keep <- setdiff(colnames(rna), to_remove)
+rna_nodb <- subset(rna, subset = m_barcode %in% to_keep)
+DimPlot(rna_nodb, group.by = 'Subtype', cols = my_cols)|DimPlot(rna, group.by = 'Subtype', cols = my_cols)
+
+remove1 <-  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv')
+
+all_remove <- c(remove1$x, to_remove)
+write.csv(file  = 'output/cell_type/sc_rna/clean_unknown/clean_cluster_potential_doublets.csv', row.names = F, all_remove)

@@ -304,3 +304,27 @@ p
 savePlot('output/cell_type/sc_rna/3.wo_db_infercnv_res1.png',p)
 
 
+rna$tumor_labels <- 'unknown'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% t_clusters] <- 'T_cells'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% macro_clusters] <- 'macrophage/monocyte'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% epi_clusters] <- 'epithelial'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% liver_clusters] <- 'liver'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% endo_clusters] <- 'endothelial'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% fn_rms_clusters] <- 'tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% atrt_shh_clusters] <- 'tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% atrt_tyr_clusters] <- 'tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% mrt_clusters] <- 'tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% sysa_clusters] <- 'tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% maybe_rms_p3f_clusters] <- 'maybe_tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% maybe_rms_p3w_clusters] <- 'maybe_tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% maybe_fn_rms_clusters] <- 'maybe_tumor'
+rna$tumor_labels[rna$RNA_snn_res.0.8 %in% maybe_sysa_clusters] <- 'maybe_tumor'
+
+# label cell identity
+rna$cell_identity <- rna$Subtype
+rna$cell_identity[rna$tumor_labels == 'T_cells'] <- 'T_cells'
+rna$cell_identity[rna$tumor_labels == 'macrophage/monocyte'] <- 'macrophage/monocyte'
+rna$cell_identity[rna$tumor_labels == 'epithelial'] <- 'epithelial'
+rna$cell_identity[rna$tumor_labels == 'liver'] <- 'liver'
+rna$cell_identity[rna$tumor_labels == 'endothelial'] <- 'endothelial'
+rna$cell_identity[rna$tumor_labels == 'maybe_tumor'] <- 'maybe_tumor'
