@@ -626,7 +626,8 @@ cluster_behavior_after_correction_plan <- drake_plan(
   # remove potential doublets ---
   # scdblFinder did not find doublets, manually inspect clusters. If a cluster contain a majority of cells from RMS samples and some from ATRT or MRT, these MRT and ATRT maybe potential doublets. 
   # these cells were identified manually from clean_contaminated_cells.R
-  potential_db =  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv'),
+  # potential_db =  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv'),
+  potential_db = read.csv(file  = 'output/cell_type/sc_rna/clean_unknown/clean_cluster_potential_doublets.csv'),
   potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db[,1]),
   rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_no_db),
   rna_wo_db_p = DimPlot(rna_wo_db, group.by = 'Subtype', cols = my_cols),
@@ -672,10 +673,11 @@ cluster_behavior_after_correction_plan <- drake_plan(
 marker_plan <- drake_plan(
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
-   rna_markers = FindAllMarkers(object = rna_nodb_infer, only.pos = T, logfc.threshold = 0.25)
+   rna_markers = FindAllMarkers(object = rna_nodb_infer, only.pos = T, logfc.threshold = 0.25),
   #  atac_markers = FindAllMarkers(object = atac_group_sgr, only.pos = T, logfc.threshold = 0.25),
   ## find markers that distinguish clusters from the same cancer type to others
   # fn_rms_markers = FindMarkers(final_hm_rna_umap, ident.1 = c(1,2,3))
+  p3w_marker = FindMarkers(rna_nodb_infer, ident.1 = 6)
    ## show it visually:
 # DoHeatmap(subset(srat, downsample = 50),
 #           features = top10$gene,

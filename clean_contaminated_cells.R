@@ -191,3 +191,126 @@ cluster_bc <- colnames(rna)[cluster_index]
 unknown_in_cluster <- intersect(all_unknown$x, cluster_bc) 
 print(paste('there are', length(unknown_in_cluster), 'unknown cells out of', length(cluster_bc), 'cells in cluster', tumor_clusters[i]))
 DimPlot(rna, cells.highlight= unknown_in_cluster)|DimPlot(rna, group.by = 'RNA_snn_res.0.8', cols = my_cols, label = T)
+
+
+# more cells seem to be problematic when identifying tumor cells 
+rna <- rna_nodb_infer 
+# get cluster that has more than 1 type of tumor 
+# except for healthy clusters 
+healthy_clusters <- c(28,26,8,18,29,13,21,20) # from identify_tumor_cells.R 
+
+tumor_clusters <- setdiff(unique(rna$RNA_snn_res.0.8), healthy_clusters)
+
+i = 3
+message(paste('investigate cluster', tumor_clusters[i]))
+cluster_index <- rna$RNA_snn_res.0.8 == tumor_clusters[i]
+tumor_type <- data.frame(table(rna$Subtype[cluster_index]))
+tumor_type
+main_tumor_type <- tumor_type$Var1[tumor_type$Freq == max(tumor_type$Freq)]
+message(paste('main tumor type of cluster', tumor_clusters[i], 'is', main_tumor_type))
+
+cluster_bc <- colnames(rna)[cluster_index]lib_l <- data.frame(table(rna$library[cluster_index]))
+lib_l
+
+table(rna$library[cluster_index], rna$Subtype[cluster_index])
+# check cluster 6 - P3W RMS to see if there is db 
+
+# LX379_LX380_an_596 in cluster 6 (P3W) has 1006 cells labeled as P3F and 3823 labeled as P3W 
+# this library is multiplex with samples from P3W and P3F 
+# maybe these 1006 P3F cells are doublets 
+cluster6 <- subset(rna, subset = RNA_snn_res.0.8 == 6)
+
+# check gene expression of cells from cluster 6. doublet cells may have higher total rna count 
+suspect_db_index <- which(cluster6$library == 'LX379_LX380_an_596' & cluster6$Subtype == 'FP-RMS (P3F)')
+
+# check if doublets found from scdbfinder is the same with the suspected db 
+df <- data.frame(y = cluster6$m_barcode,
+                x = cluster6$nCount_RNA,
+                 z = )
+p <- ggplot(df, aes(x=y, y=x)) +
+  geom_point(aes(color=(y %in% colnames(cluster6)[suspect_db_index] )), size=3, na.rm=TRUE) +
+  scale_color_manual(values=c("blue", "red"))
+
+# try sct transform 
+rna <- SCTransform(rna, vars.to.regress = "nCount_RNA", verbose = FALSE)
+
+# check souporcell annotation of these suspected db cells 
+
+sop <- read.csv('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/analyses/analyses/LX379_LX380/an_607/k2/clusters.tsv', sep = '\t')
+
+cluster6_bc <- cluster6$barcodes[suspect_db_index]
+
+sop_suspect_db <- sop[sop$barcode %in% cluster6_bc,]
+
+cluster6_all_bc <- cluster6$barcodes
+sop_all<- sop[sop$barcode %in% cluster6_all_bc,]
+table(sop_all$assignment)
+
+# it seems these cells have different sop label compare to the majority of cells in this cluster p3w 
+
+# check wwtr1 expression in these cells 
+cluster6$wwtr1 <- 'p3w'
+cluster6$wwtr1[suspect_db_index] <- 'suspect_index'
+Idents(cluster6) <- 'wwtr1'
+DotPlot(cluster6, features = 'WWTR1')
+
+
+# cluster 1:
+
+# for now remove cells with different subtypes from the main subtype in the cluster 
+cluster6_remove_index <- which(rna$RNA_snn_res.0.8 == 6 & rna$Subtype != 'FP-RMS (P3W)')
+
+cluster1_remove_index <- which(rna$RNA_snn_res.0.8 == 1 & rna$Subtype != 'ATRT_SHH')
+
+to_remove <- c(colnames(rna)[cluster6_remove], colnames(rna)[cluster1_remove])
+to_keep <- setdiff(colnames(rna), to_remove)
+rna_nodb <- subset(rna, subset = m_barcode %in% to_keep)
+DimPlot(rna_nodb, group.by = 'Subtype', cols = my_cols)|DimPlot(rna, group.by = 'Subtype', cols = my_cols)
+
+for (i in 1:length(tumor_clusters)){
+    subtype <- unique(rna$Subtype[rna$RNA_snn_res.0.8 == tumor_clusters[i]])
+    message(paste('cluster', tumor_clusters[i], 'has', length(subtype), 'subtypes'))
+}
+
+# cluster 9 has 6 subtypes: done!
+# cluster 5 has 6 subtypes: done!
+# cluster 1 has 6 subtypes : done!
+# cluster 15 has 6 subtypes: done!
+# cluster 7 has 6 subtypes: done!
+# cluster 12 has 2 subtypes: it is fine (mrt and mrt_brainmet)
+# cluster 24 has 2 subtypes: done!
+# cluster 10 has 4 subtypes: done!
+# cluster 14 has 4 subtypes: done!
+# cluster 6 has 4 subtypes: done!
+
+
+cluster_index <- rna$RNA_snn_res.0.8 == 14
+tumor_type <- data.frame(table(rna$Subtype[cluster_index]))
+tumor_type
+table(rna$library[cluster_index], rna$Subtype[cluster_index])
+
+# ATRT_MYC is clustered together with ATRT_SHH and TYR, 
+# cluster 9: 
+cluster9_remove_index <-  which(rna$RNA_snn_res.0.8 == 9 & rna$Subtype %in% c('ATRT_SHH', 'ecMRT', 'ecMRT_BrainMet'))
+# cluster 5
+cluster5_remove_index <-  which(rna$RNA_snn_res.0.8 == 5 & rna$Subtype %in% c('ATRT_MYC', 'ATRT_TYR', 'ATRT_SHH', 'ATRT-MYC (replapse from ATRT21)'))
+unique(rna$Subtype[cluster5_remove_index])
+# cluster 15
+cluster15_remove_index <-  which(rna$RNA_snn_res.0.8 == 15 & rna$Subtype %in% c('ATRT_TYR', 'ATRT_SHH'))
+unique(rna$Subtype[cluster15_remove_index])
+# cluster 7
+cluster7_remove_index <-  which(rna$RNA_snn_res.0.8 == 7 & rna$Subtype %in% c('ATRT_TYR', 'ATRT_SHH'))
+unique(rna$Subtype[cluster7_remove_index])
+# cluster 24
+cluster24_remove_index <-  which(rna$RNA_snn_res.0.8 == 24 & rna$Subtype %in% c('ATRT_SHH'))
+unique(rna$Subtype[cluster24_remove_index])
+# cluster 10
+cluster10_remove_index <-  which(rna$RNA_snn_res.0.8 == 10 & rna$Subtype %in% c('FN-eRMS', 'FP-RMS (P3W)'))
+unique(rna$Subtype[cluster10_remove_index])
+
+# cluster 14
+cluster14_remove_index <-  which(rna$RNA_snn_res.0.8 == 14 & rna$Subtype != 'FN-eRMS')
+unique(rna$Subtype[cluster14_remove_index])
+
+all_remove <- c(cluster1_remove_index, cluster5_remove_index, cluster15_remove_index, cluster7_remove_index, cluster24_remove_index, cluster10_remove_index, cluster14_remove_index, cluster6_remove_index, 
+cluster9_remove_index)
