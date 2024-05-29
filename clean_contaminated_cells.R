@@ -323,3 +323,33 @@ remove1 <-  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.c
 
 all_remove <- c(remove1$x, to_remove)
 write.csv(file  = 'output/cell_type/sc_rna/clean_unknown/clean_cluster_potential_doublets.csv', row.names = F, all_remove)
+
+# check fp-p3w cluster contamination 
+suspect_db_index <- which(rna$library == 'LX379_LX380_an_596' & rna$Subtype == 'FP-RMS (P3F)')
+suspect_db <- colnames(rna)[suspect_db_index]
+
+suspect_db_sr <- subset(rna, subset = m_barcode %in% suspect_db)
+p <- DotPlot(suspect_db_sr, feature = 'WWTR1')
+savePlot('output/cell_type/sc_rna/lx379_only_p3f.png', p)
+
+p <- DotPlot(suspect_db_sr, feature = male.genes) + theme(axis.text.x = element_text(angle = 90))
+savePlot('output/cell_type/sc_rna/lx380_male_genes.png',p)
+
+p <- DotPlot(suspect_db_sr, feature = c("XIST", "TSIX"))
+
+sop <- read.csv('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/analyses/analyses/LX379_LX380/an_607/k2/clusters.tsv', sep = '\t')
+
+lx380_index <- which(rna$library == 'LX379_LX380_an_596')
+
+lx380_df <- data.frame(barcode = rna$barcodes[lx380_index],
+m_barcode = rna$m_barcode[lx380_index])
+
+lx380_sop <- merge(lx380_df, sop, by = 'barcode')
+
+lx380_meta <- lx380_sop[,c('assignment')]
+names(lx380_meta) <- lx380_sop$m_barcode
+suspect_db_sr <- AddMetaData(suspect_db_sr, metadata = lx380_meta, name)
+suspect_db_sr <- AddMetaData(suspect_db_sr, metadata = lx380_meta, col.name='sop')
+
+p <- DimPlot(suspect_db_sr, group.by = 'sop')
+savePlot('output/cell_type/sc_rna/lx380_sop.png', p)

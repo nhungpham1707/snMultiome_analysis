@@ -19,7 +19,9 @@ db <- scDblFinder(atac.sce, samples = "library")
 rna <- rna_nodb_infer
 rna.sce <- make.sce(rna)
 db <- scDblFinder(rna.sce, samples = 'library') # found 8229 cells as doublet, remove but still not satisfy 
-
+db_sr <- as.Seurat(db)
+scdb <- colnames(db_sr)[which(db_sr$scDblFinder.class == 'doublet')]
+to_keep <- setdiff(colnames(rna), scdb)
 
 # run again with increase expected db rate 
 

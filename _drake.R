@@ -627,9 +627,11 @@ cluster_behavior_after_correction_plan <- drake_plan(
   # scdblFinder did not find doublets, manually inspect clusters. If a cluster contain a majority of cells from RMS samples and some from ATRT or MRT, these MRT and ATRT maybe potential doublets. 
   # these cells were identified manually from clean_contaminated_cells.R
   # potential_db =  read.csv('output/cell_type/sc_rna/clean_unknown/all_cluster_remove.csv'),
-  potential_db = read.csv(file  = 'output/cell_type/sc_rna/clean_unknown/clean_cluster_potential_doublets.csv'),
-  potential_no_db = setdiff(colnames(hmRna_scroshi_atrt), potential_db[,1]),
-  rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_no_db),
+  manual_db = read.csv(file  = 'output/cell_type/sc_rna/clean_unknown/clean_cluster_potential_doublets.csv'),
+  dbfinder_db = read.csv(file = 'output/cell_type/sc_rna/scdbfinder_doublet_default_setting.csv'),
+  potential_db = c(manual_db[,1], dbfinder_db$x),
+  potential_singlet = setdiff(colnames(hmRna_scroshi_atrt), potential_db),
+  rna_wo_db =  subset(hmRna_scroshi_atrt, subset = m_barcode %in% potential_singlet),
   rna_wo_db_p = DimPlot(rna_wo_db, group.by = 'Subtype', cols = my_cols),
   save_rna_wo_db_p = savePlot(paste0(cleanUnknownRnaDir,'/subtype_after_cleaning.png'), rna_wo_db_p),
   rna_wo_db_ident = change_indent(rna_wo_db, 'RNA_snn_res.0.8'),
@@ -665,11 +667,18 @@ cluster_behavior_after_correction_plan <- drake_plan(
   save_pure.hmrna_wodb.p = savePlot('output/batchEffect/hmrna_wodb_cluster_purity.png', pure.hmrna_wodb.p),
 
   # scroshi after removing db--
-  hmRna_wodb_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_wo_db_general_sub, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_demo_marker', save_path = CellRnaScroshiDir),
+  hmRna_wodb_scroshi_demo = run_scROSHI_w_demo_data(sr = rna_nodb_infer, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_demo_marker', save_path = CellRnaScroshiDir),
   
-  hmRna_wodb_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = hmRna_wodb_scroshi_demo, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_atrt', save_path = CellRnaScroshiDir)
+  hmRna_wodb_scroshi_atrt = run_scROSHI_w_cancer_marker(sr = rna_nodb_infer, cols = my_cols, pt = 1, save_name = 'hm_rna_wodb_w_atrt', save_path = CellRnaScroshiDir)
 )
 
+assign_tumor_cell_plan <- drake_plan(
+  # tumor cells were identified manually by 
+  # inspecting singleR, infercnv, scroshi and markers
+  # check identify_tumor_cells.R for more details 
+  rna_w_tumor_label = assign_tumor_cells(hmRna_wodb_scroshi_atrt)
+  
+)
 marker_plan <- drake_plan(
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
@@ -686,6 +695,6 @@ marker_plan <- drake_plan(
           # slot='scale.data'
           # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
-plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan)
+plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan, assign_tumor_cell_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

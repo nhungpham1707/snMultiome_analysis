@@ -253,6 +253,9 @@ Idents(rna) <- 'cluster_labels'
 DotPlot(rna, features = c('FANCC','CAMTA1'))
 DotPlot(rna, features = c('UBR5','BAALC','AGO2','HEY1','NDRG1','PCM1','TONSL','RECQL4'))
 
+# markers from the organoid paper 
+rms_markers <- c('MYF6','MYF5', 'MYOD1', 'DES', 'MYOG', 'GPC3', 'FGFR4', 'IGF2', 'IGF1R', 'DUSP6', 'MYCN',  'MYL1', 'MYH3', 'TTN', 'TNNT2', 'TNNT3', 'TNNC2', 'RYR1', 'RYR3', 'VGLL2', 'MYL4', 'DMD', 'PAX7', 'MSTN', 'ERBB3', 'CXCR4', 'CD82', 'NCAM1', 'MEOX2', 'HMGA2', 'NOS1')
+DotPlot(rna, features = rms_markers) + theme(axis.text.x = element_text(angle = 90))
 # look for unique genes with CNV from cbioportal for FN-RMS compare to the other tumor : too much manual work 
 
 # check other markers for fn-rms 
@@ -328,3 +331,38 @@ rna$cell_identity[rna$tumor_labels == 'epithelial'] <- 'epithelial'
 rna$cell_identity[rna$tumor_labels == 'liver'] <- 'liver'
 rna$cell_identity[rna$tumor_labels == 'endothelial'] <- 'endothelial'
 rna$cell_identity[rna$tumor_labels == 'maybe_tumor'] <- 'maybe_tumor'
+
+
+# maybe sysa 
+unique(rna$Individual.ID[rna$cluster_labels == 'maybe_sysa'])
+"PMCID160AAA" "PMCID467AAP" "PMCID641AAN" "PMCID072AAO" "PMCID338AAA"
+
+# lost of function of oncosuppressor genes https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8233868/
+sysa_markers <- c('TP53', 'RB1', 'NF1', 'PTEN', 'CDKN2A', 'SMARCB1',  'ATRX')
+DotPlot(rna, features = sysa_markers)
+
+# by overexpress MDM2
+high_sysa <- c('EGFR', 'SSX', 'ERBB2', 'IGFBP2', 'IGF2' )
+DotPlot(rna, features = high_sysa)
+# it is not up in my data 
+
+# targets of the fusion 
+# https://pubmed.ncbi.nlm.nih.gov/23313505/ 
+# gene from figure 3A
+sysa_fusion_up_targets <- c('TBX3', 'DLX2', 'PAX3', 'EBF2', 'NKX2_2', 'PRPH', 'FGF9', 'FZD10', 'SOX3', 'AJAP1', 'EBF3', 'SIX1', 'SIX2', 'CABP7', 'CBX4', 'ETV5', 'PDGFRA', 'FOXD1', 'IGF2', 'TWIST1', 'DLX5', 'CRTAC1', 'GFRA2', 'FLRT2', 'HOXD1', 'EPHA4', 'EPHB3', 'EN2', 'MMP2', 'CDH11', 'SIX3', 'DLX1', 'MSX1', 'GBX2', 'PAX7', 'GRIK3', 'FGF19', 'CADM1', 'CACNA1G', 'CRLF1', 'ENC1', 'SHISA2', 'ADAMTS9', 'LRRC4C', 'ELMOD1', 'EEF1A2', 'ALDH1A2', 'NELL1', 'MLLT3') # no, did not show signal 
+
+# FZD10 as target of the fusion https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0142991
+DotPlot(rna, features = 'FZD10') # no clear signal  
+
+# check subtype of libraries in maybe sysa cluster 
+
+maybe_sysa_lib <- unique(rna$library[rna$cluster_labels == 'maybe_sysa'])
+maybe_sysa_lib
+metadata[metadata$name %in% maybe_sysa_lib,]
+table(rna$library[rna$cluster_labels == 'maybe_sysa'])
+# mmost cells are from libraries with only sysa samples --> assign as sysa cluster 
+
+# finalize the tumor identification
+
+# if cells in healthy clusters, label them as healthy. otherwise, they get label as the sample where they are from 
+
