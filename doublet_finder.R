@@ -21,8 +21,10 @@ rna.sce <- make.sce(rna)
 db <- scDblFinder(rna.sce, samples = 'library') # found 8229 cells as doublet, remove but still not satisfy 
 db_sr <- as.Seurat(db)
 scdb <- colnames(db_sr)[which(db_sr$scDblFinder.class == 'doublet')]
+DimPlot(db_sr, group.by = 'scDblFinder.class', cols = c('grey', 'red'), pt.size = 1)|DimPlot(db_sr, cells.highlight = scdb)
 to_keep <- setdiff(colnames(rna), scdb)
-
+db_sub <- subset(db_sr, subset = m_barcode %in% to_keep)
+DimPlot(db_sub, group.by= 'Subtype', cols = my_cols)|DimPlot(db_sr, group.by = 'Subtype', cols = my_cols)
 # run again with increase expected db rate 
 
 db_0.5 <- scDblFinder(rna.sce, samples = 'library', dbr = 0.5)
