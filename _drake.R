@@ -679,6 +679,13 @@ assign_tumor_cell_plan <- drake_plan(
   rna_w_tumor_label = assign_tumor_cells(hmRna_wodb_scroshi_atrt)
   
 )
+
+# assign tumor cells and remove doublet from
+# rna without removing patient-effect w harmony
+no_harmony_plan <- drake_plan(
+  rna_nohm_nodb = subset(rna_group_sgr, subset =  m_barcode %in% potential_singlet),
+  rna_nohm_tumor_label = assign_cross_labels(des_sr = rna_nohm_nodb, source_sr = rna_w_tumor_label, label_col = 'cell_identity')
+)
 marker_plan <- drake_plan(
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
@@ -695,6 +702,6 @@ marker_plan <- drake_plan(
           # slot='scale.data'
           # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
-plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan, assign_tumor_cell_plan)
+plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan, assign_tumor_cell_plan,no_harmony_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

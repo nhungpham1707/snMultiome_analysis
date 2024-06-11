@@ -85,3 +85,33 @@ change_indent <- function(sr, by){
   Idents(sr) <- by
   return(sr)
 }
+
+plot_dataset <- function(metadata, col_to_plot, save_name, cols = 'slateblue1'){
+  metadata[,c(col_to_plot)][is.na(metadata[,(col_to_plot)])] <- ''
+  stage <- data.frame(table(metadata[,col_to_plot]))
+  colnames(stage) <- c('category', 'n')
+  ggplot(stage, aes(category, n)) + 
+  geom_bar(stat="identity", fill = cols) + coord_flip() + 
+  theme_bw() + 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black")) +
+  xlab('') + ylab('') + labs(title = col_to_plot)+ 
+  theme(text = element_text(size = 30, hjust = 0))
+
+  ggsave(filename = save_name, 
+       width = 1200 * reso/72, height = 700 * reso/72, units ="px", dpi = reso)
+}
+
+# transfer labels from rna to atac or between rna before harmony and after harmony
+assign_cross_labels <- function(des_sr, source_sr, label_col){
+  source_data <- data.frame(category = source_sr@meta.data[,label_col],
+    bc = colnames(source_sr))
+  des_data <- source_data[source_data$bc %in% colnames(des_sr),]
+  metadata <- des_data$category
+  names(metadata) <- des_data$bc
+  message(paste(length(des_data$bc), 'out of', length(source_data$bc), 'cells found in destination sr!'))
+  
+  des_sr <- AddMetaData(des_sr, metadata, col.name = label_col)
+  return(des_sr)
+}
