@@ -1,11 +1,19 @@
 # subset sr to keep a percentage number of cells to perform training 
 # Nhung 14 06 2024
-sampling_sr <- function(sr, percent_to_keep){
+# Input: 
+# - percent_to_keep: percent or number of cells per cell type to keep
+# - type: if the percent_to_keep is the number of cells, add 'number' 
+sampling_sr <- function(sr, percent_to_keep, type = 'percent'){
     cell_list <- unique(sr$cell_type)
     keep <- c()
     for (i in 1:length(cell_list)){
         sub_cells <- colnames(sr)[sr$cell_type == cell_list[i]]
-        n_cell_keep <- floor(percent_to_keep*length(sub_cells)/100)
+        if (type == 'percent'){
+            n_cell_keep <- floor(percent_to_keep*length(sub_cells)/100)
+            
+        } else {
+            n_cell_keep <- min(percent_to_keep, length(sub_cells))
+        }
         keep <- c(sample(sub_cells, n_cell_keep), keep)
     }
     sr$all_bc <- colnames(sr)
@@ -14,8 +22,19 @@ sampling_sr <- function(sr, percent_to_keep){
 }
 
 
-
-
+# run logistic and plot 
+run_logistic_n_plot <- function(ref_sr, predict_sr, ref_class_col = 'cell_type', predict_class_col = 'cell_identity', save_name){
+    refMat <- GetAssayData(ref_sr, slot = 'counts')
+    refClasses <- ref_sr@meta.data[,ref_class_col]
+    train_m <- trainModel(refMat,refClasses)
+    predictData <- GetAssayData(predict_sr, slot = 'counts')
+    p_classes <- predict_sr@meta.data[,predict_class_col]
+    predict_m <- predictSimilarity(train_m,predictData,classes= p_classes,minGeneMatch=0.70)
+    png(filename = save_name)
+    similarityHeatmap(predict_m)
+    dev.off()
+    return(predict_m)
+}
 
 
 
@@ -57,33 +76,33 @@ sampling_sr <- function(sr, percent_to_keep){
 # Libraries #
 #############
 library(glmnet)
-# if(!suppressWarnings(require(ComplexHeatmap)))
-#   message("ComplexHeatmap not found.  This library is needed for plotting functions.  It's the best heatmap library, so install it anyway :)")
-# #Define dummy functions to have parallel calls behave in a serial way
-# serialParallelCalls = list(MulticoreParam=function(workers) {invisible()},
-#                            bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)},
-#                            clusterEvalQ = function(cl,expr) {return(list(eval(expr)))},
-#                            clusterExport = function(cl,varlist,envir='a') {invisible()},
-#                            makeCluster = function(n) {},
-#                            stopCluster = function(cl) {invisible()},
-#                            multicoreWorkers = function() {1}
-#                            )
+if(!suppressWarnings(require(ComplexHeatmap)))
+  message("ComplexHeatmap not found.  This library is needed for plotting functions.  It's the best heatmap library, so install it anyway :)")
+#Define dummy functions to have parallel calls behave in a serial way
+serialParallelCalls = list(MulticoreParam=function(workers) {invisible()},
+                           bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)},
+                           clusterEvalQ = function(cl,expr) {return(list(eval(expr)))},
+                           clusterExport = function(cl,varlist,envir='a') {invisible()},
+                           makeCluster = function(n) {},
+                           stopCluster = function(cl) {invisible()},
+                           multicoreWorkers = function() {1}
+                           )
 
-# #Explicitly define each of the above functions
-# MulticoreParam=function(workers) {invisible()}
-# bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)}
-# clusterEvalQ = function(cl,expr) {return(list(eval(expr)))}
-# clusterExport = function(cl,varlist,envir='a') {invisible()}
-# makeCluster = function(n) {}
-# stopCluster = function(cl) {invisible()}
-# multicoreWorkers = function() {1}
-# workers = NULL
+#Explicitly define each of the above functions
+MulticoreParam=function(workers) {invisible()}
+bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)}
+clusterEvalQ = function(cl,expr) {return(list(eval(expr)))}
+clusterExport = function(cl,varlist,envir='a') {invisible()}
+makeCluster = function(n) {}
+stopCluster = function(cl) {invisible()}
+multicoreWorkers = function() {1}
+workers = NULL
 
-# if(!suppressWarnings(require(BiocParallel))){
-#   message("BiocParallel not found. Parallel processing will not work without this library.")
-#   #Make dummy functions that will allow fall-back to serial.
-#   list2env(serialParallelCalls,environment())
-# }
+if(!suppressWarnings(require(BiocParallel))){
+  message("BiocParallel not found. Parallel processing will not work without this library.")
+  #Make dummy functions that will allow fall-back to serial.
+  list2env(serialParallelCalls,environment())
+}
 
  
 

@@ -28,20 +28,18 @@ healthy_plan <- drake_plan(
     hthyDim = target(sc_atac_dim_redu(hthyNor),
                 transform = map(hthyNor,
                             id.vars = !!tissue_list,
-                            .id = id.vars))
-    # hthymrg = target(merge_sr_list(c(hthyDim), healthyDir),
-    #             transform = combine(hthyDim,
-    #                         id.vars = !!tissue_list,
-    #                         .id = id.vars)),
-    # hthymrgNor = sc_atac_normalize(hthymrg),
-    # hthymrgDim = sc_atac_dim_redu(hthymrgNor)
-    # hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir)
-    # hthyanchors = target(FindIntegrationAnchors(c(hthyDim), 
-    #                reduction = 'rlsi'),
-    #               transform = combine(hthyDim,
-    #                   id.var = !!tissue_list,
-    #                   .id = id.)),
-    # hthyInt = IntegrateData(anchorset = hthyanchors, dims = 1:50)
+                            .id = id.vars)),
+    hthySubset = target(sampling_sr(hthyDim, percent_to_keep = 800, type = 'number'),
+                transform = map(hthyDim,
+                            id.vars = !!tissue_list,
+                            .id = id.vars)),
+    hthymrg = target(merge_sr_list(c(hthySubset), healthyDir),
+                transform = combine(hthySubset,
+                            id.vars = !!tissue_list,
+                            .id = id.vars)),
+    hthymrgNor = sc_atac_normalize(hthymrg),
+    hthymrgDim = sc_atac_dim_redu(hthymrgNor),
+    hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir)
 )
 
 make(healthy_plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

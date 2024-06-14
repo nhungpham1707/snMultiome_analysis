@@ -10,7 +10,7 @@ t_m <- trainModel(refMat,classes)
 tgtData <- GetAssayData(rna_w_tumor_label, slot = 'counts')
 p_classes <- rna_w_tumor_label$cell_identity
 p_m <- predictSimilarity(t_m,tgtData,classes= p_classes,minGeneMatch=0.70)
-png(filename = 'output/figures/logistic_regression/trained_adrenal.png')
+png(filename = 'output/figures/logistic_regression/trained_kidney.png')
 similarityHeatmap(p_m)
 dev.off()
 # endothelial cells from our scRNAseq are very similar to the vascular endothelial cells in the reference, which is a good positive control 
@@ -34,5 +34,8 @@ similarityHeatmap(test_m)
 dev.off()
 # yes, cell types are correctly correlated to themselve again --> model seems to be fine 
 
+# generate merg reference dataset from descartes
+# for each tissue, get a maximum 800 cells per cell type, then merg all the tissue together 
 
+sub_sr <- sampling_sr(sr, percent_to_keep = 800, type = 'number') 
 
