@@ -39,7 +39,18 @@ list_files_with_exts(functions_folder, 'R') %>%
 # cols = my_cols)
 # savePlot('output/batchEffect/rna/harmony/test_final_hm/hm_rna_subtype.png')
 
-loadd(rna_nodb_infer)
-saveRDS(file = 'output/sc_RNA/merge_all/rna_nodb_infer.RDS', rna_nodb_infer)
+# loadd(rna_w_tumor_label)
+# saveRDS(file = 'output/sc_RNA/merge_all/rna_hm.RDS', rna_w_tumor_label)
 
+# loadd(rna_nohm_tumor_label)
+# saveRDS(file = 'output/sc_RNA/merge_all/rna.RDS', rna_nohm_tumor_label)
+
+# loadd(atac_group_sgr)
+# saveRDS(file = 'output/sc_atac/merge_all/atac.RDS',atac_group_sgr)
+
+# loadd(final_hm_atac_umap)
+# saveRDS(file='output/sc_atac/merge_all/atac_hm.RDS', final_hm_atac_umap)
+
+loadd(atacGA)
+saveRDS(file='output/sc_atac/merge_all/atac_ga.RDS', atacGA)
 message('finished!')

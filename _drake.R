@@ -319,7 +319,7 @@ process_special_lib_plan <- drake_plan(
   atac_group_sgr = group_singleR_labels(atac_noNA),
 
   # prep mrg atac for infercnv
-  # mrgGA = get_gene_activity(atac_group_sgr),
+  atacGA = get_gene_activity(atac_group_sgr),
 
   ## process rna ------------------------------------------
   h5Link_all = target(get_h5_link(lb, metadata),
