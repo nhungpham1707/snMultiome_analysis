@@ -116,16 +116,17 @@ normalize_dim_plot_sr <- function(sr, save_path, lib_name){
          width = 1200 * reso/72, 
          height = 700 * reso/72, units ="px", dpi = reso)
 
-  sr <- RunUMAP(sr, dims = 1:30, n.neighbors = 30)
   return(sr)
 }
 
 clustering_rna_data <- function(sr, dims = 1:15){
   message ('----start clustering rna --------')
   sr <- FindNeighbors(sr, dims = dims)
-  sr_w_cluster <- FindClusters(sr, 
-                                                          resolution = c(0.1, 0.3, 0.5, 0.7, 1))
-  return(sr_w_cluster)
+  sr <- FindClusters(sr, 
+          resolution = c(0.1, 0.3, 0.5, 0.7, 1))  
+  sr <- RunUMAP(sr, dims = 1:30, n.neighbors = 30)
+
+  return(sr)
 
 }
 

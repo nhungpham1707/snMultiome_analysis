@@ -23,20 +23,32 @@ sampling_sr <- function(sr, percent_to_keep, type = 'percent'){
 
 
 # run logistic and plot 
-run_logistic_n_plot <- function(ref_sr, predict_sr, ref_class_col = 'cell_type', predict_class_col = 'cell_identity', save_name){
+run_logistic_n_plot <- function(ref_sr, predict_sr, ref_class_col = 'cell_type',
+ predict_class_col = 'cell_identity',
+  save_name, maxCells = 2000){
     refMat <- GetAssayData(ref_sr, slot = 'counts')
     refClasses <- ref_sr@meta.data[,ref_class_col]
-    train_m <- trainModel(refMat,refClasses)
+    message('------training model ---------')
+    train_m <- trainModel(refMat,refClasses,
+     maxCells = maxCells )
+    message('------predicting -------')
     predictData <- GetAssayData(predict_sr, slot = 'counts')
     p_classes <- predict_sr@meta.data[,predict_class_col]
     predict_m <- predictSimilarity(train_m,predictData,classes= p_classes,minGeneMatch=0.70)
+    message('----plotting heatmap-----')
     png(filename = save_name)
     similarityHeatmap(predict_m)
     dev.off()
     return(predict_m)
 }
 
-
+train_logistic_w_sr <- function(sr, maxCells = 20000, class_col = 'cell_type'){
+  refMat <- GetAssayData(sr, slot = 'counts')
+  refClasses <- sr@meta.data[,class_col]
+  message('------training model ---------')
+  train_m <- trainModel(refMat,refClasses,
+  maxCells = maxCells )
+}
 
 
 
@@ -370,23 +382,25 @@ summariseToClass = function(mtx,classes,logit=any(mtx<0 | mtx>1)){
 #' @param sims Similarity scores as calculated by \code{predictSimilarity}.
 #' @param ... Extra parameters to pass to ComplexHeatmaps
 #' @return Heatmap object as constructed by Heatmap
-similarityHeatmap = function(sims,...){
+similarityHeatmap = function(sims, ...){
   #Convert to matrix
   sims = as.matrix(sims)
   #Set colour scheme differently for logits and probabilities
   isLogit = any(sims<0) | any(sims>1)
-  probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000')
+  # probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000')
+  probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#f6e8c3','#c7eae5','#5ab4ac','#01665e')
   logitCols = c('#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e')
-  if(isLogit){
-    cols = circlize::colorRamp2(seq(-5,5,length.out=length(logitCols)),logitCols)
-  }else{
+  if(is.na(isLogit)){
     cols = circlize::colorRamp2(seq(0,1,length.out=length(probCols)),probCols)
+    
+  }else{
+    cols = circlize::colorRamp2(seq(-5,5,length.out=length(logitCols)),logitCols)
   }
   #Do we have too many target "entities" to show them individually?
   showTgts = nrow(sims)>50
   theDots = list(...)
   params = list('matrix'=sims,
-               name=paste0('Predicted\nSimilarity\n',ifelse(isLogit,'(Logit)','(Prob)')),
+               name=paste0('Predicted\nSimilarity\n',ifelse(is.na(isLogit),'(Prob)','(Logit)')),
                col = cols,
                show_row_names = !showTgts,
                show_row_dend = FALSE,

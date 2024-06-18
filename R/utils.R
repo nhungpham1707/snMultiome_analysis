@@ -115,3 +115,8 @@ assign_cross_labels <- function(des_sr, source_sr, label_col){
   des_sr <- AddMetaData(des_sr, metadata, col.name = label_col)
   return(des_sr)
 }
+
+set_default_assay <- function(sr, assay ){
+  DefaultAssay(sr) <- assay
+  return(sr)
+}

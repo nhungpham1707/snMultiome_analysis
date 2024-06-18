@@ -1,12 +1,15 @@
 merge_sr_list <- function(sr_list, savepath){
-  mergeSr <- sr_list[1]
+  mergeSr <- sr_list[[1]]
+  message(paste('the first tissue is', unique(sr_list[[1]]$tissue)))
   for (i in 2:length(sr_list)){
-    tissue <- unique(sr_list$tissue)
-    mergeSr <- merge(x = mergeSr, y = sr_list[i],
+    tissue <- unique(sr_list[[i]]$tissue)
+    message(paste('merge', i, 'sample', 'tissue', tissue))
+    mergeSr <- merge(x = mergeSr, y = sr_list[[i]],
                 merge.data = TRUE, 
                 add.cell.ids = c('', tissue))
     saveRDS(mergeSr, paste0(savepath, '/merge_', i, '_tissue.RDS'))
   }
+  return(mergeSr)
 }
 
 # for large dataset, merge required too much memory, to reduce it use integration with anchors 

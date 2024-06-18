@@ -51,6 +51,6 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(final_hm_atac_umap)
 # saveRDS(file='output/sc_atac/merge_all/atac_hm.RDS', final_hm_atac_umap)
 
-loadd(atacGA)
-saveRDS(file='output/sc_atac/merge_all/atac_ga.RDS', atacGA)
+loadd(hthyDim_adrenal)
+saveRDS(file='output/healthy_data/hthyDim_adrenal', hthyDim_adrenal)
 message('finished!')

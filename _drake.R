@@ -34,6 +34,11 @@ snglId <- sngLib %>% map(splitName)
 lbLst <- unique(c(specialLib, mulLib, sngLib)) 
 idLst <- lbLst %>% map(splitName)
 
+# read metadata for healthy data that are used for identifying cell origin ----
+hthy_dataDir <- '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes'
+healthy_metadata <- read.csv(paste0(hthy_dataDir,'/filtered.cell_metadata.for_website.txt.gz'), sep = '\t')
+all_hthytissue_list <- unique(healthy_metadata$tissue)
+hthytissue_list <- all_hthytissue_list
 
 # define drake plan ----
 # ----------------------------------------------------------
@@ -702,6 +707,58 @@ marker_plan <- drake_plan(
           # slot='scale.data'
           # ) + theme(axis.text.y=element_text(size=6)) # try here https://github.com/scgenomics/scgenomics-public.github.io/blob/main/docs/14-enrich/14-enrich.R
 )
-plan <- bind_plans(combine_peak_plan, process_special_lib_plan, process_plan, cell_annotation_plan, cluster_behavior_plan, batch_detection_plan, batch_correction_plan, cluster_behavior_after_correction_plan, marker_plan, assign_tumor_cell_plan,no_harmony_plan)
+
+healthy_plan <- drake_plan(
+    hthysr = target(readRDS(paste0(hthy_dataDir, '/', ts, '_filtered.seurat.for_website.RDS')),
+                transform = map(ts = !!hthytissue_list ,
+                                id.vars = !!hthytissue_list ,
+                                .id = id.vars)),
+    hthysrFill = target(filter_outliers_healthyAtac(hthysr, healthyFigDir),
+                transform = map(hthysr,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    hthyNor = target(sc_atac_normalize(hthysrFill),
+                transform = map(hthysrFill,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    hthyDim = target(sc_atac_dim_redu(hthyNor),
+                transform = map(hthyNor,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    hthySubset = target(sampling_sr(hthyDim, percent_to_keep = 800, type = 'number'),
+                transform = map(hthyDim,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    hthymrg = target(merge_sr_list(c(hthySubset), healthyDir),
+                transform = combine(hthySubset,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    hthymrgNor = sc_atac_normalize(hthymrg),
+    hthymrgDim = sc_atac_dim_redu(hthymrgNor),
+    hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir),
+    hthymrgGA = get_gene_activity(hthymrgDim),
+    rna_hthymrg = set_default_assay(hthymrgDim, assay = 'RNA'),
+    rna_hthymrg_nor = normalize_dim_plot_sr(rna_hthymrg, save_path = healthyDir, lib_name = 'hthy_all_rna' ),
+    rna_hthymrg_clus = clustering_rna_data(rna_hthymrg_nor)
+)
+
+logistic_plan <- drake_plan(
+  train_rna_20000 = trainModel(GetAssayData(rna_hthymrg_clus), classes = rna_hthymrg_clus$cell_type, maxCells = 40000),
+  predict_rna_20000 = predictSimilarity(train_rna_20000, 
+        GetAssayData(rna_w_tumor_label), 
+        classes = rna_w_tumor_label$cell_identity, 
+        minGeneMatch = 0.7)
+)
+
+
+
+
+plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
+                  process_plan, cell_annotation_plan, 
+                  cluster_behavior_plan, batch_detection_plan, 
+                  batch_correction_plan, 
+                  cluster_behavior_after_correction_plan, 
+                  marker_plan, assign_tumor_cell_plan,
+                  no_harmony_plan,healthy_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
