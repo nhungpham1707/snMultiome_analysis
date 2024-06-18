@@ -42,14 +42,6 @@ run_logistic_n_plot <- function(ref_sr, predict_sr, ref_class_col = 'cell_type',
     return(predict_m)
 }
 
-train_logistic_w_sr <- function(sr, maxCells = 20000, class_col = 'cell_type'){
-  refMat <- GetAssayData(sr, slot = 'counts')
-  refClasses <- sr@meta.data[,class_col]
-  message('------training model ---------')
-  train_m <- trainModel(refMat,refClasses,
-  maxCells = maxCells )
-}
-
 
 
 
