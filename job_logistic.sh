@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=logistic2
-#SBATCH --output=log_logistic2.out
-#SBATCH --time=96:0:0
+#SBATCH --job-name=4logistic
+#SBATCH --output=log_logistic4.out
+#SBATCH --time=12:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=350G
+#SBATCH --mem=100G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END

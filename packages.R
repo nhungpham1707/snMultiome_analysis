@@ -56,6 +56,7 @@ suppressPackageStartupMessages({
   library(scROSHI) # dev github version  
   library(scales) # for default colors 
   library(tools)
+  library(RColorBrewer)
   
 
   library(SingleCellExperiment)

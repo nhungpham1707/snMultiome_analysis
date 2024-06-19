@@ -380,9 +380,10 @@ similarityHeatmap = function(sims, ...){
   #Set colour scheme differently for logits and probabilities
   isLogit = any(sims<0) | any(sims>1)
   # probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000')
-  probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#f6e8c3','#c7eae5','#5ab4ac','#01665e')
+  probCols = brewer.pal(n = 9,name = 'RdYlBu')
+
   logitCols = c('#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e')
-  if(is.na(isLogit)){
+  if(is.na(isLogit) | !isLogit){
     cols = circlize::colorRamp2(seq(0,1,length.out=length(probCols)),probCols)
     
   }else{

@@ -39,3 +39,25 @@ dev.off()
 
 sub_sr <- sampling_sr(sr, percent_to_keep = 800, type = 'number') 
 
+
+
+## tr Jeff reference from xi 2020 
+# try on openondemand 
+ hthy <- readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds')
+ hthy = normalize_dim_plot_sr(hthy, save_path = healthyDir, lib_name = 'xi_2020' )
+hthy = clustering_rna_data(hthy)
+
+xi_train <- trainModel(GetAssayData(hthy), classes = hthy$cell_type)
+
+p_xi <- predictSimilarity(xi_train,GetAssayData(rna),classes= rna$cell_identity,minGeneMatch=0.70, logits = F)
+
+
+similarityHeatmap(p_xi)
+# xu at alas from Terezinha 
+ xu_atlas = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Terezinha_reference/xu_atlas_2023.RDS')
+train_xu_atlas = trainModel(GetAssayData(xu_atlas), 
+            classes = xu_atlas$final_annotation, maxCells = 2000)
+predict_xu_atlas = predictSimilarity(train_xu_atlas, 
+        GetAssayData(rna), 
+        classes = rna$cell_identity,
+        minGeneMatch = 0.7)

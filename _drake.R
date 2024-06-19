@@ -390,6 +390,10 @@ process_special_lib_plan <- drake_plan(
   rna_noNA = remove_na_cells(rna_meta),
   rna_fix = fix_special_lib_rna(gexSID_specialLib, rna_noNA, gexNoDb_specialLib),
   rna_group_sgr = group_singleR_labels(rna_fix),
+  # change cell barcodes --
+  new_bc = paste0(rna_group_sgr$barcodes, '_', rna_group_sgr$library),
+  rna_new_bc = RenameCells(rna_group_sgr, new.names = new_bc),
+
   # prep rna for infercnv -----
   # prepare count matrix 
   # preInferRna = target(make_anno_count_mx(gexClusSgr, save_path = rnaInferInputDir ),
@@ -681,7 +685,14 @@ assign_tumor_cell_plan <- drake_plan(
   # tumor cells were identified manually by 
   # inspecting singleR, infercnv, scroshi and markers
   # check identify_tumor_cells.R for more details 
-  rna_w_tumor_label = assign_tumor_cells(hmRna_wodb_scroshi_atrt)
+  rna_w_tumor_label = assign_tumor_cells(hmRna_wodb_scroshi_atrt),
+  rna_new_bc = paste0(rna_w_tumor_label$barcodes, '_', rna_w_tumor_label$library),
+  rna_w_tumor_label_newbc = RenameCells(rna_w_tumor_label, new.names = rna_new_bc),
+  # atac --
+  atachm_new_bc = paste0(hmAtac_scroshi_atrt$barcodes, '_', hmAtac_scroshi_atrt$library),
+  atac_hm_newbc = RenameCells(hmAtac_scroshi_atrt, new.names = atachm_new_bc),
+  atac_hm_w_tumor_label = assign_cross_labels(des_sr = atac_hm_newbc, source_sr = rna_w_tumor_label_newbc, 
+  label_col = 'cell_identity')
   
 )
 
@@ -689,8 +700,12 @@ assign_tumor_cell_plan <- drake_plan(
 # rna without removing patient-effect w harmony
 no_harmony_plan <- drake_plan(
   rna_nohm_nodb = subset(rna_group_sgr, subset =  m_barcode %in% potential_singlet),
-  rna_nohm_tumor_label = assign_cross_labels(des_sr = rna_nohm_nodb, source_sr = rna_w_tumor_label, label_col = 'cell_identity')
-)
+  rna_nohm_tumor_label = assign_cross_labels(des_sr = rna_nohm_nodb, source_sr = rna_w_tumor_label, label_col = 'cell_identity'),
+  # atac ---
+  atac_new_bc = paste0(atac_group_sgr$barcodes, '_', atac_group_sgr$library),
+  atac_newbc = RenameCells(atac_group_sgr, new.names = atac_new_bc ),
+  atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label, label_col = 'cell_identity')
+  )
 marker_plan <- drake_plan(
   # # calculate markers ---
   # ref https://satijalab.org/seurat/articles/pbmc3k_tutorial.html
@@ -713,41 +728,68 @@ healthy_plan <- drake_plan(
                 transform = map(ts = !!hthytissue_list ,
                                 id.vars = !!hthytissue_list ,
                                 .id = id.vars)),
-    hthysrFill = target(filter_outliers_healthyAtac(hthysr, healthyFigDir),
+    # process atac hthy ---
+    atac_hthysr = target(set_default_assay(hthysr, assay = 'peaks'),
+        transform = map(hthysr ,
+                        id.vars = !!hthytissue_list ,
+                        .id = id.vars)),
+    atac_hthysrFill = target(filter_outliers_healthyAtac(atac_hthysr, healthyFigDir),
+                transform = map(atac_hthysr,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    atac_hthyNor = target(sc_atac_normalize(atac_hthysrFill),
+                transform = map(atac_hthysrFill,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    atac_hthyDim = target(sc_atac_dim_redu(atac_hthyNor),
+                transform = map(atac_hthyNor,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    atac_hthySubset = target(sampling_sr(atac_hthyDim, percent_to_keep = 800, type = 'number'),
+                transform = map(atac_hthyDim,
+                            id.vars = !!hthytissue_list ,
+                            .id = id.vars)),
+    atac_hthymrg = target(merge_sr_list(c(atac_hthySubset), healthyDir),
+                transform = combine(atac_hthySubset,
+                id.vars = !!hthytissue_list ,
+                .id = id.vars)),
+    atac_hthymrgNor = sc_atac_normalize(atac_hthymrg),
+    atac_hthymrgDim = sc_atac_dim_redu(atac_hthymrgNor),
+    atac_hthymrgGA = get_gene_activity(atac_hthymrgDim),
+    # merg rna hthy ---
+    rna_hthySubset = target(sampling_sr(hthysr, percent_to_keep = 800, type = 'number'),
                 transform = map(hthysr,
                             id.vars = !!hthytissue_list ,
                             .id = id.vars)),
-    hthyNor = target(sc_atac_normalize(hthysrFill),
-                transform = map(hthysrFill,
-                            id.vars = !!hthytissue_list ,
-                            .id = id.vars)),
-    hthyDim = target(sc_atac_dim_redu(hthyNor),
-                transform = map(hthyNor,
-                            id.vars = !!hthytissue_list ,
-                            .id = id.vars)),
-    hthySubset = target(sampling_sr(hthyDim, percent_to_keep = 800, type = 'number'),
-                transform = map(hthyDim,
-                            id.vars = !!hthytissue_list ,
-                            .id = id.vars)),
-    hthymrg = target(merge_sr_list(c(hthySubset), healthyDir),
-                transform = combine(hthySubset,
-                            id.vars = !!hthytissue_list ,
-                            .id = id.vars)),
-    hthymrgNor = sc_atac_normalize(hthymrg),
-    hthymrgDim = sc_atac_dim_redu(hthymrgNor),
-    hthymrgDimP = dimplot_w_nCell_label(hthymrgDim, by = 'tissue', healthyFigDir),
-    hthymrgGA = get_gene_activity(hthymrgDim),
-    rna_hthymrg = set_default_assay(hthymrgDim, assay = 'RNA'),
+    rna_hthymrg = target(merge_sr_list(c(rna_hthySubset), healthyDir),
+                transform = combine(rna_hthySubset,
+                id.vars = !!hthytissue_list ,
+                .id = id.vars)),
     rna_hthymrg_nor = normalize_dim_plot_sr(rna_hthymrg, save_path = healthyDir, lib_name = 'hthy_all_rna' ),
     rna_hthymrg_clus = clustering_rna_data(rna_hthymrg_nor)
+    
 )
 
 logistic_plan <- drake_plan(
+  # with descardes data ---
   train_rna_20000 = trainModel(GetAssayData(rna_hthymrg_clus), classes = rna_hthymrg_clus$cell_type, maxCells = 40000),
   predict_rna_20000 = predictSimilarity(train_rna_20000, 
         GetAssayData(rna_w_tumor_label), 
         classes = rna_w_tumor_label$cell_identity, 
-        minGeneMatch = 0.7)
+        minGeneMatch = 0.7, logits = FALSE),
+  # xi 2020 
+  xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
+  xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
+  xi_2020_dim = clustering_rna_data(xi_2020_nor),
+  
+  xi_train = trainModel(GetAssayData(xi_2020_dim), 
+    classes = xi_2020_dim$cell_type,
+    maxCells = 40000),
+  p_xi = predictSimilarity(xi_train,
+    GetAssayData(rna_w_tumor_label),
+    classes= rna_w_tumor_label$cell_identity,
+    minGeneMatch=0.70, logits = FALSE)
+
 )
 
 

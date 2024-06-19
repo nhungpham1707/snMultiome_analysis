@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=hm7_scroshi
-#SBATCH --output=log_hm_scroshi7.out
+#SBATCH --job-name=hm10_scroshi
+#SBATCH --output=log_hm_scroshi10.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

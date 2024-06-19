@@ -7,12 +7,15 @@ list_files_with_exts(functions_folder, 'R') %>%
   lapply(source) %>% invisible()
 
 
-loadd(rna_w_tumor_label)
-loadd(rna_group_sgr)
-hthy = readRDS('output/healthy_data/merge_15_tissue.RDS')
+# loadd(rna_hm)
+# loadd(rna)
+hthy = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/all_celltypes.downsampled.filtered.RDS')
 hthy$all_bc <- colnames(hthy)
 
+
 logistic_plan <- drake_plan(
+    rna = readRDS('output/sc_RNA/merge_all/rna.RDS'),
+    rna_hm = readRDS('output/sc_RNA/merge_all/rna_hm.RDS'),
     # test on descartes data ----
     hthy_rna = set_default_assay(hthy, assay = 'RNA'),
     hthy_nor = normalize_dim_plot_sr(hthy_rna, 
@@ -25,8 +28,8 @@ logistic_plan <- drake_plan(
     train_desc_rna_40000 = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 40000),
 
     predict_rna_desc = predictSimilarity(train_desc_rna_40000, 
-        GetAssayData(rna_w_tumor_label), 
-        classes = rna_w_tumor_label$cell_identity,
+        GetAssayData(rna_hm), 
+        classes = rna_hm$cell_identity,
         minGeneMatch = 0.7),
 
     predict_desc_rna25hthy = predictSimilarity(train_desc_rna_40000, 
@@ -40,19 +43,19 @@ logistic_plan <- drake_plan(
             classes = xu_atlas$final_annotation, 
             maxCells = 40000),
     predict_rnahm_xu_atlas = predictSimilarity(train_xu_atlas, 
-        GetAssayData(rna_w_tumor_label), 
-        classes = rna_w_tumor_label$cell_identity,
+        GetAssayData(rna_hm), 
+        classes = rna_hm$cell_identity,
         minGeneMatch = 0.7),
     
     # test on rna without removing patient effect ---
     predict_rna_nohm_descartes = predictSimilarity(train_desc_rna_40000, 
-        GetAssayData(rna_group_sgr), 
-        classes = rna_group_sgr$RNA_snn_res.0.5,
+        GetAssayData(rna), 
+        classes = rna$RNA_snn_res.0.5,
         minGeneMatch = 0.7),
 
     predict_rna_nohm_xu = predictSimilarity(train_xu_atlas, 
-        GetAssayData(rna_group_sgr),
-        classes = rna_group_sgr$RNA_snn_res.0.5,
+        GetAssayData(rna),
+        classes = rna$RNA_snn_res.0.5,
         minGeneMatch = 0.7)
 )
 

@@ -219,14 +219,14 @@ endothelial <- c('PECAM1', 'VWF', 'ENG', 'CDH5', 'RAMP3')
 # colors for plot
 my_cols <- c("pink1", '#ccb1f1', "violet", "slateblue1", "purple3",
             "turquoise2", 'darkred', "steelblue",'#25aff5', "blue2", 
-            "navyblue", "orange", "tomato", 'cornsilk4',  "palevioletred", 
+            "navyblue", "orange", "tomato",   'aquamarine4', "palevioletred", 
             "violetred", "red2", "springgreen2", "yellowgreen", 
             "palegreen4", '#1fa195', "wheat2", "#d4d915", "yellow4", 
             "yellow", "wheat4", "tan", "tan3", "brown",
             "grey70", "grey30", 'maroon4', 'maroon2', 'maroon', 
             'lightsalmon', "coral2",'lightsalmon3', 'lightsalmon4', 
-            'pink4', 'peru', "skyblue",'mediumpurple4', 'mediumpurple', 'lightblue4',
-            'aquamarine4', 'aquamarine', 
+            'pink4', 'cornsilk4','peru', "skyblue",'mediumpurple4', 'mediumpurple', 'lightblue4',
+             'aquamarine', 
              'black', 'bisque4')
             
 my_cols2 <- c('#25aff5',  "navyblue", 
