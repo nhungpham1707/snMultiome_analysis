@@ -10,7 +10,8 @@ identify_cell_origin_by_logistic_regress3 <- function(ref_sr, predict_sr, ref_cl
     message('-----check reference data -----')
     refMat <- GetAssayData(ref_sr, slot = 'counts')
     refClasses <- ref_sr@meta.data[,ref_class_col]
-    table(refClasses)
+    refClasses_plot <- data.frame(table(refClasses))
+    p <- ggplot(data = refClasses_plot, aes(x = refClasses, y = Freq)) + geom_point(stat = 'identity') + coord_flip()
     
     
     
