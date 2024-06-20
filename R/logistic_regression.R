@@ -1,13 +1,48 @@
+# 
+# run logistic regression
+# - check reference data, subset if required
+# - check if classes in reference data are balance
+#   - if not, resampling data to improve it 
+
+identify_cell_origin_by_logistic_regress3 <- function(ref_sr, predict_sr, ref_class_col = 'cell_type',
+ predict_class_col = 'cell_identity',
+  save_name, maxCells = 2000){
+    message('-----check reference data -----')
+    refMat <- GetAssayData(ref_sr, slot = 'counts')
+    refClasses <- ref_sr@meta.data[,ref_class_col]
+    table(refClasses)
+    
+    
+    
+    message('------training model ---------')
+    train_m <- trainModel(refMat,refClasses,
+     maxCells = maxCells )
+    message('------predicting -------')
+    predictData <- GetAssayData(predict_sr, slot = 'counts')
+    p_classes <- predict_sr@meta.data[,predict_class_col]
+    predict_m <- predictSimilarity(train_m,predictData,classes= p_classes,minGeneMatch=0.70)
+    message('----plotting heatmap-----')
+    png(filename = save_name)
+    similarityHeatmap(predict_m)
+    dev.off()
+    return(predict_m)
+}
+
+
+
+
+
+
 # subset sr to keep a percentage number of cells to perform training 
 # Nhung 14 06 2024
 # Input: 
-# - percent_to_keep: percent or number of cells per cell type to keep
+# - percent_to_keep: percent or number of cells per cell type (class_col) to keep
 # - type: if the percent_to_keep is the number of cells, add 'number' 
-sampling_sr <- function(sr, percent_to_keep, type = 'percent'){
-    cell_list <- unique(sr$cell_type)
+sampling_sr <- function(sr, percent_to_keep, type = 'percent', class_col){
+    cell_list <- unique(sr@meta.data[,class_col])
     keep <- c()
     for (i in 1:length(cell_list)){
-        sub_cells <- colnames(sr)[sr$cell_type == cell_list[i]]
+        sub_cells <- colnames(sr)[sr@meta.data[,class_col] == cell_list[i]]
         if (type == 'percent'){
             n_cell_keep <- floor(percent_to_keep*length(sub_cells)/100)
             

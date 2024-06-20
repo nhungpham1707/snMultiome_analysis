@@ -686,8 +686,8 @@ assign_tumor_cell_plan <- drake_plan(
   # inspecting singleR, infercnv, scroshi and markers
   # check identify_tumor_cells.R for more details 
   rna_w_tumor_label = assign_tumor_cells(hmRna_wodb_scroshi_atrt),
-  rna_new_bc = paste0(rna_w_tumor_label$barcodes, '_', rna_w_tumor_label$library),
-  rna_w_tumor_label_newbc = RenameCells(rna_w_tumor_label, new.names = rna_new_bc),
+  rna_hm_new_bc = paste0(rna_w_tumor_label$barcodes, '_', rna_w_tumor_label$library),
+  rna_w_tumor_label_newbc = RenameCells(rna_w_tumor_label, new.names = rna_hm_new_bc),
   # atac --
   atachm_new_bc = paste0(hmAtac_scroshi_atrt$barcodes, '_', hmAtac_scroshi_atrt$library),
   atac_hm_newbc = RenameCells(hmAtac_scroshi_atrt, new.names = atachm_new_bc),
