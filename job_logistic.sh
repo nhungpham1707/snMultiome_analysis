@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=6logistic
 #SBATCH --output=log_logistic6.out
-#SBATCH --time=12:0:0
+#SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=200G
 #SBATCH --cpus-per-task=1
