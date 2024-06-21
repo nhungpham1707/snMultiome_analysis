@@ -757,7 +757,7 @@ healthy_plan <- drake_plan(
     atac_hthymrgDim = sc_atac_dim_redu(atac_hthymrgNor),
     atac_hthymrgGA = get_gene_activity(atac_hthymrgDim),
     # merg rna hthy ---
-    rna_hthySubset = target(sampling_sr(hthysr, percent_to_keep = 800, type = 'number'),
+    rna_hthySubset = target(sampling_sr(hthysr, percent_to_keep = 800, type = 'number', class_col = 'cell_type'),
                 transform = map(hthysr,
                             id.vars = !!hthytissue_list ,
                             .id = id.vars)),

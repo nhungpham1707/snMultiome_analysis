@@ -25,12 +25,12 @@ logistic_plan <- drake_plan(
     hthy_75 = sampling_sr(hthy_clus, 75, class_col = 'cell_type'),
     to_keep = setdiff(colnames(hthy), colnames(hthy_75)),
     hthy_25 =  subset(hthy, subset = all_bc %in% to_keep),
-    train_desc_rna_40k = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 40000),
+    # train_desc_rna_40k = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 40000),
 
-    p_rna_desc = predictSimilarity(train_desc_rna_40k, 
-        GetAssayData(rna_hm), 
-        classes = rna_hm$cell_identity,
-        minGeneMatch = 0.7, logits = F),
+    # p_rna_desc = predictSimilarity(train_desc_rna_40k, 
+        # GetAssayData(rna_hm), 
+        # classes = rna_hm$cell_identity,
+        # minGeneMatch = 0.7, logits = F),
 
     p_desc_rna25hthy = predictSimilarity(train_desc_rna_40k, 
         GetAssayData(hthy_25),
@@ -86,13 +86,22 @@ logistic_plan <- drake_plan(
                 classes = rna_hm$cell_identity,
                 minGeneMatch = 0.7,
                 logits = F),
-
-    
+    xi_nojuv = subset(xi, subset = stage_type != 'Juv_SC'),
+    train_xi_nojuv = trainModel(
+                    GetAssayData(xi_nojuv),
+                    classes = xi_nojuv$cell_type,
+                    maxCells = 10000),
+    p_xi_nojuv = predictSimilarity(
+                    train_xi_nojuv,
+                    GetAssayData(rna_hm),
+                    classes = rna_hm$cell_identity,
+                    minGeneMatch = 0.7,
+                    logits = F),
     # test on rna without removing patient effect ---
-    p_rna_nohm_descartes_40k = predictSimilarity(train_desc_rna_40k, 
-        GetAssayData(rna), 
-        classes = rna$RNA_snn_res.0.5,
-        minGeneMatch = 0.7, logits = F),
+    # p_rna_nohm_descartes_40k = predictSimilarity(train_desc_rna_40k, 
+    #     GetAssayData(rna), 
+    #     classes = rna$RNA_snn_res.0.5,
+    #     minGeneMatch = 0.7, logits = F),
     p_rna_no_hm_xi_40k = predictSimilarity(train_xi_40k,
             GetAssayData(rna),
             classes = rna$RNA_snn_res.0.5,
