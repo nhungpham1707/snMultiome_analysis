@@ -57,7 +57,7 @@ suppressPackageStartupMessages({
   library(scales) # for default colors 
   library(tools)
   library(RColorBrewer)
-  
+  library(funrar) #convert df to matrix (logistic regression significant prob heatmap)
 
   library(SingleCellExperiment)
   library(cowplot)

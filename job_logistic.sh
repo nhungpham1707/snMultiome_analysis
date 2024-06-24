@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=4logistic
-#SBATCH --output=log_logistic4.out
+#SBATCH --job-name=logistic
+#SBATCH --output=log_logistic.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=200G

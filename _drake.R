@@ -745,7 +745,7 @@ healthy_plan <- drake_plan(
                 transform = map(atac_hthyNor,
                             id.vars = !!hthytissue_list ,
                             .id = id.vars)),
-    atac_hthySubset = target(sampling_sr(atac_hthyDim, percent_to_keep = 800, type = 'number'),
+    atac_hthySubset = target(sampling_sr(atac_hthyDim, percent_to_keep = 800, type = 'number', class_col = 'cell_type'),
                 transform = map(atac_hthyDim,
                             id.vars = !!hthytissue_list ,
                             .id = id.vars)),

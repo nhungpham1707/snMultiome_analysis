@@ -31,9 +31,37 @@ identify_cell_origin_by_logistic_regress3 <- function(ref_sr, predict_sr, ref_cl
 
 
 
+analyze_logistic_res <- function(logistic_prediction, prob_cutoff = 0.5){
+  result <- c()
+  cell_type <- unique(rownames(logistic_prediction))
+  for (i in 1:length(cell_type)){
+  tumor1 <- logistic_prediction[i,]
+  tumor1 <- tumor1[order(tumor1, decreasing = T)]
+  # get only prob > 0.5
+  tumor_sig <- tumor1[tumor1 > prob_cutoff] 
+  tumor_sig <- tumor_sig[!is.na(tumor_sig)]
+  head(tumor_sig)
+  if (is_empty(tumor_sig)){
+    result <- result
+  } else {
+    result <- data.frame(cells = cell_type[i],
+    similar_to = names(tumor_sig), 
+    prob = tumor_sig) %>% rbind(result, .)
+    }
+  }
 
+  rownames(result) <- NULL
+  return(result)
+}
 
-
+# result: significant result from analyze_logistic_res
+heatmap_only_significant_prob <- function(logistic_prediction, prob_cutoff = 0.5, probCols){
+  result <- analyze_logistic_res(logistic_prediction, prob_cutoff)
+  m <- stack_to_matrix(result, 'cells', 'similar_to', 'prob')
+  m[is.na(m)] <- 0
+  similarityHeatmap(m, probCols)
+  
+}
 # subset sr to keep a percentage number of cells to perform training 
 # Nhung 14 06 2024
 # Input: 
@@ -410,14 +438,18 @@ summariseToClass = function(mtx,classes,logit=any(mtx<0 | mtx>1)){
 #' @param sims Similarity scores as calculated by \code{predictSimilarity}.
 #' @param ... Extra parameters to pass to ComplexHeatmaps
 #' @return Heatmap object as constructed by Heatmap
-similarityHeatmap = function(sims, ...){
+similarityHeatmap = function(sims, probCols, ...){
   #Convert to matrix
   sims = as.matrix(sims)
   #Set colour scheme differently for logits and probabilities
   isLogit = any(sims<0) | any(sims>1)
   # probCols = c('#ffffff','#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000')
-  probCols = brewer.pal(n = 9,name = 'RdYlBu')
-  probCols = rev(probCols)
+  if (missing(probCols)){
+    probCols = brewer.pal(n = 9,name = 'RdYlBu')
+    probCols = rev(probCols)
+  } else {
+    probCols = probCols
+  }
   logitCols = c('#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e')
   if(is.na(isLogit) | !isLogit){
     cols = circlize::colorRamp2(seq(0,1,length.out=length(probCols)),probCols)

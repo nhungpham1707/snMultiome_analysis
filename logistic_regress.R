@@ -61,3 +61,9 @@ predict_xu_atlas = predictSimilarity(train_xu_atlas,
         GetAssayData(rna), 
         classes = rna$cell_identity,
         minGeneMatch = 0.7)
+
+probCols = brewer.pal(n = 9,name = 'RdYlBu')
+probCols = rev(probCols)
+probCols[1] <- 'white'
+
+heatmap_only_significant_prob(p_ka_40k, prob_cutoff  = 0.6, probCols = probCols)

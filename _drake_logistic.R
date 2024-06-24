@@ -23,20 +23,31 @@ logistic_plan <- drake_plan(
                         lib_name = 'hthy_subset'),
     hthy_clus = clustering_rna_data(hthy_nor),
     hthy_75 = sampling_sr(hthy_clus, 75, class_col = 'cell_type'),
-    to_keep = setdiff(colnames(hthy), colnames(hthy_75)),
-    hthy_25 =  subset(hthy, subset = all_bc %in% to_keep),
-    # train_desc_rna_40k = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 40000),
+    to_keep = setdiff(colnames(hthy_rna), colnames(hthy_75)),
+    hthy_25 =  subset(hthy_rna, subset = all_bc %in% to_keep),
+    train_desc_rna_40k = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 40000),
 
-    # p_rna_desc = predictSimilarity(train_desc_rna_40k, 
-        # GetAssayData(rna_hm), 
-        # classes = rna_hm$cell_identity,
-        # minGeneMatch = 0.7, logits = F),
+    p_rna_desc = predictSimilarity(train_desc_rna_40k, 
+        GetAssayData(rna_hm), 
+        classes = rna_hm$cell_identity,
+        minGeneMatch = 0.7, logits = F),
 
     p_desc_rna25hthy = predictSimilarity(train_desc_rna_40k, 
         GetAssayData(hthy_25),
         classes = hthy_25$cell_type, 
         minGeneMatch = 0.7, logits = F),
     
+     train_desc_rna_80k = trainModel(GetAssayData(hthy_75), classes = hthy_75$cell_type, maxCells = 80000),
+
+    p_rna_desc_80k = predictSimilarity(train_desc_rna_80k, 
+        GetAssayData(rna_hm), 
+        classes = rna_hm$cell_identity,
+        minGeneMatch = 0.7, logits = F),
+
+    p_desc_rna25hthy_80k = predictSimilarity(train_desc_rna_80k, 
+        GetAssayData(hthy_25),
+        classes = hthy_25$cell_type, 
+        minGeneMatch = 0.7, logits = F),
     # test other reference data ----
     ## xu at alas ----
     xu_atlas = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Terezinha_reference/xu_atlas_2023.RDS'),
