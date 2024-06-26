@@ -755,7 +755,16 @@ healthy_plan <- drake_plan(
                 .id = id.vars)),
     atac_hthymrgNor = sc_atac_normalize(atac_hthymrg),
     atac_hthymrgDim = sc_atac_dim_redu(atac_hthymrgNor),
-    atac_hthymrgGA = get_gene_activity(atac_hthymrgDim),
+    # atac_hthymrgGA = get_gene_activity_wo_fragFile(atac_hthymrgDim, hg38),
+
+    # mrg descartes atac download ---
+    desc_atac_download = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/all_celltypes.downsampled.filtered.RDS'),
+    # atac downloaded online have no fragment file, so use custom-made function to get gene activity 
+    # desc_atac_download_ga = get_gene_activity_wo_fragFile(desc_atac_download, hg38),
+
+    # create the same gene activity for multiome data to compare with reference data --
+    # atac_ga_nofrag = get_gene_activity_wo_fragFile(atac_group_sgr, hg38),
+
     # merg rna hthy ---
     rna_hthySubset = target(sampling_sr(hthysr, percent_to_keep = 800, type = 'number', class_col = 'cell_type'),
                 transform = map(hthysr,

@@ -67,3 +67,53 @@ probCols = rev(probCols)
 probCols[1] <- 'white'
 
 heatmap_only_significant_prob(p_ka_40k, prob_cutoff  = 0.6, probCols = probCols)
+
+
+## make atac ga for descartes 
+desc_eye <- readRDS()
+annotation <- getHg38Annotation()
+fragpath <- c('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/fragment_files/sample_55_eye.fragments.txt.gz', '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/fragment_files/sample_53_eye.fragments.txt.gz')
+
+fragpath = '/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/fragment_files/mrg_eye.txt.gz'
+sr_chr <-  CreateChromatinAssay(
+    counts = GetAssayData(sr),
+    sep = c(":", "-"),
+    annotation = hg38,
+    min.cells = 10,
+    min.features = 200)
+
+
+sr_chr <- CreateSeuratObject(counts = sr_chr,
+                                assay = "peaks" )
+eyeSr_ga <- get_gene_activity(eyeSr)
+
+
+# create index frag file 
+tabix -p bed sample_55_eye.fragments.txt.gz 
+ 
+in bash in conda activate /hpc/pmc_drost/nhung/anaconda3/envs/cutnrun_env/
+
+# create similar peak coordinate between test and training set 
+# make granges dataframe from rownames of atac sr
+sr <- atac_group_sgr
+make_bedfile_from_rownamesSr <- function(sr){
+coord_df <- c()
+for (i in 1:length(rownames(sr))){
+        message(paste('i is', i))
+coord <- strsplit(rownames(sr)[i], split = '-')
+coord_df <- data.frame(chr = coord[[1]][1],
+                        start = coord[[1]][2],
+                        end = coord[[1]][3]) %>% rbind( coord_df, . )
+}
+return(coord_df)
+}
+
+sr2 <- atac_hthyDim_eye
+
+gr_atac <- makeGRangesFromDataFrame(coord_df_atac)
+gr_eye <- makeGRangesFromDataFrame(coord_df)
+allpeaks <- disjoin(c(gr_atac, gr_eye))
+allpeaks2 <- GenomicRanges::reduce(c(gr_atac, gr_eye))
+library(Repitools)
+
+a_df <- annoGR2DF(allpeaks)
