@@ -11,7 +11,7 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(rna)
 hthy = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/all_celltypes.downsampled.filtered.RDS')
 hthy$all_bc <- colnames(hthy)
-
+loadd(rna_w_tumor_label_newbc)
 
 logistic_plan <- drake_plan(
     rna = readRDS('output/sc_RNA/merge_all/rna.RDS'),
@@ -127,12 +127,31 @@ logistic_plan <- drake_plan(
         GetAssayData(rna),
         classes = rna$cell_identity,
         minGeneMatch = 0.7,
-        logits = F)
+        logits = F),
 
     # predict_rna_nohm_xu = predictSimilarity(train_xu_atlas, 
     #     GetAssayData(rna),
     #     classes = rna$RNA_snn_res.0.5,
     #     minGeneMatch = 0.7)
+
+    # atac ---
+    mrg_dsc_atac = readRDS('output/logistic_regression/mrg_descartes_atac.RDS'),
+    dsc_atac_data = subset(mrg_dsc_atac, subset = source == 'descartes'),
+    atac_data = subset(mrg_dsc_atac, subset = source == 'nhung_etal'),
+    # train_dsc_atac = trainModel(GetAssayData(dsc_atac_data), classes = dsc_atac_data$cell_type),
+
+    atacdata_newbc = paste0(atac_data$barcodes, '_', atac_data$library),
+    atac_data_newbc = RenameCells(atac_data, new.names = atacdata_newbc),
+    atac_data_w_tumor_label = assign_cross_labels(des_sr = atac_data_newbc, source_sr = rna_w_tumor_label_newbc, 
+    label_col = 'cell_identity'),
+    p_dsc_atac = predictSimilarity(train_dsc_atac, 
+        GetAssayData(atac_data_w_tumor_label),
+        classes = atac_data_w_tumor_label$cell_identity,
+        minGeneMatch = 0.7, 
+        logits = F)
+
 )
+
+
 
 make(logistic_plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

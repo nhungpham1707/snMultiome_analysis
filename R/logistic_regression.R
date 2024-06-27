@@ -55,7 +55,10 @@ analyze_logistic_res <- function(logistic_prediction, prob_cutoff = 0.5){
 }
 
 # result: significant result from analyze_logistic_res
-heatmap_only_significant_prob <- function(logistic_prediction, prob_cutoff = 0.5, probCols){
+heatmap_only_significant_prob <- function(logistic_prediction, prob_cutoff = 0.5){
+    probCols = brewer.pal(n = 9,name = 'RdYlBu')
+    probCols = rev(probCols)
+    probCols[1] <- 'white'
   result <- analyze_logistic_res(logistic_prediction, prob_cutoff)
   m <- stack_to_matrix(result, 'cells', 'similar_to', 'prob')
   m[is.na(m)] <- 0

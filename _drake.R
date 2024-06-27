@@ -700,11 +700,13 @@ assign_tumor_cell_plan <- drake_plan(
 # rna without removing patient-effect w harmony
 no_harmony_plan <- drake_plan(
   rna_nohm_nodb = subset(rna_group_sgr, subset =  m_barcode %in% potential_singlet),
-  rna_nohm_tumor_label = assign_cross_labels(des_sr = rna_nohm_nodb, source_sr = rna_w_tumor_label, label_col = 'cell_identity'),
+  newbc_rna_nohm = paste0(rna_nohm_nodb$barcodes, '_', rna_nohm_nodb$library),
+  rna_nohm_nodb_newbc = RenameCells(rna_nohm_nodb, new.names = newbc_rna_nohm), 
+  rna_nohm_tumor_label = assign_cross_labels(des_sr = rna_nohm_nodb_newbc, source_sr = rna_w_tumor_label_newbc, label_col = 'cell_identity'),
   # atac ---
   atac_new_bc = paste0(atac_group_sgr$barcodes, '_', atac_group_sgr$library),
   atac_newbc = RenameCells(atac_group_sgr, new.names = atac_new_bc ),
-  atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label, label_col = 'cell_identity')
+  atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label_newbc, label_col = 'cell_identity')
   )
 marker_plan <- drake_plan(
   # # calculate markers ---

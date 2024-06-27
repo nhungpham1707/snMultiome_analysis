@@ -117,3 +117,47 @@ allpeaks2 <- GenomicRanges::reduce(c(gr_atac, gr_eye))
 library(Repitools)
 
 a_df <- annoGR2DF(allpeaks)
+
+# new idea: merg hthy atac with my atac, it will combine the peak list 
+atac <- hmAtac_scroshi_atrt
+atac$source <- 'nhung_etal'
+hthy = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/all_celltypes.downsampled.filtered.RDS')hthy$source = 'descartes'
+dsc_sr <- CreateChromatinAssay(counts = 
+                GetAssayData(hthy), 
+                sep = c(":","-"), 
+                annotation = hg38, 
+                min.cells = 10, 
+                min.features = 200)
+dsc_sr <- CreateSeuratObject(counts = dsc_sr,
+                                assay = "peaks" )
+metadata <- hthy@meta.data
+rownames(metadata) <- colnames(hthy)
+dsc_sr <- AddMetaData(dsc_sr, metadata)
+mrg_data <- merge(x= atac, y = dsc_sr, add.cell.ids = c('this_paper', 'descartes'))
+saveRDS(file = 'output/logistic_regression/mrg_descartes_atac.RDS', mrg_data)
+ dsc_data <- subset(mrg_data, subset = source == 'descartes')
+ atac_data <- subset(mrg_data, subset = source == 'nhung_etal')
+
+# find overlap between atac and dsc ---
+
+dsc_chr <-  CreateChromatinAssay(
+    counts = GetAssayData(hthy),
+    sep = c(":", "-"),
+    annotation = hg38,
+    min.cells = 10,
+    min.features = 200)
+
+
+dsc_chr <- CreateSeuratObject(counts = dsc_chr,
+                                assay = "peaks" )
+metadata <- dsc_chr@meta.data
+rownames(metadata) <- colnames(dsc_chr)
+dsc_chr <- AddMetaData(dsc_chr, metadata)
+
+atac_gr <- granges(atac_hm_w_tumor_label)
+dsc_gr <- granges(hthy)
+gr1 <- atac_gr
+gr <- dsc_gr
+countOverlaps(gr, gr1)
+olap <- findOverlaps(gr, gr1)
+sub_olap <- subsetByOverlaps(gr, gr1)
