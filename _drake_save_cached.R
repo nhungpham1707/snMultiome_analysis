@@ -51,6 +51,17 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(final_hm_atac_umap)
 # saveRDS(file='output/sc_atac/merge_all/atac_hm.RDS', final_hm_atac_umap)
 
-loadd(hthyDim_adrenal)
-saveRDS(file='output/healthy_data/hthyDim_adrenal', hthyDim_adrenal)
+# loadd(hthyDim_adrenal)
+# saveRDS(file='output/healthy_data/hthyDim_adrenal', hthyDim_adrenal)
+# loadd(atac_hm_w_tumor_label)
+# saveRDS(file = 'output/sc_atac/merge_all/atac_hm_w_tumor_label.RDS', atac_hm_w_tumor_label)
+
+# loadd(atac_nohm_tumor_label)
+# saveRDS(file = 'output/sc_atac/merge_all/atac_nohm_tumor_label.RDS', atac_nohm_tumor_label)
+
+loadd(hg38)
+saveRDS(file = 'output/hg38.RDS', hg38)
+
+
 message('finished!')
+

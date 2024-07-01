@@ -138,7 +138,7 @@ logistic_plan <- drake_plan(
     mrg_dsc_atac = readRDS('output/logistic_regression/mrg_descartes_atac.RDS'),
     dsc_atac_data = subset(mrg_dsc_atac, subset = source == 'descartes'),
     atac_data = subset(mrg_dsc_atac, subset = source == 'nhung_etal'),
-    # train_dsc_atac = trainModel(GetAssayData(dsc_atac_data), classes = dsc_atac_data$cell_type),
+    train_dsc_atac = trainModel(GetAssayData(dsc_atac_data), classes = dsc_atac_data$cell_type),
 
     atacdata_newbc = paste0(atac_data$barcodes, '_', atac_data$library),
     atac_data_newbc = RenameCells(atac_data, new.names = atacdata_newbc),

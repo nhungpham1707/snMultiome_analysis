@@ -121,3 +121,20 @@ set_default_assay <- function(sr, assay ){
   return(sr)
 }
 
+# some atacseq data such as descartes are seurat object but are not chromatin assay. This prevents the use of built-in functions for chromatin assay such as GetAssayData or granges. this func convert such seurat into seurat with chromatin asay. Annotation file can be generated from 'gethg38annotation' func 
+createSrWChromatinAssay <- function(sr, annotation){
+  sr_chr <-  CreateChromatinAssay(
+    counts = GetAssayData(sr),
+    sep = c(":", "-"),
+    annotation = hg38,
+    min.cells = 10,
+    min.features = 200)
+  
+  sr_chr <- CreateSeuratObject(counts = sr_chr,
+                               assay = "peaks" )
+  
+  metadata <- sr@meta.data
+  rownames(metadata) <- colnames(sr)
+  sr_chr <- AddMetaData(sr_chr, metadata)
+  return(sr_chr)
+}

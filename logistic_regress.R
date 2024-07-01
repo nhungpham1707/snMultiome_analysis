@@ -150,14 +150,29 @@ dsc_chr <-  CreateChromatinAssay(
 
 dsc_chr <- CreateSeuratObject(counts = dsc_chr,
                                 assay = "peaks" )
-metadata <- dsc_chr@meta.data
-rownames(metadata) <- colnames(dsc_chr)
+metadata <- hthy@meta.data
+rownames(metadata) <- colnames(hthy)
 dsc_chr <- AddMetaData(dsc_chr, metadata)
 
-atac_gr <- granges(atac_hm_w_tumor_label)
-dsc_gr <- granges(hthy)
+atac_chr <-  CreateChromatinAssay(
+    counts = GetAssayData(atac_hm_w_tumor_label),
+    sep = c(":", "-"),
+    annotation = hg38,
+    min.cells = 10,
+    min.features = 200)
+
+
+atac_chr <- CreateSeuratObject(counts = atac_chr,
+                                assay = "peaks" )
+metadata <- atac_hm_w_tumor_label@meta.data
+rownames(metadata) <- colnames(atac_hm_w_tumor_label)
+atac_chr <- AddMetaData(atac_chr, metadata)
+
+atac_gr <- granges(atac_chr)
+dsc_gr <- granges(dsc_chr)
 gr1 <- atac_gr
 gr <- dsc_gr
-countOverlaps(gr, gr1)
+
 olap <- findOverlaps(gr, gr1)
 sub_olap <- subsetByOverlaps(gr, gr1)
+olap_count <- countOverlaps(gr, gr1, type = )
