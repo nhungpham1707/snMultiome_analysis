@@ -692,8 +692,16 @@ assign_tumor_cell_plan <- drake_plan(
   atachm_new_bc = paste0(hmAtac_scroshi_atrt$barcodes, '_', hmAtac_scroshi_atrt$library),
   atac_hm_newbc = RenameCells(hmAtac_scroshi_atrt, new.names = atachm_new_bc),
   atac_hm_w_tumor_label = assign_cross_labels(des_sr = atac_hm_newbc, source_sr = rna_w_tumor_label_newbc, 
-  label_col = 'cell_identity')
+  label_col = 'cell_identity'),
+  atac_hm_tumor_nona = remove_na_cells_in_metadata(atac_hm_w_tumor_label, 'cell_identity'),
+
+    # atac with gene activity
   
+  atachmGA_new_bc = paste0(hm_atacGA$barcodes, '_', hm_atacGA$library),
+  atac_hmGA_newbc = RenameCells(hm_atacGA, new.names = atachmGA_new_bc),
+  atac_hmGA_w_tumor_label = assign_cross_labels(des_sr = atac_hmGA_newbc, source_sr = rna_w_tumor_label_newbc, 
+  label_col = 'cell_identity'),
+  atac_hmGA_tumor_nona = remove_na_cells_in_metadata(atac_hmGA_w_tumor_label, 'cell_identity')
 )
 
 # assign tumor cells and remove doublet from
@@ -706,7 +714,13 @@ no_harmony_plan <- drake_plan(
   # atac ---
   atac_new_bc = paste0(atac_group_sgr$barcodes, '_', atac_group_sgr$library),
   atac_newbc = RenameCells(atac_group_sgr, new.names = atac_new_bc ),
-  atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label_newbc, label_col = 'cell_identity')
+  atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label_newbc, label_col = 'cell_identity'),
+  atac_nohm_tumor_nona = remove_na_cells_in_metadata(atac_nohm_tumor_label, 'cell_identity')
+  atac_nohm_tumor_ga = get_gene_activity(atac_nohm_tumor_nona)
+
+
+  
+
   )
 marker_plan <- drake_plan(
   # # calculate markers ---

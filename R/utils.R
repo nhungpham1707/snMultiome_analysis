@@ -138,3 +138,19 @@ createSrWChromatinAssay <- function(sr, annotation){
   sr_chr <- AddMetaData(sr_chr, metadata)
   return(sr_chr)
 }
+
+# add cell barcodes after merging as m_barcode in metadata 
+add_mbarcode <- function(sr){
+  sr$m_barcode <- colnames(sr)
+  return(sr)
+}
+
+# remove na cells in a column in metadata 
+# metadata_colname is string of colname
+remove_na_cells_in_metadata <- function(sr, metadata_colname){
+  na_cells = colnames(sr)[is.na(sr@meta.data[,metadata_colname])]
+  cells_to_keep = setdiff(colnames(sr), na_cells)
+  sr_add_mbarcode = add_mbarcode(sr)
+  sr_wo_na = subset(sr_add_mbarcode, subset = m_barcode %in% cells_to_keep)
+  return (sr_wo_na)
+}
