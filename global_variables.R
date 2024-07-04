@@ -3,7 +3,7 @@
 # create variables that will be called 
 # in the analysis.
 # These include: directory where data 
-# and results are stored. Variables 
+# and results are stored and variables 
 # such as filter thredshold, and
 # figures configuration
 # 
@@ -12,7 +12,7 @@
 #  Directory explain: 
 # base_sc_dir: a base location of the project 
 # where data and output locate
-# base_data_dir: where data is (h5 count matrix, fragment files, souporcell) 
+# base_data_dir: where data (i.e. h5 count matrix, fragment files, souporcell) are
 # output directories are organized base
 # on the type of outputs: 
 #   - report_dir: any statistic csv files, 
@@ -26,7 +26,7 @@
 #     e.g. dimplot, vlnplot of data
 #   - atcMrgDir : 
 #     merge seurats of all samples.
-#     this file is the amin file to use 
+#     this file is the main file to use 
 #     for downstream analysis 
 # ---------------------------------------
 
@@ -171,11 +171,14 @@ male.genes <- genelists$male
 stress_gene_list <- genelists$stress
 
 # normal cells from singler human dex for infercnv
+# can be defined by inspecting the singleR result
+# make sure there are at least more than 1 cell 
+# in each reference cells 
 normal_cells <- c('Pre-B_cell_CD34-', 'Pro-B_cell_CD34+', 
                   'B_cell', 'T_cells', 'Macrophage', 
                   'Monocyte', 'Neutrophils', 'NK_cells') 
 
-# Define cell groups: (from primary human atlas)
+# Define cell groups: (from primary human atlas) to group singleR labels
 # ref https://phys.org/news/2021-07-cell-human-tissues.html
 immune_cells <- c("Monocyte", "T_cells", "Neutrophils", "Macrophage", "B_cell", "NK_cell", "DC", "Pro-B_cell_CD34+", "BM & Prog.", "CMP", "Erythroblast", "GMP", "Myelocyte" , "Pro-Myelocyte", "MEP", "HSC_CD34+", "HSC_-G-CSF", "Platelets", "Pre-B_cell_CD34-", "BM")
 brain_cells <- c("Astrocyte", "Neurons", "Neuroepithelial_cell")
@@ -187,7 +190,7 @@ stroma_cells <- c("Fibroblasts", "Endothelial_cells", "Keratinocytes", "Smooth_m
 nonMalignant_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Endothelial_cells', 'Erythroblast', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Myelocyte', 'Osteoblasts', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
 # immune_cells = c('B_cell', 'BM & Prog.', 'DC', 'CMP', 'Monocyte', 'Neutrophils', 'NK_cell', 'Pro-B_cell_CD34+', 'T_cells', 'Gametocytes', 'GMP', 'HSC_-G-CSF', 'HSC_CD34+', 'Macrophage', 'MEP', 'MSC', 'Platelets', 'Pre-B_cell_CD34−', 'Pro-Myelocyte')
 
-## markers ----
+## markers for cancer cells identification  ----
 # ref https://academic.oup.com/neuro-oncology/article/22/5/613/5691191
 ATRT_TYR <- c('MITF', 'OTX2', 'TYR', 'PDGFRB', 'JAK1', 'BMP4')
 ATRT_SHH <- c('NOTCH1', 'GLI2', 'MYCN', 'ASCL1', 'HES1', 'DTX1', 'PTCH1', 'BOC')
