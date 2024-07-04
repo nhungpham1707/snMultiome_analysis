@@ -2,6 +2,7 @@ message('---------- Start running _drake.R ------------')
 setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu')
 ## Load your packages, e.g. library(drake).
 source("./packages.R")
+source("./global_variables.R")
 # Load your R files ----
 functions_folder <- './R'
 list_files_with_exts(functions_folder, 'R') %>%
@@ -695,7 +696,7 @@ assign_tumor_cell_plan <- drake_plan(
   label_col = 'cell_identity'),
   atac_hm_tumor_nona = remove_na_cells_in_metadata(atac_hm_w_tumor_label, 'cell_identity'),
 
-    # atac with gene activity
+    # atac harmony with gene activity
   
   atachmGA_new_bc = paste0(hm_atacGA$barcodes, '_', hm_atacGA$library),
   atac_hmGA_newbc = RenameCells(hm_atacGA, new.names = atachmGA_new_bc),
