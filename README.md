@@ -107,6 +107,6 @@ The overall steps are described in Fig below
 <img src="https://github.com/nhungpham1707/clean_code_bu/blob/main/github_fig/pipeline.drawio.png" width="450" alt>
 </p>
 <p>
-    <em>Pipeline<em>.
+    <em>A schematic of the analysis pipeline<em>.
         </p>
 
