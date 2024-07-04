@@ -76,7 +76,7 @@ Activate conda environment by:
 conda activate scRNA_scATAC_env
 ```
  
-There is conflict to install infercnv and Seurat in the same environment. therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
+There is conflict to install infercnv and Seurat in the same environment. Therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
 
 In short, 
 ```
@@ -85,6 +85,8 @@ mamba activate r43
 mamba install r-essentials=4.3
 
 export PKG_CONFIG_PATH=/home/user/miniconda3/envs/r43/lib/pkgconfig/:$PKG_CONFIG_PATH
+
+# replace /home/user/miniconda3/ to the path of your conda or miniconda 
 
 # activate env 
 conda activate r43 
