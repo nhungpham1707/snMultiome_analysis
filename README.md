@@ -8,7 +8,7 @@ This repo contains code to process and analyze single-nucleus (sn) multiome data
 - Removing patient-specific effects
 - Comparing with published snRNAseq and snATACseq from normal embryonal tissues to identify potential cancer cell of origin
 
-In this pipeline, drake, a workflow manager for R was used. drake helps to store intermediate outputs as cache and can be loaded if needed. In addition, drake helps to rerun the pipeline and skips steps that are still up-to-date. So no need to comment out steps. For more information about drake please visit the [github] (https://github.com/ropensci/drake)
+In this pipeline, drake, a workflow manager for R was used. drake helps to store intermediate outputs as cache and can be loaded if needed. In addition, drake helps to rerun the pipeline and skips steps that are still up-to-date. So no need to comment out steps. For more information about drake please visit the [github](https://github.com/ropensci/drake)
 
 The main scripts are:
 -  _drake.R: a master script that run all analysis steps except infercnv 
