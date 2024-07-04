@@ -715,7 +715,7 @@ no_harmony_plan <- drake_plan(
   atac_new_bc = paste0(atac_group_sgr$barcodes, '_', atac_group_sgr$library),
   atac_newbc = RenameCells(atac_group_sgr, new.names = atac_new_bc ),
   atac_nohm_tumor_label = assign_cross_labels(des_sr = atac_newbc, source_sr = rna_w_tumor_label_newbc, label_col = 'cell_identity'),
-  atac_nohm_tumor_nona = remove_na_cells_in_metadata(atac_nohm_tumor_label, 'cell_identity')
+  atac_nohm_tumor_nona = remove_na_cells_in_metadata(atac_nohm_tumor_label, 'cell_identity'),
   atac_nohm_tumor_ga = get_gene_activity(atac_nohm_tumor_nona)
 
 

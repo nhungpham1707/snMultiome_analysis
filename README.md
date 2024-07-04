@@ -1,4 +1,13 @@
 # scATAC_scRNA analysis pipeline
+This repo contains code to process and analyze single-nucleus (sn) multiome data (snRNAseq + snATACseq). The analysis includes:
+- QC filter 
+- Normalization, Dimension reduction
+- Clustering 
+- Inspecting clustering quality
+- Cell type annotation
+- Removing patient-specific effects
+- Comparing with published snRNAseq and snATACseq from normal embryonal tissues to identify potential cancer cell of origin
+
 ## Data:
 ### scATAC:
 
@@ -10,24 +19,24 @@
 filter matrix.h5 output from cellranger
 
 ### data for sample demultiplexing:
-clsuter.tsv file from souporcell (k=2) 
+clsuter.tsv file from souporcell (k=2 because there are 2 samples in each multiplex library) 
 ## Prepare a metadata file
 
 The file should have the following columns with these exact names (case sensitive): 
   
   | **column name**| **description**|
   |------------|------------|
-  |**RNA_lib**|ID of scRNA library|
-  |**ATAC_lib**| ID of scATAC library|
-  |**data_link**| link to the h5 file. for example, if the path to filter matrix is LX049_LX050/an_127/outs/filtered_feature_bc_matrix.h5, data_link will be LX049_LX050/an_127|
-  |**name**| replace '/' in data_link with '_'. for ex, LX049_LX050_an127. This will be used to label clusters by library|
+  |**RNA_lib**|ID of scRNA library. Can be empty|
+  |**ATAC_lib**| ID of scATAC library. Can be empty|
+  |**data_link**| link to the h5 file. for example, if the path to a filter matrix for a library A is libraryA/an_127/outs/filtered_feature_bc_matrix.h5, data_link will be libraryA/an_127|
+  |**name**| replace '/' in data_link with '_'. for ex, libraryA_an127. This will be used to label clusters by library. Can also be any custom name|
   |**source**| metadata for the sample. for instance, tissue location|
   |**sampleID**| ID of the sample for each library (can be different from library ID). This infomation is used for confounding correction|
-  |**Subtype**| tumor type. for instance, 'MRTK', 'ATRT'|
-  |**Souporcell_link**| link to souporcell result, for ex LX049_LX050/an_207. BY default the function will look for LX049_LX050/an_207/k2/clusters.tsv file| 
+  |**Subtype**| cancer type. for instance, 'MRTK', 'ATRT'|
+  |**Souporcell_link**| link to souporcell result, for ex libraryA/an_207. By default the function will look for libraryA/an_207/k2/clusters.tsv file| 
   |**Date.of.Library**| sequencing date of each library. This infomation is used for confounding correction|
-  |**Individual.ID**| patients ID for each library. This infomation is used for confounding correction| 
-  |**Gender**| patient genders for each library. This infomation is used for confounding correction|
+  |**Individual.ID**| patients ID for each sample. This infomation is used for confounding correction| 
+  |**Gender**| patient genders for each sample. This infomation is used for confounding correction|
 
 
     #' @return RDS of seurat object in sc_atac_preprocessing_dir, report in report_dir and plots in sc_atac_preprocessing_fig_dir defined in global_variables.R
@@ -52,11 +61,11 @@ souporcell_link/k2/clusters.tsv
 
 The main packages are Seurat, Signac and an in-house package SCutils that can be downloaded from [bitbucket](https://bitbucket.org/princessmaximacenter/scutils/src/master/) for curated stress and male gene list. A similar conda environment can be reproduced from the yaml file using the code below:
 ```
-conda env create -f export_environment.yaml
+conda env create -f multiome_env.yml
 ```
 Activate conda environment by: 
 ```
-conda activate scRNA_scATAC
+conda activate scRNA_scATAC_env
 ```
 
 ## Steps
@@ -68,11 +77,4 @@ The overall steps are described in Fig below
 <p>
     <em>Pipeline<em>.
         </p>
-### scATAC processing:
-        - annotation
-       - calculate qc metrics
-       - filtering
-       - normalization
-       - dimension Reduction
-       - clustering
-       - umap
+
