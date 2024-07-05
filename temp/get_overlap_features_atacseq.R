@@ -61,36 +61,74 @@ mrg <- merge(x= atac, y = dsc_atacchr)
 ## only work with accessiblepeaks ---
 pe <- AccessiblePeaks(atac)
 
-olap <- findOverlaps(gr_dsc, gr_atac)
 
+
+
+# 
+
+loadd(atac_hthymrgDim)
+dsc_atac <- atac_hthymrgDim
+
+loadd(atac_hm_w_tumor_label)
+atac <- atac_hm_w_tumor_label
+loadd(hg38)
+
+dsc_atacchr <- createSrWChromatinAssay(dsc_atac, hg38)
+atacchr <- createSrWChromatinAssay(atac, hg38)
+atac_gr <- granges(atacchr)
+dsc_gr <- granges(dsc_atacchr)
+gr_atac <- atac_gr
+gr_dsc <- dsc_gr
+count <- GetAssayData(atac)
+new_atac_count_mx <- makeCountMx_withSamePeaks(gr_dsc, gr_atac, count)
+
+
+
+
+makeCountMx_withSamePeaks <- function(querry_gr, hit_gr, count_hit){
+olap <- findOverlaps(querry_gr,hit_gr)
 olap_df <- as.data.frame(olap) # 568396 peaks dsc vs atac_nohm 
-unique_olap_dsc <- unique(olap_df[,1]) # 262577 peaks 
+unique_olap_querry <- unique(olap_df[,1]) # 262577 peaks 
 
 new_count_mx <- c()
 names <- c()
-for (i in 1:2){
-
-querry_index <- unique_olap_dsc[i]
+for (i in 1:length(unique_olap_querry)){
+message(paste('running', i, 'peaks out of', length(unique_olap_querry), 'unique overlap peaks'))
+querry_index <- unique_olap_querry[i]
 hit_index <- olap_df[olap_df[,1]==querry_index,2]
 
-
 # change coordinate to that in querry (dsc)
-new_coor <- paste0(gr_dsc[querry_index]@seqnames,'-', gr_dsc[querry_index]@ranges)
+new_coor <- paste0(querry_gr[querry_index]@seqnames,'-', querry_gr[querry_index]@ranges)
 
-
-# rownames(count)[hit_index[1]] <- new_coor 
-# atac@assays$peaks@counts@Dimnames[[1]][hit_index[1]] <- new_coor
-# atac@assays$peaks@data@Dimnames[[1]][hit_index[1]] <- new_coor
-# rownames(atac@assays$peaks@meta.features)[hit_index[1]] <- new_coor
-# change count value by summing up all peaks in the region of querry peak
 if (length(hit_index) > 1){
-  new_value <- colSums(count[hit_index,])
+  new_value <- colSums(count_hit[hit_index,])
 } else {
-  new_value <- count[hit_index,]
+  new_value <- count_hit[hit_index,]
 }
-# count[hit_index[1]] <- new_value # this take forever ??? 
-
 new_count_mx <- rbind(new_count_mx, new_value)
 names <- rbind(names, new_coor)
-
+rownames(new_count_mx) <- names[,1]
 }
+return (new_count_mx)
+}
+
+olap_querry <- unique_olap_querry[i]
+
+get_new_coor_value <- function(olap_querry, querry_gr, olap_df, count_hit){
+querry_index <- olap_querry
+hit_index <- olap_df[olap_df[,1]==querry_index,2]
+new_count_mx <- c()
+name <- c()
+# change coordinate to that in querry (dsc)
+new_coor <- paste0(querry_gr[querry_index]@seqnames,'-', querry_gr[querry_index]@ranges)
+
+if (length(hit_index) > 1){
+  new_value <- colSums(count_hit[hit_index,])
+} else {
+  new_value <- count_hit[hit_index,]
+}
+new_count_mx <- rbind(new_count_mx, new_value)
+names <- rbind(names, new_coor)
+rownames(new_count_mx) <- names[,1]
+}
+sapply(unique_olap_querry, get_new_coor_value, querry_gr = dsc_gr, olap_df = olap_df, count_hit = count_hit)

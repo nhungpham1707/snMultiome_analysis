@@ -154,3 +154,42 @@ remove_na_cells_in_metadata <- function(sr, metadata_colname){
   sr_wo_na = subset(sr_add_mbarcode, subset = m_barcode %in% cells_to_keep)
   return (sr_wo_na)
 }
+
+# to compare scATACseq from different sources
+#  with different peak coordinate,
+# we need to convert them into 
+# the same peaks. 
+# Here we get the overlap peaks, 
+# and sum up all small fragments in the
+# target data that are overlap 
+# with a peak in the reference data
+# querry_gr: granges object of the reference data. can be created with granges(sr_w_chromatin_assay)
+# hit_gr: granges object of the target data to change peak coordinate
+# count_hit: count matrix of the target data (can be created with GetAssayData(sr)) 
+
+makeCountMx_withSamePeaks <- function(querry_gr, hit_gr, count_hit){
+olap <- findOverlaps(querry_gr,hit_gr)
+olap_df <- as.data.frame(olap) # 568396 peaks dsc vs atac_nohm 
+unique_olap_querry <- unique(olap_df[,1]) # 262577 peaks 
+
+new_count_mx <- c()
+names <- c()
+for (i in 1:length(unique_olap_querry)){
+message(paste('running', i, 'peaks out of', length(unique_olap_querry), 'unique overlap peaks'))
+querry_index <- unique_olap_querry[i]
+hit_index <- olap_df[olap_df[,1]==querry_index,2]
+
+# change coordinate to that in querry (dsc)
+new_coor <- paste0(querry_gr[querry_index]@seqnames,'-', querry_gr[querry_index]@ranges)
+
+if (length(hit_index) > 1){
+  new_value <- colSums(count_hit[hit_index,])
+} else {
+  new_value <- count_hit[hit_index,]
+}
+new_count_mx <- rbind(new_count_mx, new_value)
+names <- rbind(names, new_coor)
+rownames(new_count_mx) <- names[,1]
+}
+return (new_count_mx)
+}

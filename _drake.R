@@ -796,28 +796,37 @@ healthy_plan <- drake_plan(
     
 )
 
-logistic_plan <- drake_plan(
+logistic_rna_plan <- drake_plan(
   # with descardes data ---
-  train_rna_20000 = trainModel(GetAssayData(rna_hthymrg_clus), classes = rna_hthymrg_clus$cell_type, maxCells = 40000),
-  predict_rna_20000 = predictSimilarity(train_rna_20000, 
-        GetAssayData(rna_w_tumor_label), 
-        classes = rna_w_tumor_label$cell_identity, 
-        minGeneMatch = 0.7, logits = FALSE),
-  # xi 2020 
-  xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
-  xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
-  xi_2020_dim = clustering_rna_data(xi_2020_nor),
+  # train_rna_2k = trainModel(GetAssayData(rna_hthymrg_clus), classes = rna_hthymrg_clus$cell_type, maxCells = 40000),
+  # predict_rna_2k = predictSimilarity(train_rna_2k, 
+  #       GetAssayData(rna_w_tumor_label_newbc), 
+  #       classes = rna_w_tumor_label_newbc$cell_identity,
+  #       minGeneMatch = 0.7, logits = FALSE)
+  # xi 2020 ---
+  # xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
+  # xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
+  # xi_2020_dim = clustering_rna_data(xi_2020_nor),
   
-  xi_train = trainModel(GetAssayData(xi_2020_dim), 
-    classes = xi_2020_dim$cell_type,
-    maxCells = 40000),
-  p_xi = predictSimilarity(xi_train,
-    GetAssayData(rna_w_tumor_label),
-    classes= rna_w_tumor_label$cell_identity,
-    minGeneMatch=0.70, logits = FALSE)
+  # xi_train = trainModel(GetAssayData(xi_2020_dim), 
+  #   classes = xi_2020_dim$cell_type,
+  #   maxCells = 40000),
+  # p_xi = predictSimilarity(xi_train,
+  #   GetAssayData(rna_w_tumor_label_newbc),
+  #   classes= rna_w_tumor_label_newbc$cell_identity,
+  #   minGeneMatch=0.70, logits = FALSE)
 
 )
 
+logistic_atac_plan <- drake_plan(
+  # convert peak coordinate to be comparable ---
+  dsc_atacchr = createSrWChromatinAssay(atac_hthymrgDim, hg38),
+  atacchr = createSrWChromatinAssay(atac_hm_tumor_nona, hg38),
+  atac_gr = granges(atacchr),
+  dsc_gr = granges(dsc_atacchr),
+  atac_hm_count = GetAssayData(atac_hm_tumor_nona),
+  new_atachm_count_mx = makeCountMx_withSamePeaks(dsc_gr,atac_gr, atac_hm_count)
+)
 
 
 
@@ -827,6 +836,7 @@ plan <- bind_plans(combine_peak_plan, process_special_lib_plan,
                   batch_correction_plan, 
                   cluster_behavior_after_correction_plan, 
                   marker_plan, assign_tumor_cell_plan,
-                  no_harmony_plan,healthy_plan)
+                  no_harmony_plan,healthy_plan, logistic_rna_plan,
+                  logistic_atac_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
