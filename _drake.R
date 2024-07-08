@@ -819,13 +819,13 @@ logistic_rna_plan <- drake_plan(
 )
 
 logistic_atac_plan <- drake_plan(
-  # convert peak coordinate to be comparable ---
-  dsc_atacchr = createSrWChromatinAssay(atac_hthymrgDim, hg38),
-  atacchr = createSrWChromatinAssay(atac_hm_tumor_nona, hg38),
-  atac_gr = granges(atacchr),
-  dsc_gr = granges(dsc_atacchr),
-  atac_hm_count = GetAssayData(atac_hm_tumor_nona),
-  new_atachm_count_mx = makeCountMx_withSamePeaks(dsc_gr,atac_gr, atac_hm_count)
+  # # convert peak coordinate to be comparable ---
+  # dsc_atacchr = createSrWChromatinAssay(atac_hthymrgDim, hg38),
+  # atacchr = createSrWChromatinAssay(atac_hm_tumor_nona, hg38),
+  # atac_gr = granges(atacchr),
+  # dsc_gr = granges(dsc_atacchr),
+  # atac_hm_count = GetAssayData(atac_hm_tumor_nona),
+  # new_atachm_count_mx = makeCountMx_withSamePeaks_optimized(dsc_gr,atac_gr, atac_hm_count)
 )
 
 

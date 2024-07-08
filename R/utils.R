@@ -167,29 +167,232 @@ remove_na_cells_in_metadata <- function(sr, metadata_colname){
 # hit_gr: granges object of the target data to change peak coordinate
 # count_hit: count matrix of the target data (can be created with GetAssayData(sr)) 
 
+
+# querry_gr, hit_gr, count_hit are data frames
+
 makeCountMx_withSamePeaks <- function(querry_gr, hit_gr, count_hit){
-olap <- findOverlaps(querry_gr,hit_gr)
-olap_df <- as.data.frame(olap) # 568396 peaks dsc vs atac_nohm 
-unique_olap_querry <- unique(olap_df[,1]) # 262577 peaks 
+  olap <- findOverlaps(querry_gr,hit_gr)
+  olap_df <- as.data.frame(olap) # 568396 peaks 
+  unique_olap_querry <- unique(olap_df[,1]) # 262577 peaks 
 
-new_count_mx <- c()
-names <- c()
-for (i in 1:length(unique_olap_querry)){
-message(paste('running', i, 'peaks out of', length(unique_olap_querry), 'unique overlap peaks'))
-querry_index <- unique_olap_querry[i]
-hit_index <- olap_df[olap_df[,1]==querry_index,2]
+  new_count_mx <- c()
+  names <- c()
+  for (i in 1:length(unique_olap_querry)){
+    message(paste('running', i, 'peaks out of', length(unique_olap_querry), 'unique overlap peaks'))
+    querry_index <- unique_olap_querry[i]
+    hit_index <- olap_df[olap_df[,1]==querry_index,2]
 
-# change coordinate to that in querry (dsc)
-new_coor <- paste0(querry_gr[querry_index]@seqnames,'-', querry_gr[querry_index]@ranges)
+    # change coordinate to that in querry (dsc)
+    new_coor <- paste0(querry_gr[querry_index]@seqnames,'-', querry_gr[querry_index]@ranges)
 
-if (length(hit_index) > 1){
-  new_value <- colSums(count_hit[hit_index,])
-} else {
-  new_value <- count_hit[hit_index,]
+    if (length(hit_index) > 1){
+      new_value <- colSums(count_hit[hit_index,])
+    } else {
+      new_value <- count_hit[hit_index,]
+    }
+    new_count_mx <- rbind(new_count_mx, new_value)
+    names <- rbind(names, new_coor)
+    rownames(new_count_mx) <- names[,1]
+    }
+  return (new_count_mx)
 }
-new_count_mx <- rbind(new_count_mx, new_value)
-names <- rbind(names, new_coor)
-rownames(new_count_mx) <- names[,1]
+
+
+makeCountMx_withSamePeaks_optimized <- function(querry_gr, hit_gr, count_hit){
+  # Find overlaps
+  olap <- findOverlaps(querry_gr, hit_gr)
+  olap_df <- as.data.frame(olap)
+  unique_olap_querry <- unique(olap_df[,1])
+  
+  # Pre-allocate memory
+  n <- length(unique_olap_querry)
+  num_cols <- ncol(count_hit)
+  new_count_mx <- matrix(0, n, num_cols)
+  names <- character(n)
+  total_hit <- length(unique_olap_querry)
+  # Loop through unique overlap queries
+  for (i in seq_along(unique_olap_querry)){
+    message(paste('process', i, 'out of', total_hit, 'overlap peaks'))
+    querry_index <- unique_olap_querry[i]
+    hit_index <- olap_df[olap_df[,1] == querry_index, 2]
+    
+    # Change coordinate to that in querry (dsc)
+    new_coor <- paste0(seqnames(querry_gr[querry_index]), '-', ranges(querry_gr[querry_index]))
+    
+    # Summarize counts
+     if (length(hit_index) > 1){
+      new_value <- colSums(count_hit[hit_index,])
+    } else {
+      new_value <- count_hit[hit_index,]
+    }
+    
+    new_count_mx[i, ] <- new_value
+    names[i] <- new_coor
+  }
+  
+  # Convert matrix to data frame
+  new_count_mx <- as.data.frame(new_count_mx)
+  rownames(new_count_mx) <- names
+  return(new_count_mx)
 }
-return (new_count_mx)
+
+
+
+makeCountMx_withSamePeaks_optimized2 <- function(querry_gr, hit_gr, count_hit) {
+  # Find overlaps
+  olap <- findOverlaps(querry_gr, hit_gr)
+  olap_df <- as.data.frame(olap)
+  
+  # Extract unique querry indices
+  unique_olap_querry <- unique(olap_df[, 1])
+  
+  # Pre-allocate memory
+  n <- length(unique_olap_querry)
+  num_cols <- ncol(count_hit)
+  new_count_mx <- matrix(0, n, num_cols)
+  names <- character(n)
+  
+  # Vectorize computation for new_coor
+  seqnames_vec <- as.character(seqnames(querry_gr))
+  ranges_vec <- as.character(ranges(querry_gr))
+  
+  # Create a list of indices for each unique querry index
+  hit_indices_list <- split(olap_df[, 2], olap_df[, 1])
+  
+  # Loop through unique overlap queries
+  for (i in 10) {
+    querry_index <- unique_olap_querry[i]
+    hit_index <- hit_indices_list[[as.character(querry_index)]]
+    
+    # Change coordinate to that in querry (dsc)
+    new_coor <- paste0(seqnames_vec[querry_index], '-', ranges_vec[querry_index])
+    
+    # Summarize counts
+    if (length(hit_index) > 1) {
+      new_value <- colSums(count_hit[hit_index, ])
+    } else {
+      new_value <- count_hit[hit_index, ]
+    }
+    
+    new_count_mx[i, ] <- new_value
+    names[i] <- new_coor
+  }
+  
+  # Convert matrix to data frame
+  new_count_mx <- as.data.frame(new_count_mx)
+  rownames(new_count_mx) <- names
+  return(new_count_mx)
+}
+
+
+
+makeCountMx_withSamePeaks_optimized3 <- function(querry_gr, hit_gr, count_hit) {
+  # Find overlaps
+  olap <- findOverlaps(querry_gr, hit_gr)
+  
+  # Extract Hits and queryHits directly
+  hits <- olap@to
+  query_hits <- olap@from
+  
+  # Extract unique query indices
+  unique_query <- unique(query_hits)
+  n <- length(unique_query)
+  
+  # Pre-allocate memory
+  num_cols <- ncol(count_hit)
+  new_count_mx <- matrix(0, n, num_cols)
+  names <- character(n)
+  
+  # Vectorize computation for new coordinates
+  seqnames_vec <- as.character(seqnames(querry_gr))
+  ranges_vec <- as.character(ranges(querry_gr))
+  
+  # Loop through unique query indices
+  for (i in seq_len(n)) {
+    message(paste('process', i, 'out of', n, 'peaks'))
+    query_index <- unique_query[i]
+    hit_indices <- hits[query_hits == query_index]
+    
+    # Change coordinate to that in query (dsc)
+    new_coor <- paste0(seqnames_vec[query_index], '-', ranges_vec[query_index])
+    
+    # Summarize counts using matrix subsetting
+    if (length(hit_indices) > 1) {
+      new_value <- colSums(count_hit[hit_indices, ])
+    } else {
+      new_value <- count_hit[hit_indices, ]
+    }
+    
+    new_count_mx[i, ] <- as.numeric(new_value)
+    names[i] <- new_coor
+  }
+  
+  # Convert matrix to data frame
+  new_count_mx <- as.data.frame(new_count_mx)
+  rownames(new_count_mx) <- names
+  return(new_count_mx)
+}
+
+
+
+
+library(Matrix)
+library(foreach)
+library(doParallel)
+
+makeCountMx_withSamePeaks_optimized_parallel <- function(querry_gr, hit_gr, count_hit) {
+  # Find overlaps
+  olap <- findOverlaps(querry_gr, hit_gr)
+  
+  # Extract Hits and queryHits directly
+  hits <- olap@to
+  query_hits <- olap@from
+  
+  # Extract unique query indices
+  unique_query <- unique(query_hits)
+  n <- length(unique_query)
+  
+  # Pre-allocate memory
+  num_cols <- ncol(count_hit)
+  new_count_mx <- matrix(0, n, num_cols)
+  names <- character(n)
+  
+  # Vectorize computation for new coordinates
+  seqnames_vec <- as.character(seqnames(querry_gr))
+  ranges_vec <- as.character(ranges(querry_gr))
+  
+  # Set up parallel backend
+  cores <- detectCores()
+  cl <- makeCluster(cores)
+  registerDoParallel(cl)
+  
+  # Perform parallel computation with progress messages
+  new_count_mx <- foreach(i = unique_query, .combine = rbind) %dopar% {
+    hit_indices <- hits[query_hits == i]
+    
+    # Change coordinate to that in query (dsc)
+    new_coor <- paste0(seqnames_vec[i], '-', ranges_vec[i])
+    
+    # Print progress message
+    message(sprintf("Processing query index %d/%d", which(unique_query == i), length(unique_query)))
+    
+    # Summarize counts using matrix subsetting
+    if (length(hit_indices) > 1) {
+      new_value <- colSums(count_hit[hit_indices,])
+    } else {
+      new_value <- count_hit[hit_indices, ]
+    }
+    
+    as.numeric(new_value)
+  }
+  
+  # Convert matrix to data frame
+  new_count_mx <- as.data.frame(new_count_mx)
+  rownames(new_count_mx) <- names
+  
+  # Deregister parallel backend
+  stopCluster(cl)
+  registerDoSEQ()  # Switch back to sequential processing
+  
+  return(new_count_mx)
 }

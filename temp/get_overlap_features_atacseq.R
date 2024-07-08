@@ -132,3 +132,30 @@ names <- rbind(names, new_coor)
 rownames(new_count_mx) <- names[,1]
 }
 sapply(unique_olap_querry, get_new_coor_value, querry_gr = dsc_gr, olap_df = olap_df, count_hit = count_hit)
+
+
+
+# to speed up the process 
+# remvoe all 0 rows in ocuntmatrix (not sure why they are still there)
+
+freq_0 <- rowSums(atac_hm_count !=0)
+# keep only features with at least 40 cells non 0 
+atac_non0 <- atac_hm_count[freq_0 > 100,] # reduce to 972263 features from 1760372 in atac_hm 
+feature_tokeep <- rownames(atac_hm_count)[freq_0 >100]
+
+atac <- readRDS('output/sc_atac/merge_all/atac_hm_tumor_nona.RDS')
+
+
+atac_sub <- subset(atac, features = feature_tokeep, slot = 'count') # does not work, not sure how to define peaks assay 
+# remove features in atac_gr 
+atac_gr_df <- as.data.frame(atac_gr)
+atac_gr_df$name <- paste0(atac_gr_df$seqnames, '-', atac_gr_df$start, '-', atac_gr_df$end)
+index_tokeep <- atac_gr_df$name %in% feature_tokeep
+new_atac_gr <- atac_gr[index_tokeep]
+
+
+
+id <- seq(1,length(new_atac_gr), by = 1000)
+subset_atac <- function(id, new_atac_gr, atac_non0){
+  
+}
