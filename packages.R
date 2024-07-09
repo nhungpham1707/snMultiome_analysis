@@ -58,6 +58,8 @@ suppressPackageStartupMessages({
   library(tools)
   library(RColorBrewer)
   library(funrar) #convert df to matrix (logistic regression significant prob heatmap)
+  library(TFBSTools)
+  library(JASPAR2020)
 
   library(SingleCellExperiment)
   library(cowplot)

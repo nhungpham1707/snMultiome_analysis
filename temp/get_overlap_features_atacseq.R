@@ -155,7 +155,3 @@ new_atac_gr <- atac_gr[index_tokeep]
 
 
 
-id <- seq(1,length(new_atac_gr), by = 1000)
-subset_atac <- function(id, new_atac_gr, atac_non0){
-  
-}

@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=3hm_scroshi
-#SBATCH --output=log_hm_scroshi3.out
+#SBATCH --job-name=atacwh
+#SBATCH --output=log_atac_whole_mx.out
 #SBATCH --time=600:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
@@ -13,11 +13,7 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 # process, merge and prep for infercnv
 conda activate scRNA_scATAC_env_copy
 
-# Rscript _drake.R
-Rscript r_make_job.R
+Rscript _drake_logis_atac_whole_mx.R
 
-# run infercnv 
-conda activate r43_copy
-Rscript _drake_infercnv.R
-# Rscript _drake_vis_infercnv.R
+
 

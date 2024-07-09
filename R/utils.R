@@ -126,7 +126,7 @@ createSrWChromatinAssay <- function(sr, annotation){
   sr_chr <-  CreateChromatinAssay(
     counts = GetAssayData(sr),
     sep = c(":", "-"),
-    annotation = hg38,
+    annotation = annotation,
     min.cells = 10,
     min.features = 200)
   
@@ -395,4 +395,12 @@ makeCountMx_withSamePeaks_optimized_parallel <- function(querry_gr, hit_gr, coun
   registerDoSEQ()  # Switch back to sequential processing
   
   return(new_count_mx)
+}
+
+
+merge_sparseMx <- function(list_of_mx){
+  mx1 <- list_of_mx[[1]]
+  other_mx <- list_of_mx[[2:length(list_of_mx)]]
+  mrgMx <- RowMergeSparseMatrices(mx1, other_mx)
+  return(mrgMx)
 }
