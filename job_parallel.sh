@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=4hm_scroshi
-#SBATCH --output=log_hm_scroshi4.out
+#SBATCH --job-name=4pipeline_par
+#SBATCH --output=log_parallel4.out
 #SBATCH --time=600:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
@@ -14,10 +14,6 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 conda activate scRNA_scATAC_env_copy
 
 # Rscript _drake.R
-Rscript r_make_job.R
+Rscript r_make_parallel.R
 
-# run infercnv 
-conda activate r43_copy
-Rscript _drake_infercnv.R
-# Rscript _drake_vis_infercnv.R
-
+Rscript _drake_parallel.R
