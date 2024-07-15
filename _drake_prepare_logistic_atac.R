@@ -48,7 +48,7 @@ logistic_atac_plan <- drake_plan(
   all_atachm_mx = target(merge_sparseMx(c(new_atachm_mx)),
                       transform = combine(new_atachm_mx,
                                   id_vars = !!id2,
-                                  .id = id_vars)),
+                                  .id = id_vars))
 
   # combine_atachm_mx = target(rbind(c(new_atachm_mx)),
   #                     transform = combine(new_atachm_mx,

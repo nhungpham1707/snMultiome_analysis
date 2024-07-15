@@ -6,7 +6,6 @@ functions_folder <- './R'
 list_files_with_exts(functions_folder, 'R') %>%
   lapply(source) %>% invisible()
 
-# cannot add these lines in drake_plan because id2 need to be predefined outside drake plan
 atac_mx_plan <- drake_plan(
  atac_hthy = readRDS('output/healthy_data/dsc_atac_hthymrgDim.RDS'),
   atac_hm = readRDS('output/sc_atac/merge_all/atac_hm_tumor_nona.RDS'),

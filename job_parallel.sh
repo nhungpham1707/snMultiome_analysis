@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=4pipeline_par
-#SBATCH --output=log_parallel4.out
-#SBATCH --time=600:0:0
+#SBATCH --job-name=2pipeline_par
+#SBATCH --output=log_parallel2.out
+#SBATCH --time=300:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
 #SBATCH --cpus-per-task=1

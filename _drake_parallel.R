@@ -517,9 +517,7 @@ batch_correction_plan <- drake_plan(
           theta = !!c(0,0.1,0.2,0.5,1))),
                   
   # final hm ----
-  final_hm_rna = harmony_n_plot(rna_group_sgr, batch_factor = 'library', theta = final_theta,
-   sigma = final_sigma, save_path = batchRnaHarmonyDir),
-  
+    
   final_hm_rna = RunHarmony(rna_group_sgr, group.by.vars = 'library', theta = 0.8),
   final_hm_rna_nb = FindNeighbors(object = final_hm_rna, reduction = "harmony", k.param = 30, dims = 1:30),
   final_hm_rna_clus = FindClusters(final_hm_rna_nb, resolution = c(0.2,0.4,0.6, 0.8,1)),
@@ -832,14 +830,21 @@ logistic_atac_plan <- drake_plan(
 
 
 
+# plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
+#                   process_plan, cell_annotation_plan, 
+#                   cluster_behavior_plan, batch_detection_plan, 
+#                   batch_correction_plan, 
+#                   cluster_behavior_after_correction_plan, 
+#                   marker_plan, assign_tumor_cell_plan,
+#                   no_harmony_plan,healthy_plan, logistic_rna_plan,
+#                   logistic_atac_plan)
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
                   process_plan, cell_annotation_plan, 
                   cluster_behavior_plan, batch_detection_plan, 
                   batch_correction_plan, 
                   cluster_behavior_after_correction_plan, 
-                  marker_plan, assign_tumor_cell_plan,
-                  no_harmony_plan,healthy_plan, logistic_rna_plan,
+                  assign_tumor_cell_plan,
+                  no_harmony_plan, logistic_rna_plan,
                   logistic_atac_plan)
-
 options(clustermq.scheduler = "multicore")
-make(plan, parallelism = "clustermq", jobs = 4, lock_cache = FALSE, lock_envir = FALSE)
+make(plan, parallelism = "clustermq", jobs = 1, lock_cache = FALSE, lock_envir = FALSE)

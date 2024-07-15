@@ -13,7 +13,7 @@ source /hpc/pmc_drost/nhung/anaconda3/envs/infercnv_mamba/etc/profile.d/conda.sh
 # process, merge and prep for infercnv
 conda activate scRNA_scATAC_env_copy
 
-Rscript _drake_prepare_logistic_atac.R
+# Rscript _drake_prepare_logistic_atac.R
 
 
-
+Rscript _drake_prepare_logis_atac_whole_mx.R
