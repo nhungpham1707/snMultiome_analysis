@@ -111,5 +111,8 @@ dsc_gr = granges(dsc_atacchr)
 
 new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,atac_gr, sub_atac)
 
-
+loadd(atac_hm_tumor_nona)
+loadd(atac_markers)
+loadd(atac_gr)
+loadd(dsc_gr)
 sub_atac_mx <- extract_atac_w_n_features(n = 20000, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
