@@ -833,25 +833,25 @@ healthy_plan <- drake_plan(
 
 logistic_rna_plan <- drake_plan(
   # with descardes data ---
-  # train_rna_2k = trainModel(GetAssayData(rna_hthymrg_clus),
-  #                           classes = rna_hthymrg_clus$cell_type, 
-  #                           maxCells = 40000),
-  # predict_rna_2k = predictSimilarity(train_rna_2k,
-  #       GetAssayData(rna_w_tumor_label_newbc),
-  #       classes = rna_w_tumor_label_newbc$cell_identity,
-  #       minGeneMatch = 0.7, logits = FALSE),
+  train_rna_2k = trainModel(GetAssayData(rna_hthymrg_clus),
+                            classes = rna_hthymrg_clus$cell_type, 
+                            maxCells = 40000),
+  predict_rna_2k = predictSimilarity(train_rna_2k,
+        GetAssayData(rna_w_tumor_label_newbc),
+        classes = rna_w_tumor_label_newbc$cell_identity,
+        minGeneMatch = 0.7, logits = FALSE),
   # xi 2020 ---
-  # xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
-  # xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
-  # xi_2020_dim = clustering_rna_data(xi_2020_nor),
+  xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
+  xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
+  xi_2020_dim = clustering_rna_data(xi_2020_nor),
 
-  # xi_train = trainModel(GetAssayData(xi_2020_dim),
-  #   classes = xi_2020_dim$cell_type,
-  #   maxCells = 40000),
-  # p_xi = predictSimilarity(xi_train,
-  #   GetAssayData(rna_w_tumor_label_newbc),
-  #   classes= rna_w_tumor_label_newbc$cell_identity,
-  #   minGeneMatch=0.70, logits = FALSE)
+  xi_train = trainModel(GetAssayData(xi_2020_dim),
+    classes = xi_2020_dim$cell_type,
+    maxCells = 40000),
+  p_xi = predictSimilarity(xi_train,
+    GetAssayData(rna_w_tumor_label_newbc),
+    classes= rna_w_tumor_label_newbc$cell_identity,
+    minGeneMatch=0.70, logits = FALSE)
 
 )
 
@@ -871,7 +871,18 @@ logistic_atac_plan <- drake_plan(
   atac_gr_df = as.data.frame(atac_gr),
   index_tokeep = paste0(atac_gr_df$seqnames, '-', atac_gr_df$start, '-', atac_gr_df$end) %in% feature_tokeep,
   new_atac_gr = atac_gr[index_tokeep],
-  new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,new_atac_gr, atac_non0)
+  new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,new_atac_gr, atac_non0),
+  new_atachmMx_colname = assign_colname_newMx(new_atachm_mx, atac_hm_tumor_nona),
+  # train atac dsc ---
+  # train_dsc_atac40k = trainModel(GetAssayData(atac_hthymrgDim), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
+  # train only overlap features ---
+  # sub_dsc_atac = subset(atac_hthymrgDim, features = rownames(new_atachm_mx)),
+  tran_sub_dsc_atac = trainModel(GetAssayData(sub_dsc_atac), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
+
+  p_sub_dsc_atac = predictSimilarity(tran_sub_dsc_atac, new_atachmMx_colname, classes = atac_hm_tumor_nona$cell_identity,
+  minGeneMatch = 0.2, logits = FALSE )
+  # dsc_atac_ident = change_indent(atac_hthymrgDim, by = 'cell_type'),
+  # dsc_markers = FindAllMarkers(dsc_atac_ident)
 )
 
 

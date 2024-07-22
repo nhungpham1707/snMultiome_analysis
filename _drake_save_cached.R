@@ -59,9 +59,14 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(atac_nohm_tumor_label)
 # saveRDS(file = 'output/sc_atac/merge_all/atac_nohm_tumor_label.RDS', atac_nohm_tumor_label)
 
-loadd(hg38)
-saveRDS(file = 'output/hg38.RDS', hg38)
+# loadd(hg38)
+# saveRDS(file = 'output/hg38.RDS', hg38)
 
 
+# loadd(train_dsc_atac40k)
+# saveRDS(file='output/logistic_regression/train_dsc_atac_40k.RDS', train_dsc_atac40k )
+
+loadd(new_atachm_mx)
+saveRDS(file = 'output/logistic_regression/atac_hm_features_above_300cells.RDS', new_atachm_mx )
 message('finished!')
 

@@ -67,3 +67,49 @@ length(unique(f_inmrg))
 f_inmrg2 <- gsub('[0-9]+', '',f_inmrg)
 length(unique(f_inmrg2))
 f_inmrg2
+
+# 22 07 2024 ----
+source('_drake.R')
+loadd(new_atachm_mx)
+loadd(atac_hm_tumor_nona)
+loadd(train_dsc_atac40k)
+new_atachm_mx[1:10,1:10]
+colnames(new_atachm_mx) <- colnames(atac_hm_tumor_nona)
+p_atac <- predictSimilarity(train_dsc_atac40k, new_atachm_mx, 
+                            classes = atac_hm_tumor_nona$cell_identity,
+                            minGeneMatch = 0.0,
+                            logits = F)
+
+# new idea - extract only overlap feature in dsc and train model based on that 
+
+loadd(atac_hthymrgDim)
+
+dsc_markers <- FindAllMarkers(atac_hthymrgDim)
+atac_markers <- FindAllMarkers(atac_hm_tumor_nona)
+# keep only top 5k features for each cell types 
+topfeatures_dsc <- dsc_markers %>% 
+  group_by(cluster) %>% 
+  top_n(n = 5000, 
+        wt = avg_log2FC)
+
+features_to_keep_dsc <- topfeatures_dsc$gene
+sub_dsc <- subset(atac_hthymrgDim, features = features_to_keep_dsc)
+
+loadd(atac_markers)
+topfeatures_atac <- atac_markers %>% 
+  group_by(cluster) %>% 
+  top_n(n = 5000, 
+        wt = avg_log2FC)
+features_to_keep_atac <- topfeatures_atac$gene
+sub_atac <- subset(atac_hm_tumor_nona, features = features_to_keep_atac) # error: no RNA assay --> why? it is the same with dsc, but dsc work ????
+
+loadd(hg38)
+dsc_atacchr = createSrWChromatinAssay(sub_dsc, hg38)
+atacchr = createSrWChromatinAssay(sub_atac, hg38)
+atac_gr = granges(atacchr)
+dsc_gr = granges(dsc_atacchr)
+
+new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,atac_gr, sub_atac)
+
+
+sub_atac_mx <- extract_atac_w_n_features(n = 20000, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
