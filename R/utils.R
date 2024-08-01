@@ -168,7 +168,9 @@ remove_na_cells_in_metadata <- function(sr, metadata_colname){
 # count_hit: count matrix of the target data (can be created with GetAssayData(sr)) 
 
 
-# querry_gr, hit_gr, count_hit are data frames
+# querry_gr: data frame of grange object of querry (reference)
+# hit_gr: data frame of grange object of target 
+# count_hit: data frames, count matrix of target (output from GetAssayData)
 
 makeCountMx_withSamePeaks_optimized3 <- function(querry_gr, hit_gr, count_hit) {
   # Find overlaps

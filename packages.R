@@ -96,4 +96,6 @@ suppressPackageStartupMessages({
   library(lisi)
   library(EnsDb.Hsapiens.v86)
   library(scDblFinder)
+  library(glmnet)
+  library(ComplexHeatmap)
 })

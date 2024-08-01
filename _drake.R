@@ -874,15 +874,15 @@ logistic_atac_plan <- drake_plan(
   new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,new_atac_gr, atac_non0),
   new_atachmMx_colname = assign_colname_newMx(new_atachm_mx, atac_hm_tumor_nona),
   # train atac dsc ---
-  # train_dsc_atac40k = trainModel(GetAssayData(atac_hthymrgDim), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
+  train_dsc_atac40k = trainModel(GetAssayData(atac_hthymrgDim), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
   # train only overlap features ---
-  # sub_dsc_atac = subset(atac_hthymrgDim, features = rownames(new_atachm_mx)),
+  sub_dsc_atac = subset(atac_hthymrgDim, features = rownames(new_atachm_mx)),
   tran_sub_dsc_atac = trainModel(GetAssayData(sub_dsc_atac), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
 
   p_sub_dsc_atac = predictSimilarity(tran_sub_dsc_atac, new_atachmMx_colname, classes = atac_hm_tumor_nona$cell_identity,
-  minGeneMatch = 0.2, logits = FALSE )
-  # dsc_atac_ident = change_indent(atac_hthymrgDim, by = 'cell_type'),
-  # dsc_markers = FindAllMarkers(dsc_atac_ident)
+  minGeneMatch = 0.2, logits = FALSE ),
+  dsc_atac_ident = change_indent(atac_hthymrgDim, by = 'cell_type'),
+  dsc_markers = FindAllMarkers(dsc_atac_ident)
 )
 
 

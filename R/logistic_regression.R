@@ -146,34 +146,34 @@ run_logistic_n_plot <- function(ref_sr, predict_sr, ref_class_col = 'cell_type',
 #############
 # Libraries #
 #############
-library(glmnet)
-if(!suppressWarnings(require(ComplexHeatmap)))
-  message("ComplexHeatmap not found.  This library is needed for plotting functions.  It's the best heatmap library, so install it anyway :)")
-#Define dummy functions to have parallel calls behave in a serial way
-serialParallelCalls = list(MulticoreParam=function(workers) {invisible()},
-                           bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)},
-                           clusterEvalQ = function(cl,expr) {return(list(eval(expr)))},
-                           clusterExport = function(cl,varlist,envir='a') {invisible()},
-                           makeCluster = function(n) {},
-                           stopCluster = function(cl) {invisible()},
-                           multicoreWorkers = function() {1}
-                           )
 
-#Explicitly define each of the above functions
-MulticoreParam=function(workers) {invisible()}
-bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)}
-clusterEvalQ = function(cl,expr) {return(list(eval(expr)))}
-clusterExport = function(cl,varlist,envir='a') {invisible()}
-makeCluster = function(n) {}
-stopCluster = function(cl) {invisible()}
-multicoreWorkers = function() {1}
-workers = NULL
+# if(!suppressWarnings(require(ComplexHeatmap)))
+#   message("ComplexHeatmap not found.  This library is needed for plotting functions.  It's the best heatmap library, so install it anyway :)")
+# #Define dummy functions to have parallel calls behave in a serial way
+# serialParallelCalls = list(MulticoreParam=function(workers) {invisible()},
+#                            bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)},
+#                            clusterEvalQ = function(cl,expr) {return(list(eval(expr)))},
+#                            clusterExport = function(cl,varlist,envir='a') {invisible()},
+#                            makeCluster = function(n) {},
+#                            stopCluster = function(cl) {invisible()},
+#                            multicoreWorkers = function() {1}
+#                            )
 
-if(!suppressWarnings(require(BiocParallel))){
-  message("BiocParallel not found. Parallel processing will not work without this library.")
-  #Make dummy functions that will allow fall-back to serial.
-  list2env(serialParallelCalls,environment())
-}
+# #Explicitly define each of the above functions
+# MulticoreParam=function(workers) {invisible()}
+# bplapply = function(X,FUN,BPPARAM,...) {lapply(X,FUN,...)}
+# clusterEvalQ = function(cl,expr) {return(list(eval(expr)))}
+# clusterExport = function(cl,varlist,envir='a') {invisible()}
+# makeCluster = function(n) {}
+# stopCluster = function(cl) {invisible()}
+# multicoreWorkers = function() {1}
+# workers = NULL
+
+# if(!suppressWarnings(require(BiocParallel))){
+#   message("BiocParallel not found. Parallel processing will not work without this library.")
+#   #Make dummy functions that will allow fall-back to serial.
+#   list2env(serialParallelCalls,environment())
+# }
 
  
 

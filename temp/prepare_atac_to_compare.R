@@ -115,4 +115,41 @@ loadd(atac_hm_tumor_nona)
 loadd(atac_markers)
 loadd(atac_gr)
 loadd(dsc_gr)
+loadd(atac_hthymrgDim)
 sub_atac_mx <- extract_atac_w_n_features(n = 20000, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
+
+sub_atac_mx <- extract_atac_w_n_features(n = 2000, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
+
+sub_atac_mx <- extract_atac_w_n_features(n = 100, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
+
+sub_atac_mx <- extract_atac_w_n_features(n = 10000, atac_markers,GetAssayData(atac_hm_tumor_nona), atac_gr, dsc_gr, atac_hm_tumor_nona)
+saveRDS(file = 'output/logistic_regression/atac_all_markers.RDS', sub_atac_mx)
+sub_dsc <- subset(atac_hthymrgDim, features = rownames(sub_atac_mx))
+
+train_sub_dsc <- trainModel(GetAssayData(sub_dsc), classes = sub_dsc$cell_type, maxCells = 4000)
+saveRDS(file = 'output/logistic_regression/train_sub_dsc_w_overlap_atac_markers.RDS', train_sub_dsc)
+
+p_sub_dsc_atac <- predictSimilarity(train_sub_dsc, sub_atac_mx, 
+                            classes = atac_hm_tumor_nona$cell_identity,
+                            minGeneMatch = 0.9,
+                            logits = F)
+similarityHeatmap(p_sub_dsc_atac)
+
+# 01 08 2024 ----
+# try feature selection to reduce the number of feature 
+library(bestglm)
+library(caret)
+library(pROC)
+library(glmnet)
+library(InformationValue) # no package to install ??
+loadd(new_atachm_mx)
+loadd(atac_hthymrgDim)
+
+dsc_only_overlap_countMx <- subset(atac_hthymrgDim, features = rownames(new_atachm_mx))
+dsc_overlap_mx <- as.matrix(dsc_only_overlap_countMx)
+saveRDS(file = 'output/logistic_regression/dsc_only_overlap_countMx.RDS', dsc_overlap_mx)  # take  a long time 
+
+dsc_atac <- readRDS('output/logistic_regression/dsc_only_overlap_countMx.RDS')
+
+dsc_atac$cell_type <- atac_hthymrgDim$cell_type
+
