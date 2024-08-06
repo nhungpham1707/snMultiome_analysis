@@ -833,10 +833,17 @@ healthy_plan <- drake_plan(
 
 logistic_rna_plan <- drake_plan(
   # with descardes data ---
-  train_rna_2k = trainModel(GetAssayData(rna_hthymrg_clus),
+  train_rna_40k = trainModel(GetAssayData(rna_hthymrg_clus),
                             classes = rna_hthymrg_clus$cell_type, 
                             maxCells = 40000),
-  predict_rna_2k = predictSimilarity(train_rna_2k,
+  predict_rna_40k = predictSimilarity(train_rna_40k,
+        GetAssayData(rna_w_tumor_label_newbc),
+        classes = rna_w_tumor_label_newbc$cell_identity,
+        minGeneMatch = 0.7, logits = FALSE),
+   train_rna_allCells = trainModel(GetAssayData(rna_hthymrg_clus),
+                            classes = rna_hthymrg_clus$cell_type, 
+                            maxCells = 82300),
+  predict_rna_allCells = predictSimilarity(train_rna_allCells,
         GetAssayData(rna_w_tumor_label_newbc),
         classes = rna_w_tumor_label_newbc$cell_identity,
         minGeneMatch = 0.7, logits = FALSE),
@@ -871,18 +878,36 @@ logistic_atac_plan <- drake_plan(
   atac_gr_df = as.data.frame(atac_gr),
   index_tokeep = paste0(atac_gr_df$seqnames, '-', atac_gr_df$start, '-', atac_gr_df$end) %in% feature_tokeep,
   new_atac_gr = atac_gr[index_tokeep],
-  new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,new_atac_gr, atac_non0),
+  # new_atachm_mx = makeCountMx_withSamePeaks_optimized3(dsc_gr,new_atac_gr, atac_non0),
+  new_atachm_mx = readRDS('output/logistic_regression/atac_hm_features_above_300cells.RDS'),
   new_atachmMx_colname = assign_colname_newMx(new_atachm_mx, atac_hm_tumor_nona),
   # train atac dsc ---
-  train_dsc_atac40k = trainModel(GetAssayData(atac_hthymrgDim), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
-  # train only overlap features ---
-  sub_dsc_atac = subset(atac_hthymrgDim, features = rownames(new_atachm_mx)),
-  tran_sub_dsc_atac = trainModel(GetAssayData(sub_dsc_atac), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
+  # train_dsc_atac40k = trainModel(GetAssayData(atac_hthymrgDim), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
+  # # train only overlap features ---
+  # sub_dsc_atac = subset(atac_hthymrgDim, features = rownames(new_atachm_mx)),
+  # tran_sub_dsc_atac = trainModel(GetAssayData(sub_dsc_atac), classes = atac_hthymrgDim$cell_type, maxCells = 40000),
 
-  p_sub_dsc_atac = predictSimilarity(tran_sub_dsc_atac, new_atachmMx_colname, classes = atac_hm_tumor_nona$cell_identity,
-  minGeneMatch = 0.2, logits = FALSE ),
+  # p_sub_dsc_atac = predictSimilarity(tran_sub_dsc_atac, new_atachmMx_colname, classes = atac_hm_tumor_nona$cell_identity,
+  # minGeneMatch = 0.2, logits = FALSE ), # out of memory 350Gb
   dsc_atac_ident = change_indent(atac_hthymrgDim, by = 'cell_type'),
   dsc_markers = FindAllMarkers(dsc_atac_ident)
+#   n = 3000,
+#   topfeatures = dsc_markers %>% 
+#   group_by(cluster) %>% 
+#     top_n(n = n, 
+#         wt = avg_log2FC),
+
+#   features_to_keep <- topfeatures$gene
+# length(features_to_keep)
+# atac_features <- rownames(new_atachm_mx)
+# length(intersect(features_to_keep, atac_features)) # 2k markers - 19330, 3k markers - 27695 , 5k markers - 39435, 7k markers - 46963 
+# train_feature <- intersect(features_to_keep, atac_features)
+  
+# sub_dsc_7k <- subset(dsc_atac, features = train_feature)
+# train_dsc_7k <- trainModel(GetAssayData(sub_dsc_7k), class = sub_dsc_7k$cell_type, maxCell = 82300)
+# sub_atac_7k <- new_atachm_mx[rownames(new_atachm_mx) %in% train_feature,]
+# p_dsc_7k <- predictSimilarity(train_dsc_7k, sub_atac_7k, classes = atac_hm$cell_identity, 
+#                            logits = F, minGeneMatch = 0.7)
 )
 
 

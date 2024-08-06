@@ -145,7 +145,8 @@ library(InformationValue) # no package to install ??
 loadd(new_atachm_mx)
 loadd(atac_hthymrgDim)
 
-dsc_only_overlap_countMx <- subset(atac_hthymrgDim, features = rownames(new_atachm_mx))
+dsc_only_overlap <- subset(atac_hthymrgDim, features = rownames(new_atachm_mx))
+dsc_only_overlap_countMx <- GetAssayData(dsc_only_overlap)
 dsc_overlap_mx <- as.matrix(dsc_only_overlap_countMx)
 saveRDS(file = 'output/logistic_regression/dsc_only_overlap_countMx.RDS', dsc_overlap_mx)  # take  a long time 
 

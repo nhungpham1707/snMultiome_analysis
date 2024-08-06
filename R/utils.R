@@ -242,7 +242,17 @@ colnames(new_atachm_mx) <- colnames(atac_sr)
 return(new_atachm_mx)
 }
 
-
+extract_seurat_w_n_features <- function(n, markers, seurat){
+  topfeatures <- markers %>% 
+    group_by(cluster) %>% 
+    top_n(n = n, 
+          wt = avg_log2FC)
+  
+  features_to_keep <- topfeatures$gene
+  message(paste('there are', length(features_to_keep), 'features to extract'))
+  sub_sr <-  subset(seurat, features = features_to_keep)
+  return(sub_sr)
+}
 
 
 
