@@ -17,35 +17,38 @@ dsc_rna$all_bc <- colnames(dsc_rna)
 rna <- rna_w_tumor_label_newbc
 
 loadd(atac_hthymrgDim)
- dsc_atac = atac_hthymrgDim
- dsc_atac$cell_bc = colnames(dsc_atac)
-
+dsc_atac = atac_hthymrgDim
+dsc_atac$cell_bc = colnames(dsc_atac)
+Idents(dsc_atac) <- 'cell_type'
 new_atachm_mx = readRDS('output/logistic_regression/atac_hm_features_above_300cells.RDS')
-loadd(atac_hm_tumor_nona)
+atac_hm_tumor_nona = readRDS('output/sc_atac/merge_all/atac_hm.RDS')
 colnames(new_atachm_mx) <- colnames(atac_hm_tumor_nona)
 
 logistic_plan <- drake_plan(
-    
-    # test on descartes data ----
-    hthyrna_75 = sampling_sr(dsc_rna, 75, type = 'percent', class_col = 'cell_type'),
+    # get only overlap features---
+    train_feature_rna = intersect(rownames(dsc_rna), rownames(rna)),
+    sub_dsc_rna = subset(dsc_rna, features = train_feature_rna),
+    sub_rna = subset(rna, features = train_feature_rna),
+    # prepare training and test set----
+    dscrna_75 = sampling_sr(sub_dsc_rna, 75, type = 'percent', class_col = 'cell_type'),
 
-    to_keep_rna = setdiff(colnames(hthy_rna), colnames(hthyrna_75)),
+    to_keep_rna = setdiff(colnames(sub_dsc_rna), colnames(dscrna_75)),
 
-    hthyrna_25 =  subset(hthy_rna, subset = all_bc %in% to_keep_rna),
+    dscrna_25 =  subset(sub_dsc_rna, subset = all_bc %in% to_keep_rna),
 
-    train_desc_75rna_allCells = trainModel(GetAssayData(hthyrna_75), classes = hthyrna_75$cell_type, maxCells = 82300),
+    train_desc_75rna_allCells = trainModel(GetAssayData(dscrna_75), classes = dscrna_75$cell_type, maxCells = 82300),
 
     p_rna_75desc_allCells = predictSimilarity(train_desc_75rna_allCells, 
-        GetAssayData(rna_hm), 
-        classes = rna_hm$cell_identity,
+        GetAssayData(sub_rna), 
+        classes = sub_rna$cell_identity,
         minGeneMatch = 0.7, logits = F),
 
     p_desc_75rnaOn25 = predictSimilarity(train_desc_75rna_allCells, 
-        GetAssayData(hthyrna_25),
-        classes = hthy_25$cell_type, 
+        GetAssayData(dscrna_25),
+        classes = dscrna_25$cell_type, 
         minGeneMatch = 0.7, logits = F),
 
-    # atac ---
+    # atac on markers from overlap ---
     dsc_atac_only_overlap = subset(dsc_atac, features = rownames(new_atachm_mx)),
 
     dscOnlyOverlap_markers = FindAllMarkers(object = dsc_atac_only_overlap, only.pos = T, logfc.threshold = 0.25),
@@ -54,7 +57,7 @@ logistic_plan <- drake_plan(
 
     sub_dsc = extract_seurat_w_n_features(n = 3000, dscOnlyOverlap_markers, dsc_atac_only_overlap), 
      
-    hthyatac_75 = sampling_sr(sub_dsc, 75, class_col = 'cell_type'),
+    hthyatac_75 = sampling_sr(sub_dsc, 75, class_col = 'cell_type', type = 'percent'),
 
     to_keep_atac = setdiff(colnames(sub_dsc), colnames(hthyatac_75)),
 
@@ -70,7 +73,39 @@ logistic_plan <- drake_plan(
     sub_atac = new_atachm_mx[rownames(new_atachm_mx) %in% rownames(sub_dsc),],
 
     p_dsc_75atac = predictSimilarity(train_desc_75atac_allCells, 
-   sub_atac, classes = atac_hm_tumor_nona$cell_identity, minGeneMatch = 0.7, logits = F)
+   sub_atac, classes = atac_hm_tumor_nona$cell_identity, minGeneMatch = 0.7, logits = F),
+
+   # atac on markers with all features ---
+
+    dsc_markers = FindAllMarkers(object = dsc_atac, only.pos = T, logfc.threshold = 0.25),
+
+    topfeatures8k = dsc_markers %>% 
+      group_by(cluster) %>% 
+      top_n(n = 8000, 
+            wt = avg_log2FC),
+
+    features8k_to_keep = topfeatures$gene,
+    atac_8kfeatures = rownames(new_atachm_mx),
+    train_8kfeature = intersect(features8k_to_keep, atac_8kfeatures),
+      
+    sub_dsc_8k = subset(dsc_atac, features = train_8kfeature),
+
+    sub_dsc8k75 = sampling_sr(sub_dsc_8k, 75, type = 'percent', class_col = 'cell_type'),
+
+    train_dsc_8k75 = trainModel(GetAssayData(sub_dsc_8k75), class = sub_dsc_8k75$cell_type, maxCell = 82300),
+    # test ----
+    bc_in25 = setdiff(colnames(sub_dsc_8k), colnames(sub_dsc8k75)),
+    sub_dsc8k25 =  subset(sub_dsc_8k, subset = cell_bc %in% bc_in25),
+    p_dscatac8k75on25 = predictSimilarity(train_dsc_8k75, GetAssayData(sub_dsc8k25), classes = sub_dsc8k25$cell_type, logits = F),
+
+    # predict ----
+    sub_atac_8k = new_atachm_mx[rownames(new_atachm_mx) %in% train_8kfeature,],
+
+    p_dsc_8k = predictSimilarity(train_dsc_8k75, sub_atac_8k, classes = atac_hm_tumor_nona$cell_identity, 
+                              logits = F, minGeneMatch = 0.7),
+
+
+
     # test other reference data ----
     ## xu at alas ----
     # xu_atlas = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Terezinha_reference/xu_atlas_2023.RDS'),
@@ -177,4 +212,4 @@ logistic_plan <- drake_plan(
 
 
 
-make(logistic_plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
+make(logistic_plan, lock_cache = FALSE, lock_envir = FALSE)

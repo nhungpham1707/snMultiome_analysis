@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=logisAtac
-#SBATCH --output=log_run_logistic_atac.out
+#SBATCH --job-name=2logisAtac
+#SBATCH --output=log_run_logistic_atac2.out
 #SBATCH --time=96:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=2rnalogistic
-#SBATCH --output=log_logistic_rna2.out
-#SBATCH --time=96:0:0
+#SBATCH --job-name=4rnalogistic
+#SBATCH --output=log_logistic_rna4.out
+#SBATCH --time=600:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=200G
+#SBATCH --mem=350G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END
