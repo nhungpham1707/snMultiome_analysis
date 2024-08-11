@@ -889,25 +889,63 @@ logistic_atac_plan <- drake_plan(
 
   # p_sub_dsc_atac = predictSimilarity(tran_sub_dsc_atac, new_atachmMx_colname, classes = atac_hm_tumor_nona$cell_identity,
   # minGeneMatch = 0.2, logits = FALSE ), # out of memory 350Gb
-  dsc_atac_ident = change_indent(atac_hthymrgDim, by = 'cell_type'),
-  dsc_markers = FindAllMarkers(dsc_atac_ident)
-#   n = 3000,
-#   topfeatures = dsc_markers %>% 
-#   group_by(cluster) %>% 
-#     top_n(n = n, 
-#         wt = avg_log2FC),
 
-#   features_to_keep <- topfeatures$gene
-# length(features_to_keep)
-# atac_features <- rownames(new_atachm_mx)
-# length(intersect(features_to_keep, atac_features)) # 2k markers - 19330, 3k markers - 27695 , 5k markers - 39435, 7k markers - 46963 
-# train_feature <- intersect(features_to_keep, atac_features)
+  # add bc metadata ---
+  dsc_atac = add_barcode_metadata(atac_hthyDim),
+  dsc_atac_ident = change_indent(dsc_atac, by = 'cell_type'),
+  dsc_markers = FindAllMarkers(dsc_atac_ident, only.pos = T, logfc.threshold = 0.25),
+  atac_features = rownames(new_atachm_mx),
+
+  topfeatures7k = dsc_markers %>% 
+    group_by(cluster) %>% 
+    top_n(n = 7000, 
+          wt = avg_log2FC),
   
-# sub_dsc_7k <- subset(dsc_atac, features = train_feature)
-# train_dsc_7k <- trainModel(GetAssayData(sub_dsc_7k), class = sub_dsc_7k$cell_type, maxCell = 82300)
-# sub_atac_7k <- new_atachm_mx[rownames(new_atachm_mx) %in% train_feature,]
-# p_dsc_7k <- predictSimilarity(train_dsc_7k, sub_atac_7k, classes = atac_hm$cell_identity, 
-#                            logits = F, minGeneMatch = 0.7)
+  features_to_keep7k = topfeatures7k$gene,
+
+  train_feature7k = intersect(features_to_keep7k, atac_features),
+  sub_dsc7k = subset(dsc_atac_ident, features = train_feature7k),
+  sub_dsc7k75 = sampling_sr(sub_dsc7k, 75, class_col = 'cell_type', type = 'percent'),
+  
+  sub_dsc_25bc = setdiff(colnames(sub_dsc7k), colnames(sub_dsc7k75)),
+  sub_dsc7k25 =  subset(sub_dsc7k, subset = cell_bc %in% sub_dsc_25bc),
+  
+  # train ----
+  train_dsc7k = trainModel(GetAssayData(sub_dsc7k75), class = sub_dsc7k75$cell_type, maxCell = 82300),
+  # test ----
+  p_dsc7k_test25 = predictSimilarity(train_dsc7k, GetAssayData(sub_dsc7k25), 
+                                     classes = sub_dsc7k25$cell_identity, 
+                                     logits = F, minGeneMatch = 0.0),
+  # predict ----
+  sub_atac7k = new_atachm_mx[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
+  p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hmIdent$cell_identity, 
+                              logits = F, minGeneMatch = 0.0)
+  # 10k features ---
+  topfeatures10k = dsc_markers %>% 
+    group_by(cluster) %>% 
+    top_n(n = 10000, 
+          wt = avg_log2FC),
+  
+  features_to_keep10k = topfeatures10k$gene,
+  train_feature10k = intersect(features_to_keep10k, atac_features),
+  sub_dsc10k = subset(dsc_atac_ident, features = train_feature10k),
+  sub_dsc10k75 = sampling_sr(sub_dsc10k, 75, class_col = 'cell_type', type = 'percent'),
+  
+  sub_dsc_25bc = setdiff(colnames(sub_dsc10k), colnames(sub_dsc10k75)),
+  sub_dsc10k25 =  subset(sub_dsc10k, subset = cell_bc %in% sub_dsc_25bc),
+  
+  # train ----
+  train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = 2000),
+  # test ----
+  p_dsc10k_test25 = predictSimilarity(train_dsc10k, GetAssayData(sub_dsc10k25), 
+                                      classes = sub_dsc10k25$cell_identity, 
+                               logits = F, minGeneMatch = 0.0),
+  
+  # predict ----
+  sub_atac10k = new_atachm_mx[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
+  p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hmIdent$cell_identity, 
+                             logits = F, minGeneMatch = 0.0)
+  
 )
 
 

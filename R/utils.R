@@ -254,5 +254,7 @@ extract_seurat_w_n_features <- function(n, markers, seurat){
   return(sub_sr)
 }
 
-
-
+add_barcode_metadata <- function(sr){
+  sr$cell_bc <- colnames(sr)
+  return(sr)
+}
