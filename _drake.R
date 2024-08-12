@@ -842,11 +842,52 @@ logistic_rna_plan <- drake_plan(
         minGeneMatch = 0.7, logits = FALSE),
    train_rna_allCells = trainModel(GetAssayData(rna_hthymrg_clus),
                             classes = rna_hthymrg_clus$cell_type, 
-                            maxCells = 82300),
+                            maxCells = ncol(rna_hthymrg_clus)),
   predict_rna_allCells = predictSimilarity(train_rna_allCells,
         GetAssayData(rna_w_tumor_label_newbc),
         classes = rna_w_tumor_label_newbc$cell_identity,
         minGeneMatch = 0.7, logits = FALSE),
+
+  # split data for training and test ---
+  dsc_rna = add_barcode_metadata(rna_hthymrg_clus),
+  dscRnatrain80_data = sampling_sr(dsc_rna, 80, type = 'percent', class_col = 'cell_type'),
+
+  dscRnatestbc = setdiff(colnames(dsc_rna), colnames(dscRnatrain80_data)),
+  dscRnatest20_data = subset(dsc_rna, subset = cell_bc %in% dscRnatestbc), 
+  # train ---
+  dscRnatrain80 = trainModel_Nhung(GetAssayData(dscRnatrain80_data), classes = dscRnatrain80_data$cell_type, maxCells = ncol(dscRnatrain80_data)),
+
+  # test ----
+  dscRnatest20 = predictSimilarity(dscRnatrain80, GetAssayData(dscRnatest20_data), classes = dscRnatest20_data, logits = F),
+
+  # predict ----
+  dscRnapredict = predictSimilarity(dscRnatrain80, GetAssayData(rna_w_tumor_label_newbc), classes = rna_w_tumor_label_newbc$cell_type, minGeneMatch = 0.7, logits = F),
+
+  # with only overlap features ---
+  # get overlap features ---
+trainfeatureRna = intersect(rownames(dsc_rna), rownames(rna_w_tumor_label_newbc)),
+
+dsc_rnaOnlyoverlap = subset(dsc_rna, features = trainfeatureRna),
+
+rnaOnlyOverlap = subset(rna_w_tumor_label_newbc, features = trainfeatureRna), 
+
+# split data ----
+ dscRnaOverlaptrain80_data = sampling_sr(dsc_rnaOnlyoverlap, 80, type = 'percent', class_col = 'cell_type'),
+
+  dscRnaOverlaptestBc = setdiff(colnames(dsc_rnaOnlyoverlap), colnames(dscRnaOverlaptrain80_data)),
+
+  dscRnaOverlaptest20_data = subset(dsc_rnaOnlyoverlap, subset = cell_bc %in% dscRnaOverlaptestBc), 
+  # train ---
+  dscRnaOverlaptrain80 = trainModel_Nhung(GetAssayData(dscRnaOverlaptrain80_data), classes =dscRnaOverlaptrain80_data$cell_type, maxCells = ncol(dscRnaOverlaptrain80_data)),
+
+  # test ----
+  dscRnaOverlaptest20 = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(dscRnaOverlaptest20_data), classes = dscRnaOverlaptest20_data, logits = F),
+
+  # predict ----
+  dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_type, logits = F),
+
+
+
   # xi 2020 ---
   xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
   xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
@@ -891,7 +932,7 @@ logistic_atac_plan <- drake_plan(
   # minGeneMatch = 0.2, logits = FALSE ), # out of memory 350Gb
 
   # add bc metadata ---
-  dsc_atac = add_barcode_metadata(atac_hthyDim),
+  dsc_atac = add_barcode_metadata(atac_hthymrgDim),
   dsc_atac_ident = change_indent(dsc_atac, by = 'cell_type'),
   dsc_markers = FindAllMarkers(dsc_atac_ident, only.pos = T, logfc.threshold = 0.25),
   atac_features = rownames(new_atachm_mx),
@@ -907,19 +948,19 @@ logistic_atac_plan <- drake_plan(
   sub_dsc7k = subset(dsc_atac_ident, features = train_feature7k),
   sub_dsc7k75 = sampling_sr(sub_dsc7k, 75, class_col = 'cell_type', type = 'percent'),
   
-  sub_dsc_25bc = setdiff(colnames(sub_dsc7k), colnames(sub_dsc7k75)),
-  sub_dsc7k25 =  subset(sub_dsc7k, subset = cell_bc %in% sub_dsc_25bc),
+  sub_dsc_25bc7k = setdiff(colnames(sub_dsc7k), colnames(sub_dsc7k75)),
+  sub_dsc7k25 =  subset(sub_dsc7k, subset = cell_bc %in% sub_dsc_25bc7k),
   
   # train ----
-  train_dsc7k = trainModel(GetAssayData(sub_dsc7k75), class = sub_dsc7k75$cell_type, maxCell = 82300),
+  train_dsc7k = trainModel(GetAssayData(sub_dsc7k75), class = sub_dsc7k75$cell_type, maxCell = ncol(sub_dsc7k75)),
   # test ----
   p_dsc7k_test25 = predictSimilarity(train_dsc7k, GetAssayData(sub_dsc7k25), 
                                      classes = sub_dsc7k25$cell_identity, 
                                      logits = F, minGeneMatch = 0.0),
   # predict ----
-  sub_atac7k = new_atachm_mx[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
+  sub_atac7k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
   p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hmIdent$cell_identity, 
-                              logits = F, minGeneMatch = 0.0)
+                              logits = F, minGeneMatch = 0.0),
   # 10k features ---
   topfeatures10k = dsc_markers %>% 
     group_by(cluster) %>% 
@@ -931,23 +972,22 @@ logistic_atac_plan <- drake_plan(
   sub_dsc10k = subset(dsc_atac_ident, features = train_feature10k),
   sub_dsc10k75 = sampling_sr(sub_dsc10k, 75, class_col = 'cell_type', type = 'percent'),
   
-  sub_dsc_25bc = setdiff(colnames(sub_dsc10k), colnames(sub_dsc10k75)),
-  sub_dsc10k25 =  subset(sub_dsc10k, subset = cell_bc %in% sub_dsc_25bc),
+  sub_dsc_25bc10k = setdiff(colnames(sub_dsc10k), colnames(sub_dsc10k75)),
+  sub_dsc10k25 =  subset(sub_dsc10k, subset = cell_bc %in% sub_dsc_25bc10k),
   
   # train ----
-  train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = 2000),
+  train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = ncol(sub_dsc10k75)),
   # test ----
   p_dsc10k_test25 = predictSimilarity(train_dsc10k, GetAssayData(sub_dsc10k25), 
                                       classes = sub_dsc10k25$cell_identity, 
                                logits = F, minGeneMatch = 0.0),
   
   # predict ----
-  sub_atac10k = new_atachm_mx[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
+  sub_atac10k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
   p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hmIdent$cell_identity, 
                              logits = F, minGeneMatch = 0.0)
   
 )
-
 
 
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
@@ -956,7 +996,15 @@ plan <- bind_plans(combine_peak_plan, process_special_lib_plan,
                   batch_correction_plan, 
                   cluster_behavior_after_correction_plan, 
                   marker_plan, assign_tumor_cell_plan,
-                  no_harmony_plan,healthy_plan, logistic_rna_plan,
-                  logistic_atac_plan)
+                  no_harmony_plan,healthy_plan, logistic_rna_plan)
+
+# plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
+#                   process_plan, cell_annotation_plan, 
+#                   cluster_behavior_plan, batch_detection_plan, 
+#                   batch_correction_plan, 
+#                   cluster_behavior_after_correction_plan, 
+#                   marker_plan, assign_tumor_cell_plan,
+#                   no_harmony_plan,healthy_plan, logistic_rna_plan,
+#                   logistic_atac_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

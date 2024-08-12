@@ -624,3 +624,28 @@ getPopulationOffset = function(y){
   off = log(off/(1-off))
   return(rep(off,length(y)))
 }
+
+# add keep = TRUE to reatin prevalidated matrix to calculate roc and other performance metric 
+trainModel_Nhung = function(refMat,classes,lengths=rep(1,nrow(refMat)),maxCells=2000,minCells=100,genes2remove=NULL, keep = TRUE,...){
+  ##############
+  # Sub-sample #
+  ##############
+  w = smartSubset(classes,maxCells,minCells)
+  ###################
+  # Train the model #
+  ###################
+  #Prepare the data
+  dat = normData(refMat[,w],lengths)
+  
+  message(dim(dat))
+  #Remove genes (ADDED BY JDEM)
+  dat <- dat[,!colnames(dat) %in% genes2remove]
+  
+  message(dim(dat))
+  #Train the model
+  fit = multinomialFitCV(dat,classes[w],...)
+  #####################
+  # Return the result #
+  #####################
+  return(fit)
+}

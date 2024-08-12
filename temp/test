@@ -1,0 +1,21 @@
+# get overlap features ---
+trainfeatureRna = intersect(rownames(dsc_rna), rownames(rna_w_tumor_label_newbc)),
+
+dsc_rnaOnlyoverlap = subset(dsc_rna, features = trainfeatureRna),
+
+rnaOnlyOverlap = subset(rna_w_tumor_label_newbc, features = trainfeatureRna), 
+
+# split data ----
+ dscRnaOverlaptrain80_data = sampling_sr(dsc_rnaOnlyoverlap, 80, type = 'percent', class_col = 'cell_type'),
+
+  dscRnaOverlaptestBc = setdiff(colnames(dsc_rnaOnlyoverlap), colnames(dscRnaOverlaptrain80_data)),
+
+  dscRnaOverlaptest20_data = subset(dsc_rnaOnlyoverlap, subset = cell_bc %in% dscRnaOverlaptestBc), 
+  # train ---
+  dscRnaOverlaptrain80 = trainModel_Nhung(GetAssayData(dscRnaOverlaptrain80_data), classes =dscRnaOverlaptrain80_data$cell_type, maxCells = ncol(dscRnaOverlaptrain80_data)),
+
+  # test ----
+  dscRnaOverlaptest20 = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(dscRnaOverlaptest20_data), classes = dscRnaOverlaptest20_data, logits = F),
+
+  # predict ----
+  dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_type, logits = F),

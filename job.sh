@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=2logis
-#SBATCH --output=log_logis_pipeline2.out
+#SBATCH --job-name=rnalogis
+#SBATCH --output=log_logis_rnatesttrain.out
 #SBATCH --time=100:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
