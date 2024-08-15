@@ -69,16 +69,20 @@ list_files_with_exts(functions_folder, 'R') %>%
 # loadd(new_atachm_mx)
 # saveRDS(file = 'output/logistic_regression/atac_hm_features_above_300cells.RDS', new_atachm_mx )
 
-message('load data')
-loadd(atac_hthymrgDim)
+# message('load data')
+# loadd(atac_hthymrgDim)
 
-message('read dsc_atac')
-dsc_atac <- readRDS('output/logistic_regression/dsc_only_overlap_countMx.RDS')
+# message('read dsc_atac')
+# dsc_atac <- readRDS('output/logistic_regression/dsc_only_overlap_countMx.RDS')
 
-message('add cell type')
-dsc_atac$cell_type <- atac_hthymrgDim$cell_type
+# message('add cell type')
+# dsc_atac$cell_type <- atac_hthymrgDim$cell_type
 
-message('save rds')
-saveRDS(file = 'output/logistic_regression/dsc_atac_only_overlap.RDS', dsc_atac)
+# message('save rds')
+# saveRDS(file = 'output/logistic_regression/dsc_atac_only_overlap.RDS', dsc_atac)
+
+loadd(dsc_atac_ident)
+saveRDS(file = 'output/logistic_regression/dsc_atac_ident.RDS', dsc_atac_ident)
+
 message('finished!')
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=savecache
 #SBATCH --output=log_savecache.out
-#SBATCH --time=96:0:0
+#SBATCH --time=2:0:0
 #SBATCH --ntasks=1
-#SBATCH --mem=350G
+#SBATCH --mem=50G
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=tmpspace:10G
 #SBATCH --mail-type=FAIL,END

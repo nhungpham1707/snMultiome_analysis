@@ -840,13 +840,13 @@ logistic_rna_plan <- drake_plan(
         GetAssayData(rna_w_tumor_label_newbc),
         classes = rna_w_tumor_label_newbc$cell_identity,
         minGeneMatch = 0.7, logits = FALSE),
-   train_rna_allCells = trainModel(GetAssayData(rna_hthymrg_clus),
-                            classes = rna_hthymrg_clus$cell_type, 
-                            maxCells = ncol(rna_hthymrg_clus)),
-  predict_rna_allCells = predictSimilarity(train_rna_allCells,
-        GetAssayData(rna_w_tumor_label_newbc),
-        classes = rna_w_tumor_label_newbc$cell_identity,
-        minGeneMatch = 0.7, logits = FALSE),
+  #  train_rna_allCells = trainModel(GetAssayData(rna_hthymrg_clus),
+  #                           classes = rna_hthymrg_clus$cell_type, 
+  #                           maxCells = ncol(rna_hthymrg_clus)),
+  # predict_rna_allCells = predictSimilarity(train_rna_allCells,
+  #       GetAssayData(rna_w_tumor_label_newbc),
+  #       classes = rna_w_tumor_label_newbc$cell_identity,
+  #       minGeneMatch = 0.7, logits = FALSE),
 
   # split data for training and test ---
   dsc_rna = add_barcode_metadata(rna_hthymrg_clus),
@@ -934,7 +934,9 @@ logistic_atac_plan <- drake_plan(
   # add bc metadata ---
   dsc_atac = add_barcode_metadata(atac_hthymrgDim),
   dsc_atac_ident = change_indent(dsc_atac, by = 'cell_type'),
-  dsc_markers = FindAllMarkers(dsc_atac_ident, only.pos = T, logfc.threshold = 0.25),
+  # dsc_markers = FindAllMarkers(dsc_atac_ident, only.pos = T, logfc.threshold = 0.25),
+  # dsc_mrkers calculated from seurat 5.1.0, return more result
+  dsc_markers = readRDS('output/logistic_regression/dsc_markers.RDS'),
   atac_features = rownames(new_atachm_mx),
 
   topfeatures7k = dsc_markers %>% 
@@ -955,11 +957,11 @@ logistic_atac_plan <- drake_plan(
   train_dsc7k = trainModel(GetAssayData(sub_dsc7k75), class = sub_dsc7k75$cell_type, maxCell = ncol(sub_dsc7k75)),
   # test ----
   p_dsc7k_test25 = predictSimilarity(train_dsc7k, GetAssayData(sub_dsc7k25), 
-                                     classes = sub_dsc7k25$cell_identity, 
+                                     classes = sub_dsc7k25$cell_type, 
                                      logits = F, minGeneMatch = 0.0),
   # predict ----
   sub_atac7k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
-  p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hmIdent$cell_identity, 
+  p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hm_tumor_nona$cell_identity, 
                               logits = F, minGeneMatch = 0.0),
   # 10k features ---
   topfeatures10k = dsc_markers %>% 
@@ -979,15 +981,17 @@ logistic_atac_plan <- drake_plan(
   train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = ncol(sub_dsc10k75)),
   # test ----
   p_dsc10k_test25 = predictSimilarity(train_dsc10k, GetAssayData(sub_dsc10k25), 
-                                      classes = sub_dsc10k25$cell_identity, 
+                                      classes = sub_dsc10k25$cell_type, 
                                logits = F, minGeneMatch = 0.0),
   
   # predict ----
   sub_atac10k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
-  p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hmIdent$cell_identity, 
+  p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hm_tumor_nona$cell_identity, 
                              logits = F, minGeneMatch = 0.0)
   
 )
+
+
 
 
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
@@ -996,15 +1000,7 @@ plan <- bind_plans(combine_peak_plan, process_special_lib_plan,
                   batch_correction_plan, 
                   cluster_behavior_after_correction_plan, 
                   marker_plan, assign_tumor_cell_plan,
-                  no_harmony_plan,healthy_plan, logistic_rna_plan)
-
-# plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
-#                   process_plan, cell_annotation_plan, 
-#                   cluster_behavior_plan, batch_detection_plan, 
-#                   batch_correction_plan, 
-#                   cluster_behavior_after_correction_plan, 
-#                   marker_plan, assign_tumor_cell_plan,
-#                   no_harmony_plan,healthy_plan, logistic_rna_plan,
-#                   logistic_atac_plan)
+                  no_harmony_plan,healthy_plan, logistic_rna_plan,
+                  logistic_atac_plan)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)
