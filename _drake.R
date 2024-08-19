@@ -858,10 +858,10 @@ logistic_rna_plan <- drake_plan(
   dscRnatrain80 = trainModel_Nhung(GetAssayData(dscRnatrain80_data), classes = dscRnatrain80_data$cell_type, maxCells = ncol(dscRnatrain80_data)),
 
   # test ----
-  dscRnatest20 = predictSimilarity(dscRnatrain80, GetAssayData(dscRnatest20_data), classes = dscRnatest20_data, logits = F),
+  dscRnatest20 = predictSimilarity(dscRnatrain80, GetAssayData(dscRnatest20_data), classes = dscRnatest20_data$cell_type, logits = F),
 
   # predict ----
-  dscRnapredict = predictSimilarity(dscRnatrain80, GetAssayData(rna_w_tumor_label_newbc), classes = rna_w_tumor_label_newbc$cell_type, minGeneMatch = 0.7, logits = F),
+  dscRnapredict = predictSimilarity(dscRnatrain80, GetAssayData(rna_w_tumor_label_newbc), classes = rna_w_tumor_label_newbc$cell_identity, minGeneMatch = 0.7, logits = F),
 
   # with only overlap features ---
   # get overlap features ---
@@ -881,10 +881,10 @@ rnaOnlyOverlap = subset(rna_w_tumor_label_newbc, features = trainfeatureRna),
   dscRnaOverlaptrain80 = trainModel_Nhung(GetAssayData(dscRnaOverlaptrain80_data), classes =dscRnaOverlaptrain80_data$cell_type, maxCells = ncol(dscRnaOverlaptrain80_data)),
 
   # test ----
-  dscRnaOverlaptest20 = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(dscRnaOverlaptest20_data), classes = dscRnaOverlaptest20_data, logits = F),
+  dscRnaOverlaptest20 = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(dscRnaOverlaptest20_data), classes = dscRnaOverlaptest20_data$cell_type, logits = F),
 
   # predict ----
-  dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_type, logits = F),
+  dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_identity, logits = F),
 
 
 
@@ -961,34 +961,61 @@ logistic_atac_plan <- drake_plan(
                                      logits = F, minGeneMatch = 0.0),
   # predict ----
   sub_atac7k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
-  p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hm_tumor_nona$cell_identity, 
-                              logits = F, minGeneMatch = 0.0),
-  # 10k features ---
-  topfeatures10k = dsc_markers %>% 
+  # p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hm_tumor_nona$cell_identity, 
+  #                             logits = F, minGeneMatch = 0.0),
+  # # 10k features ---
+  # topfeatures10k = dsc_markers %>% 
+  #   group_by(cluster) %>% 
+  #   top_n(n = 10000, 
+  #         wt = avg_log2FC),
+  
+  # features_to_keep10k = topfeatures10k$gene,
+  # train_feature10k = intersect(features_to_keep10k, atac_features),
+  # sub_dsc10k = subset(dsc_atac_ident, features = train_feature10k),
+  # sub_dsc10k75 = sampling_sr(sub_dsc10k, 75, class_col = 'cell_type', type = 'percent'),
+  
+  # sub_dsc_25bc10k = setdiff(colnames(sub_dsc10k), colnames(sub_dsc10k75)),
+  # sub_dsc10k25 =  subset(sub_dsc10k, subset = cell_bc %in% sub_dsc_25bc10k),
+  
+  # # train ----
+  # train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = ncol(sub_dsc10k75)),
+  # # test ----
+  # p_dsc10k_test25 = predictSimilarity(train_dsc10k, GetAssayData(sub_dsc10k25), 
+  #                                     classes = sub_dsc10k25$cell_type, 
+  #                              logits = F, minGeneMatch = 0.0),
+  
+  # # predict ----
+  # sub_atac10k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
+  # p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hm_tumor_nona$cell_identity, 
+  #                            logits = F, minGeneMatch = 0.0),
+
+  # combine features from seurat 5 and seurat 4  --------
+  dscMarkers_seurat4 = FindAllMarkers(dsc_atac_ident, only.pos = T, logfc.threshold = 0.25),
+  featuresInSeurat4 = intersect(rownames(new_atachmMx_colname), rownames(dscMarkers_seurat4)),
+  featuresInSeurat5 = intersect(rownames(new_atachmMx_colname), rownames(dsc_markers)),
+  featuresInSeurat5Only = setdiff(featuresInSeurat5, featuresInSeurat4),
+  dscMarkers_onlyInS5 = dsc_markers[rownames(dsc_markers) %in% featuresInSeurat5Only,],
+  trainfeatureCombine =  dscMarkers_onlyInS5 %>% 
     group_by(cluster) %>% 
-    top_n(n = 10000, 
+    top_n(n = 500, 
           wt = avg_log2FC),
+  ## split training and test -----
+  sub_dsccombine = subset(dsc_atac_ident, features = trainfeatureCombine),
+  sub_dsc80combine = sampling_sr(sub_dsccombine, 80, class_col = 'cell_type', type = 'percent'),
   
-  features_to_keep10k = topfeatures10k$gene,
-  train_feature10k = intersect(features_to_keep10k, atac_features),
-  sub_dsc10k = subset(dsc_atac_ident, features = train_feature10k),
-  sub_dsc10k75 = sampling_sr(sub_dsc10k, 75, class_col = 'cell_type', type = 'percent'),
-  
-  sub_dsc_25bc10k = setdiff(colnames(sub_dsc10k), colnames(sub_dsc10k75)),
-  sub_dsc10k25 =  subset(sub_dsc10k, subset = cell_bc %in% sub_dsc_25bc10k),
-  
+  sub_dsc_20combinebc = setdiff(colnames(sub_dsccombine), colnames(sub_dsc80combine)),
+  sub_dsccombine20 =  subset(sub_dsccombine, subset = cell_bc %in% sub_dsc_20combinebc),
   # train ----
-  train_dsc10k = trainModel(GetAssayData(sub_dsc10k75), class = sub_dsc10k75$cell_type, maxCell = ncol(sub_dsc10k75)),
+  train_dsccombine = trainModel(GetAssayData(sub_dsc80combine), class = sub_dsc80combine$cell_type, maxCell = ncol(sub_dsc80combine)),
   # test ----
-  p_dsc10k_test25 = predictSimilarity(train_dsc10k, GetAssayData(sub_dsc10k25), 
-                                      classes = sub_dsc10k25$cell_type, 
-                               logits = F, minGeneMatch = 0.0),
+  p_dsccombine_test20 = predictSimilarity(train_dsccombine, GetAssayData(sub_dsccombine20), 
+                     classes = sub_dsccombine20$cell_type, 
+                     logits = F),
   
   # predict ----
-  sub_atac10k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature10k,], # 9760 features
-  p_dsc10k = predictSimilarity(train_dsc10k, sub_atac10k, classes = atac_hm_tumor_nona$cell_identity, 
-                             logits = F, minGeneMatch = 0.0)
-  
+  sub_ataccombine = new_atachmMx_colname[rownames(new_atachm_mx) %in% trainfeatureCombine,], 
+  p_dsccombine = predictSimilarity(train_dsccombine, sub_ataccombine, classes = atac_hm_tumor_nona$cell_identity, 
+                     logits = F)
 )
 
 

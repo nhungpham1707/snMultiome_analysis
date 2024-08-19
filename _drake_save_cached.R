@@ -81,8 +81,10 @@ list_files_with_exts(functions_folder, 'R') %>%
 # message('save rds')
 # saveRDS(file = 'output/logistic_regression/dsc_atac_only_overlap.RDS', dsc_atac)
 
-loadd(dsc_atac_ident)
-saveRDS(file = 'output/logistic_regression/dsc_atac_ident.RDS', dsc_atac_ident)
+# loadd(dsc_atac_ident)
+# saveRDS(file = 'output/logistic_regression/dsc_atac_ident.RDS', dsc_atac_ident)
 
+loadd(rna_hthymrg_clus)
+saveRDS(file = 'output/logistic_regression/dscRna.RDS', rna_hthymrg_clus)
 message('finished!')
 
