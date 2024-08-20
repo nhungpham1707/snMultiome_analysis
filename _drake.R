@@ -805,7 +805,7 @@ healthy_plan <- drake_plan(
                 .id = id.vars)),
     atac_hthymrgNor = sc_atac_normalize(atac_hthymrg),
     atac_hthymrgDim = sc_atac_dim_redu(atac_hthymrgNor),
-    # atac_hthymrgGA = get_gene_activity_wo_fragFile(atac_hthymrgDim, hg38),
+   
 
     # mrg descartes atac download ---
     desc_atac_download = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/healthy_data_descartes/all_celltypes.downsampled.filtered.RDS'),
@@ -815,6 +815,24 @@ healthy_plan <- drake_plan(
     # create the same gene activity for multiome data to compare with reference data --
     # atac_ga_nofrag = get_gene_activity_wo_fragFile(atac_group_sgr, hg38),
 
+    # merge atac with gene activity -----
+    atac_hthysrGA = target(set_default_assay(hthysr, assay = 'RNA'),
+                     transform = map(hthysr,
+                                     id.vars = !!hthytissue_list ,
+                                     .id = id.vars)),
+
+    atac_hthyGASubset = target(sampling_sr(atac_hthysrGA, 
+                                     percent_to_keep = 800, 
+                                     type = 'number', 
+                                     class_col = 'cell_type'),
+                         transform = map(atac_hthysrGA,
+                                         id.vars = !!hthytissue_list ,
+                                         .id = id.vars)),
+
+    atac_hthyGAmrg = target(merge_sr_list(c(atac_hthyGASubset), healthyDir),
+                      transform = combine(atac_hthyGASubset,
+                                          id.vars = !!hthytissue_list ,
+                                          .id = id.vars)),
     # merg rna hthy ---
     rna_hthySubset = target(sampling_sr(hthysr, percent_to_keep = 800, 
                                         type = 'number', class_col = 'cell_type'),
@@ -963,6 +981,15 @@ logistic_atac_plan <- drake_plan(
   sub_atac7k = new_atachmMx_colname[rownames(new_atachm_mx) %in% train_feature7k,], # 9760 features
   # p_dsc7k = predictSimilarity(train_dsc7k, sub_atac7k, classes = atac_hm_tumor_nona$cell_identity, 
   #                             logits = F, minGeneMatch = 0.0),
+
+  # with less cells 
+  subDsc7kLesscell =  sampling_sr(sub_dsc7k75, 5, class_col = 'cell_type', type = 'percent'),
+  trainDsc7klessCell = trainModel(GetAssayData(subDsc7kLesscell), class = subDsc7kLesscell$cell_type),
+  # p_dsc7klessCell = predictSimilarity(trainDsc7klessCell, sub_atac7k, classes = atac_hm_tumor_nona$cell_identity, logits = F),
+  # p_dsc7klessCell_test25 = predictSimilarity(trainDsc7klessCell, GetAssayData(sub_dsc7k25), 
+  #                                    classes = sub_dsc7k25$cell_type, 
+  #                                    logits = F, minGeneMatch = 0.0),
+
   # # 10k features ---
   # topfeatures10k = dsc_markers %>% 
   #   group_by(cluster) %>% 
@@ -1000,22 +1027,45 @@ logistic_atac_plan <- drake_plan(
     top_n(n = 500, 
           wt = avg_log2FC),
   ## split training and test -----
-  sub_dsccombine = subset(dsc_atac_ident, features = trainfeatureCombine),
+  sub_dsccombine = subset(dsc_atac_ident, features = trainfeatureCombine$gene),
   sub_dsc80combine = sampling_sr(sub_dsccombine, 80, class_col = 'cell_type', type = 'percent'),
   
   sub_dsc_20combinebc = setdiff(colnames(sub_dsccombine), colnames(sub_dsc80combine)),
   sub_dsccombine20 =  subset(sub_dsccombine, subset = cell_bc %in% sub_dsc_20combinebc),
   # train ----
-  train_dsccombine = trainModel(GetAssayData(sub_dsc80combine), class = sub_dsc80combine$cell_type, maxCell = ncol(sub_dsc80combine)),
-  # test ----
-  p_dsccombine_test20 = predictSimilarity(train_dsccombine, GetAssayData(sub_dsccombine20), 
-                     classes = sub_dsccombine20$cell_type, 
-                     logits = F),
+  # train_dsccombine = trainModel(GetAssayData(sub_dsc80combine), class = sub_dsc80combine$cell_type, maxCell = ncol(sub_dsc80combine)),
+  # # test ----
+  # p_dsccombine_test20 = predictSimilarity(train_dsccombine, GetAssayData(sub_dsccombine20), 
+  #                    classes = sub_dsccombine20$cell_type, 
+  #                    logits = F),
   
-  # predict ----
-  sub_ataccombine = new_atachmMx_colname[rownames(new_atachm_mx) %in% trainfeatureCombine,], 
-  p_dsccombine = predictSimilarity(train_dsccombine, sub_ataccombine, classes = atac_hm_tumor_nona$cell_identity, 
-                     logits = F)
+  # # predict ----
+  # sub_ataccombine = new_atachmMx_colname[rownames(new_atachm_mx) %in% trainfeatureCombine$gene,], 
+  # p_dsccombine = predictSimilarity(train_dsccombine, sub_ataccombine, classes = atac_hm_tumor_nona$cell_identity, 
+  #                    logits = F)
+
+  # predict with atac GA -------
+  # prepare features -----
+dsc_atacGA = add_barcode_metadata(atac_hthyGAmrg),
+trainfeatureAtacGA = intersect(rownames(dsc_atacGA), rownames(atac_hmGA_tumor_nona)),
+
+dscatacGA_onlyoverlap = subset(dsc_atacGA, features = trainfeatureAtacGA),
+
+atacGA_onlyoverlap = subset(atac_hmGA_tumor_nona, features = trainfeatureAtacGA),
+# split data ----
+dscatacGAOverlaptrain80_data = sampling_sr(dscatacGA_onlyoverlap, 80, type = 'percent', class_col = 'cell_type'),
+
+dscatacGAOverlaptestBc = setdiff(colnames(dscatacGA_onlyoverlap), colnames(dscatacGAOverlaptrain80_data)),
+
+dscatacGAOverlaptest20_data = subset(dscatacGA_onlyoverlap, subset = cell_bc %in% dscatacGAOverlaptestBc), 
+# train ---
+dscatacGAOverlaptrain80 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data)),
+
+# test ----
+dscatacGAOverlaptest20 = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(dscatacGAOverlaptest20_data), classes = dscatacGAOverlaptest20_data$cell_type, logits = F),
+
+# predict ----
+dscatacGAOverlappredict = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(atacGA_onlyoverlap), classes = atacGA_onlyoverlap$cell_identity, logits = F)
 )
 
 
