@@ -1051,7 +1051,6 @@ trainfeatureAtacGA = intersect(rownames(dsc_atacGA), rownames(atac_hmGA_tumor_no
 
 dscatacGA_onlyoverlap = subset(dsc_atacGA, features = trainfeatureAtacGA),
 
-atacGA_onlyoverlap = subset(atac_hmGA_tumor_nona, features = trainfeatureAtacGA),
 # split data ----
 dscatacGAOverlaptrain80_data = sampling_sr(dscatacGA_onlyoverlap, 80, type = 'percent', class_col = 'cell_type'),
 
@@ -1059,13 +1058,62 @@ dscatacGAOverlaptestBc = setdiff(colnames(dscatacGA_onlyoverlap), colnames(dscat
 
 dscatacGAOverlaptest20_data = subset(dscatacGA_onlyoverlap, subset = cell_bc %in% dscatacGAOverlaptestBc), 
 # train ---
-dscatacGAOverlaptrain80 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data)),
+# dscatacGAOverlaptrain80 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data)),
 
+# # test ----
+# dscatacGAOverlaptest20 = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(dscatacGAOverlaptest20_data), classes = dscatacGAOverlaptest20_data$cell_type, logits = F),
+
+# # predict ----
+# atacGA_Mx = GetAssayData(atac_hmGA_tumor_nona),
+
+# atacGA_onlyoverlap = atacGA_Mx[rownames(atacGA_Mx) %in% trainfeatureAtacGA],
+
+# dscatacGAOverlappredict = predictSimilarity(dscatacGAOverlaptrain80, atacGA_onlyoverlap, classes = atac_hmGA_tumor_nona$cell_identity, logits = F),
+
+# with clean dsc ---------
+# remove cells with uncertain annotation in DESCARTES 
+# (i.e. those with 'unknown', '?', 'xyz positive') and 
+# cell types with less than 350 cells (based on previous prediction, 
+# these cells do not have good performance)  
+# also, cell types are grouped (i.e. lymphoid, myloid cells are grouped to immune cells) 
+cleanDscAtac = readRDS('output/healthy_data/groupCelltype_nCleanDscAtac.RDS'), 
+cleanDscAtacIdent = change_indent(cleanDscAtac, by = 'group_cell_type'),
+cleanDscAtac_markers = FindAllMarkers(cleanDscAtacIdent, only.pos = T, logfc.threshold = 0.20),
+topfeatures7CleanAtac = cleanDscAtac_markers %>% 
+    group_by(cluster) %>% 
+    top_n(n = 7000, 
+          wt = avg_log2FC),
+  
+features_to_keepcleanDsc= topfeatures7CleanAtac$gene,
+
+train_featurecleanDsc= intersect(features_to_keepcleanDsc, atac_features),
+sub_cleanDscAtac = subset(cleanDscAtacIdent, features = train_featurecleanDsc),
+sub_cleanDscAtac80 = sampling_sr(sub_cleanDscAtac, 80, class_col = 'cell_type', type = 'percent'),
+
+sub_cleanDscAtac_20bc= setdiff(colnames(sub_cleanDscAtac), colnames(sub_cleanDscAta80)),
+sub_cleanDscAtac20 =  subset(sub_cleanDscAtac, subset = cell_bc %in% sub_cleanDscAtac_20bc),
+
+# train ----
+train_cleanDscAtac= trainModel(GetAssayData(sub_cleanDscAtac80), class = sub_cleanDscAtac80$group_cell_type, maxCell = ncol(sub_cleanDscAtac80)),
 # test ----
-dscatacGAOverlaptest20 = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(dscatacGAOverlaptest20_data), classes = dscatacGAOverlaptest20_data$cell_type, logits = F),
-
+p_cleanDscAtac_test20 = predictSimilarity(train_cleanDscAtac, GetAssayData(sub_cleanDscAtac20), 
+                                    classes = sub_cleanDscAtac20$group_cell_type, 
+                                    logits = F),
 # predict ----
-dscatacGAOverlappredict = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(atacGA_onlyoverlap), classes = atacGA_onlyoverlap$cell_identity, logits = F)
+sub_ataccleanDsc= new_atachmMx_colname[rownames(new_atachm_mx) %in% train_featurecleanDsc,], # 9760 features
+p_cleanDscAtac= predictSimilarity(train_cleanDscAtac, sub_ataccleanDsc, 
+                                  classes = atac_hm_tumor_nona$cell_identity, 
+                                  logits = F),
+# predict on group cell type atac ------
+AtacGroupcellMeta = readRDS('clean_code_bu/output/logistic_regression/group_cellIdentityAtac.RDS'),
+atac_hmGroup = AddMetaData(object = atac_hm_tumor_nona, 
+                          metadata = AtacGroupcellMeta, 
+                          col.name = 'group_cell_identity'),
+p_cleanDscGroupAtac = predictSimilarity(train_cleanDscAtac, 
+                                        sub_ataccleanDsc, 
+                                        classes = atac_hmGroup$group_cell_identity, 
+                                        logits = F)
+
 )
 
 

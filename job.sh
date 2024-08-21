@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=atacGAlogis
-#SBATCH --output=log_logis_atacGA.out
+#SBATCH --job-name=atacCleanDsclogis
+#SBATCH --output=log_logis_ataccleanDsc.out
 #SBATCH --time=100:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G
