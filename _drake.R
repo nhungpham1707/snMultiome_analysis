@@ -1090,7 +1090,7 @@ train_featurecleanDsc= intersect(features_to_keepcleanDsc, atac_features),
 sub_cleanDscAtac = subset(cleanDscAtacIdent, features = train_featurecleanDsc),
 sub_cleanDscAtac80 = sampling_sr(sub_cleanDscAtac, 80, class_col = 'cell_type', type = 'percent'),
 
-sub_cleanDscAtac_20bc= setdiff(colnames(sub_cleanDscAtac), colnames(sub_cleanDscAta80)),
+sub_cleanDscAtac_20bc= setdiff(colnames(sub_cleanDscAtac), colnames(sub_cleanDscAtac80)),
 sub_cleanDscAtac20 =  subset(sub_cleanDscAtac, subset = cell_bc %in% sub_cleanDscAtac_20bc),
 
 # train ----
@@ -1105,7 +1105,7 @@ p_cleanDscAtac= predictSimilarity(train_cleanDscAtac, sub_ataccleanDsc,
                                   classes = atac_hm_tumor_nona$cell_identity, 
                                   logits = F),
 # predict on group cell type atac ------
-AtacGroupcellMeta = readRDS('clean_code_bu/output/logistic_regression/group_cellIdentityAtac.RDS'),
+AtacGroupcellMeta = readRDS('output/logistic_regression/group_cellIdentityAtac.RDS'),
 atac_hmGroup = AddMetaData(object = atac_hm_tumor_nona, 
                           metadata = AtacGroupcellMeta, 
                           col.name = 'group_cell_identity'),
