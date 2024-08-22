@@ -78,7 +78,7 @@ Activate conda environment by:
 conda activate scRNA_scATAC_env
 ```
  
-There is conflict to install infercnv and Seurat in the same environment. Therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
+There is a conflict to install infercnv and Seurat in the same environment. Therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
 
 In short, 
 ```
