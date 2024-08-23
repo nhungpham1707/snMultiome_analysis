@@ -258,34 +258,3 @@ add_barcode_metadata <- function(sr){
   sr$cell_bc <- colnames(sr)
   return(sr)
 }
-
-
-createColPalete <- function(){
-  qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-  col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-  Glasbey = glasbey.colors(32)
-  all_col <- unique(c(col_vector, Glasbey))
-  return(all_col)
-}
-
-# count feature per category, i.e. per cell type 
-countFeatures <- function(seuratObj, category = 'cell_identity'){
-  cells <- unique(seuratObj@meta.data[,category])
-  featureCount <- matrix(data = NA, nrow = length(cells), ncol = 2)
-  atacMx <- GetAssayData(seuratObj)
-  
-  for (i in 1:length(cells)){
-    message(paste('process', i, 'type'))
-    subcells <- colnames(seuratObj)[seuratObj@meta.data[,category] == cells[i]]
-    subMx <- atacMx[,subcells]
-    df_non0 <- subMx[apply(subMx[,-1], 1, function(x) !all(x==0)),]
-    
-    featureCount[i,1] <- cells[i]
-    featureCount[i,2] <- nrow(df_non0)
-  }
-  
-  featureCount[,2] <- as.numeric(featureCount[,2])
-  colnames(featureCount) <- c('cells', 'count')
-  return (featureCount)
-}
-
