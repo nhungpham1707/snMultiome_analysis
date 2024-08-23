@@ -904,6 +904,39 @@ rnaOnlyOverlap = subset(rna_w_tumor_label_newbc, features = trainfeatureRna),
   # predict ----
   dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_identity, logits = F),
 
+# do the same as atac, train with only top features to cpmpare res ---
+  dsc_rna_ident = change_indent(dsc_rna, by = 'cell_type'),
+  dscRna_markers = FindAllMarkers(object =  dsc_rna_ident, only.pos = T, logfc.threshold = 0.25), 
+  dscRna_meta = add_barcode_metadata(dsc_rna_ident),
+topfeaturesRna = dscRna_markers %>% 
+  group_by(cluster) %>% 
+  top_n(n = 7000, 
+        wt = avg_log2FC),
+
+features_to_keepdscRna= topfeaturesRna$gene,
+
+train_featuredscRna= intersect(features_to_keepdscRna, rownames(rna_w_tumor_label_newbc)),
+subRna = subset(rna_w_tumor_label_newbc, features = train_featuredscRna),
+
+sub_dscRnatopFeature = subset(dscRna_meta, features = train_featuredscRna),
+sub_dscRnatopFeature80 = sampling_sr(sub_dscRnatopFeature, 80, 
+                                     class_col = 'cell_type', type = 'percent'),
+
+sub_dscRnatopFeature_20bc= setdiff(colnames(sub_dscRnatopFeature), colnames(sub_dscRnatopFeature80)),
+sub_dscRnatopFeature20 =  subset(sub_dscRnatopFeature, subset = cell_bc %in% sub_dscRnatopFeature_20bc),
+
+# train ----
+train_dscRna= trainModel(GetAssayData(sub_dscRnatopFeature80), 
+                             class = sub_dscRnatopFeature80$group_cell_type, 
+                             maxCell = ncol(sub_dscRnatopFeature80)),
+# test ----
+p_dscRna_test20 = predictSimilarity(train_dscRna, GetAssayData(sub_dscRnatopFeature20), 
+                                          classes = sub_dscRnatopFeature20$group_cell_type, 
+                                          logits = F),
+# predict ----
+p_dscRna= predictSimilarity(train_dscRna, subRna, 
+                                  classes = subRna$cell_identity, 
+                                  logits = F),
 
 
   # xi 2020 ---

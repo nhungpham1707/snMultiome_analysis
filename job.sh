@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=atacCleanDsclogis
-#SBATCH --output=log_logis_ataccleanDsc.out
+#SBATCH --job-name=rnaTopfeature
+#SBATCH --output=log_logis_rnaTopfeatures.out
 #SBATCH --time=100:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

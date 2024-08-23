@@ -258,3 +258,12 @@ add_barcode_metadata <- function(sr){
   sr$cell_bc <- colnames(sr)
   return(sr)
 }
+
+createColPalete <- function(){
+  qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+  col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+  Glasbey = glasbey.colors(32)
+  all_col <- unique(c(col_vector, Glasbey))
+  return(all_col)
+}
+
