@@ -13,6 +13,8 @@ In this pipeline, drake, a workflow manager for R was used. drake helps to store
 The main scripts are:
 -  _drake.R: a master script that run all analysis steps except infercnv 
 - _drake_infercnv.R: master script to run infercnv (getting input data from _drake.R)
+- 
+All codes were run on HPC with SLURM, using 350Gb memory for 1Tb data. Jobs was called by job.sh
 
 Before running the code, modify the data directory in global_variables.R and global_variables_infercnv.R 
 
@@ -76,7 +78,7 @@ Activate conda environment by:
 conda activate scRNA_scATAC_env
 ```
  
-There is conflict to install infercnv and Seurat in the same environment. Therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
+There is a conflict to install infercnv and Seurat in the same environment. Therefore, infercnv was installed in a separate environment. For some reason, infercnv cannot be installed with conda or in R in a conda env. Fortunately, infercnv can be installed with mamba following instruction [here](https://gist.github.com/hiraksarkar/28824d9943309544a454c595ac0441f7)
 
 In short, 
 ```
