@@ -904,6 +904,72 @@ rnaOnlyOverlap = subset(rna_w_tumor_label_newbc, features = trainfeatureRna),
   # predict ----
   dscRnaOverlappredict = predictSimilarity(dscRnaOverlaptrain80, GetAssayData(rnaOnlyOverlap), classes = rnaOnlyOverlap$cell_identity, logits = F),
 
+# conduct the same with dsc atac, find marker and extarct top marker to train -----
+# dsc_rna_ident = change_indent(dsc_rna, by = 'cell_type'),
+# dscRna_markers = FindAllMarkers(dsc_rna_ident, only.pos = T, logfc.threshold = 0.25),
+# dscRna_meta = add_barcode_metadata(dsc_rna_ident),
+# topfeaturesRna = dscRna_markers %>% 
+#   group_by(cluster) %>% 
+#   top_n(n = 7000, 
+#         wt = avg_log2FC),
+
+# features_to_keepdscRna= topfeaturesRna$gene,
+
+# train_featuredscRna= intersect(features_to_keepdscRna, rownames(rna_w_tumor_label_newbc)),
+# subRna = subset(rna_w_tumor_label_newbc, features = train_featuredscRna),
+
+# sub_dscRnatopFeature = subset(dscRna_meta, features = train_featuredscRna),
+# sub_dscRnatopFeature80 = sampling_sr(sub_dscRnatopFeature, 80, 
+#                                      class_col = 'cell_type', type = 'percent'),
+
+# sub_dscRnatopFeature_20bc= setdiff(colnames(sub_dscRnatopFeature), colnames(sub_dscRnatopFeature80)),
+# sub_dscRnatopFeature20 =  subset(sub_dscRnatopFeature, subset = cell_bc %in% sub_dscRnatopFeature_20bc),
+
+# # train ----
+# train_dscRnaTopfeature = trainModel(GetAssayData(sub_dscRnatopFeature80), 
+#                              class = sub_dscRnatopFeature80$group_cell_type, 
+#                              maxCell = ncol(sub_dscRnatopFeature80)),
+# # test ----
+# p_dscRnatopFeature_test20 = predictSimilarity(train_dscRnaTopfeature, GetAssayData(sub_dscRnatopFeature20), 
+#                                           classes = sub_dscRnatopFeature20$group_cell_type, 
+#                                           logits = F),
+# # predict ----
+# p_dscRnatopFeature= predictSimilarity(train_dscRnaTopfeature, subRna, 
+#                                   classes = subRna$cell_identity, 
+#                                   logits = F),
+
+
+
+# group cell types and remove cell with uncertain annotation -----
+# dsc_rnaClean = readRDS('output/healthy_data/dsc_rnaClean.RDS'),
+# dsc_rnaCleanOnlyoverlap = subset(dsc_rnaClean, features = trainfeatureRna),
+dsc_rnaCleanOnlyoverlap = groupNremoveCellDsc(dsc_rnaOnlyoverlap, 'output/healthy_data/dsc_cell_type_count_group.csv'),
+# split data ----
+dscRnaCleantrain80_data = sampling_sr(dsc_rnaCleanOnlyoverlap, 80, 
+                       type = 'percent', 
+                       class_col = 'cell_type'),
+
+dscRnaCleantestBc = setdiff(colnames(dsc_rnaCleanOnlyoverlap), 
+                              colnames(dscRnaCleantrain80_data)),
+
+dscRnaCleantest20_data = subset(dsc_rnaCleanOnlyoverlap, 
+                                  subset = cell_bc %in% dscRnaCleantestBc), 
+# train ---
+dscRnaCleantrain80 = trainModel(GetAssayData(dscRnaCleantrain80_data), 
+                                        classes =dscRnaCleantrain80_data$group_cell_type, 
+                                        maxCells = ncol(dscRnaCleantrain80_data)),
+
+# test ----
+dscRnaCleantest20 = predictSimilarity(dscRnaCleantrain80, 
+                                        GetAssayData(dscRnaCleantest20_data), 
+                                        classes = dscRnaCleantest20_data$group_cell_type, 
+                                        logits = F),
+
+# predict ----
+dscRnaCleanpredict = predictSimilarity(dscRnaCleantrain80, 
+                                         GetAssayData(rnaOnlyOverlap), 
+                                         classes = rnaOnlyOverlap$cell_identity, 
+                                        logits = F),
 
 
   # xi 2020 ---
@@ -1105,18 +1171,52 @@ p_cleanDscAtac= predictSimilarity(train_cleanDscAtac, sub_ataccleanDsc,
                                   classes = atac_hm_tumor_nona$cell_identity, 
                                   logits = F),
 # predict on group cell type atac ------
-AtacGroupcellMeta = readRDS('output/logistic_regression/group_cellIdentityAtac.RDS'),
+AtacGroupcellMeta = readRDS('output/logistic_regression/group_cellIdentityATac.RDS'),
 atac_hmGroup = AddMetaData(object = atac_hm_tumor_nona, 
                           metadata = AtacGroupcellMeta, 
                           col.name = 'group_cell_identity'),
 p_cleanDscGroupAtac = predictSimilarity(train_cleanDscAtac, 
                                         sub_ataccleanDsc, 
                                         classes = atac_hmGroup$group_cell_identity, 
-                                        logits = F)
+                                        logits = F),
+# more grouping - neuron cells and remove more cells 
+groupDscAtac = groupNremoveCellDsc(dsc_atac_ident, 
+                                   'output/healthy_data/descartes_cell_type_group_neuronCells.csv'), 
+groupDscAtacIdent = change_indent(groupDscAtac, by = 'group_cell_type'),
+groupDscAtac_markers = FindAllMarkers(groupDscAtacIdent, only.pos = T, logfc.threshold = 0.20),
+topfeaturesGroupAtac = groupDscAtac_markers %>% 
+  group_by(cluster) %>% 
+  top_n(n = 7000, 
+        wt = avg_log2FC),
+
+features_to_keepGroupAtac= topfeaturesGroupAtac$gene,
+
+train_featureGroupAtac= intersect(features_to_keepGroupAtac, atac_features),
+sub_groupDscAtac = subset(groupDscAtacIdent, features = train_featureGroupAtac),
+sub_groupDscAtac80 = sampling_sr(sub_groupDscAtac, 80, class_col = 'cell_type', type = 'percent'),
+
+sub_groupDscAtac_20bc= setdiff(colnames(sub_groupDscAtac), colnames(sub_groupDscAtac80)),
+sub_groupDscAtac20 =  subset(sub_groupDscAtac, subset = cell_bc %in% sub_groupDscAtac_20bc),
+
+# train ----
+train_groupDscAtac= trainModel(GetAssayData(sub_groupDscAtac80), 
+                               class = sub_groupDscAtac80$group_cell_type, 
+                               maxCell = ncol(sub_groupDscAtac80)),
+# test ----
+p_groupDscAtac_test20 = predictSimilarity(train_groupDscAtac, GetAssayData(sub_groupDscAtac20), 
+                                          classes = sub_groupDscAtac20$group_cell_type, 
+                                          logits = F),
+# predict ----
+sub_atacGroupAtac= new_atachmMx_colname[rownames(new_atachm_mx) %in% train_featureGroupAtac,], # 9760 features
+p_groupDscAtac= predictSimilarity(train_groupDscAtac, sub_atacGroupAtac, 
+                                  classes = atac_hm_tumor_nona$cell_identity, 
+                                  logits = F)
 
 )
 
-
+statistic_plan <- drake_plan(
+  nFeatureAtacHm = countFeatures(atac_hm_tumor_nona, 'cell_identity')
+)
 
 
 plan <- bind_plans(combine_peak_plan, process_special_lib_plan, 
@@ -1125,7 +1225,10 @@ plan <- bind_plans(combine_peak_plan, process_special_lib_plan,
                   batch_correction_plan, 
                   cluster_behavior_after_correction_plan, 
                   marker_plan, assign_tumor_cell_plan,
-                  no_harmony_plan,healthy_plan, logistic_rna_plan,
-                  logistic_atac_plan)
+                  no_harmony_plan,healthy_plan,
+                  # logistic_rna_plan,
+                  logistic_atac_plan,
+                  # statistic_plan
+)
 
 drake_config(plan, lock_cache = FALSE, memory_strategy = 'autoclean', garbage_collection = TRUE,  lock_envir = FALSE)

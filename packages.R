@@ -70,6 +70,7 @@ suppressPackageStartupMessages({
   library(CellMixS)
   library(SeuratDisk)
   library(SCpubr)
+  library(Polychrome)
   conflict_prefer('select', 'clusterProfiler')
   conflict_prefer('filter', 'clusterProfiler')
   
