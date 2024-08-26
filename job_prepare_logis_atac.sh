@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=prepatac
-#SBATCH --output=log_atac_prep.out
+#SBATCH --output=log_atac_nohm_prep.out
 #SBATCH --time=600:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

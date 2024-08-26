@@ -267,3 +267,23 @@ createColPalete <- function(){
   return(all_col)
 }
 
+# count feature per category, i.e. per cell type 
+countFeatures <- function(seuratObj, category = 'cell_identity'){
+  cells <- unique(seuratObj@meta.data[,category])
+  featureCount <- matrix(data = NA, nrow = length(cells), ncol = 2)
+  atacMx <- GetAssayData(seuratObj)
+
+  for (i in 1:length(cells)){
+    message(paste('process', i, 'type'))
+    subcells <- colnames(seuratObj)[seuratObj@meta.data[,category] == cells[i]]
+    subMx <- atacMx[,subcells]
+    df_non0 <- subMx[apply(subMx[,-1], 1, function(x) !all(x==0)),]
+
+    featureCount[i,1] <- cells[i]
+    featureCount[i,2] <- nrow(df_non0)
+  }
+
+  featureCount[,2] <- as.numeric(featureCount[,2])
+  colnames(featureCount) <- c('cells', 'count')
+  return (featureCount)
+}

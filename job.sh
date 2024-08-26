@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=rnaTopfeature
+#SBATCH --job-name=rnatofeaturelogis
 #SBATCH --output=log_logis_rnaTopfeatures.out
 #SBATCH --time=100:0:0
 #SBATCH --ntasks=1
