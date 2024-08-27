@@ -1,6 +1,7 @@
 # analyze logistic regression model performance 
 # Nhung 23 08 2024 
 # load packages and custom-made functions 
+setwd('/hpc/pmc_drost/PROJECTS/cell_origin_NP/clean_code_bu/')
 source('_drake.R')
 
 # load data -----
@@ -16,6 +17,8 @@ cleanDscAtac <- readRDS('output/healthy_data/groupCelltype_nCleanDscAtac.RDS')
 ## train data ----
 loadd(sub_cleanDscAtac80) # loadd is a drake function to load a drake target, check _drake.R for pipeline 
 # saveRDS(file = 'output/logistic_regression/traindata_cleanDscAtac80.RDS', sub_cleanDscAtac80)
+# load train data -----
+loadd(sub_cleanDscAtac80)
 # load train model ----
 loadd(train_cleanDscAtac)
 # saveRDS(file = 'output/logistic_regression/train_cleanDscAtac.RDS', train_cleanDscAtac)
@@ -72,21 +75,19 @@ performanceMetric[performanceMetric[,2] < lowsensitivity_cutoff, ] # 3 cells
 index <- which(rownames(p_cleanDscAtac_test20) == 'Neuroendocrine cells')
 plot(p_cleanDscAtac_test20[index,])
 
-# count features in predictive set 
+# count features in predictive set atac_hmGroup --> fail, require too much memory 
 
-freq_0 = colSums(GetAssayData(atac_hmGroup) !=0)
-plot(freq_0)
-plot(colSums(GetAssayData(atac_hmGroup) ==0))
+# count features in test set 
+data <- atac_hmGroup
+cell_type <- data$cell_identity
 
-
-
-cells <- unique(atac_hmGroup$cell_identity)
+cells <- unique(cell_type)
 featureCount <- matrix(data = NA, nrow = length(cells), ncol = 2)
-atacMx <- GetAssayData(atac_hmGroup)
+atacMx <- GetAssayData(data)
 
-for (i in 1:length(cells)){
+for (i in 6:length(cells)){
   message(paste('process', i, 'type'))
-  subcells <- colnames(atac_hmGroup)[atac_hmGroup$cell_identity == cells[i]]
+  subcells <- colnames(data)[cell_type == cells[i]]
   subMx <- atacMx[,subcells]
   df_non0 <- subMx[apply(subMx[,-1], 1, function(x) !all(x==0)),]
   
@@ -98,13 +99,34 @@ featureCount[,2] <- as.numeric(featureCount[,2])
 colnames(featureCount) <- c('cells', 'count')
 p <- ggplot(featureCount, aes(x = cells, y = count)) + 
   geom_bar(stat = 'identity', fill = 'blue') +
-  coord_flip()
+  coord_flip() + 
+  xlab('Features')+ ylab('Count')+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust=1,
+                                   size = 8),
+        text = element_text(size = 20)) +
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black"), 
+        panel.background = element_blank()) 
 
-cells_count <- as.data.frame(table(dscAtac20$cell_type))
+p
+cells_count <- as.data.frame(table(cell_type))
+colnames(cells_count) <- c('cell_type', 'count')
 head(cells_count)
-p2 <- ggplot(cells_count, aes(x = Var1, y = Freq)) + 
+p2 <- ggplot(cells_count, aes(x = cell_type, y = count)) + 
   geom_bar(stat = 'identity', fill = 'lightblue') +
-  coord_flip()
+  coord_flip() +
+  xlab('Cell types') + ylab('Count')+
+  theme_bw() + 
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        text = element_text(size = 20),
+        axis.text.x = element_text(size = 10)) 
 
 p|p2
 
