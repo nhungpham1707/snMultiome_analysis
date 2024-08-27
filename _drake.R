@@ -1018,27 +1018,27 @@ logistic_rna_plan <- drake_plan(
                          type = 'percent', 
                          class_col = 'cell_type'),
 
-  # dscRnaCleantestBc = setdiff(colnames(dsc_rnaCleanOnlyoverlap), 
-  #                               colnames(dscRnaCleantrain80_data)),
-  
-  # dscRnaCleantest20_data = subset(dsc_rnaCleanOnlyoverlap, 
-  #                                   subset = cell_bc %in% dscRnaCleantestBc), 
+  dscRnaCleantestBc = setdiff(colnames(dsc_rnaCleanOnlyoverlap),
+                                colnames(dscRnaCleantrain80_data)),
+
+  dscRnaCleantest20_data = subset(dsc_rnaCleanOnlyoverlap,
+                                    subset = cell_bc %in% dscRnaCleantestBc),
   # # train ---
-  # dscRnaCleantrain80 = trainModel(GetAssayData(dscRnaCleantrain80_data), 
-  #                                         classes =dscRnaCleantrain80_data$group_cell_type, 
-  #                                         maxCells = ncol(dscRnaCleantrain80_data)),
-  
+  dscRnaCleantrain80 = trainModel(GetAssayData(dscRnaCleantrain80_data),
+                                          classes =dscRnaCleantrain80_data$group_cell_type,
+                                          maxCells = ncol(dscRnaCleantrain80_data)),
+
   # # test ----
-  # dscRnaCleantest20 = predictSimilarity(dscRnaCleantrain80, 
-  #                                         GetAssayData(dscRnaCleantest20_data), 
-  #                                         classes = dscRnaCleantest20_data$group_cell_type, 
-  #                                         logits = F),
-  
+  dscRnaCleantest20 = predictSimilarity(dscRnaCleantrain80,
+                                          GetAssayData(dscRnaCleantest20_data),
+                                          classes = dscRnaCleantest20_data$group_cell_type,
+                                          logits = F),
+
   # # predict ----
-  # dscRnaCleanpredict = predictSimilarity(dscRnaCleantrain80, 
-  #                                          GetAssayData(rnaOnlyOverlap), 
-  #                                          classes = rnaOnlyOverlap$cell_identity, 
-  #                                         logits = F),
+  dscRnaCleanpredict = predictSimilarity(dscRnaCleantrain80,
+                                           GetAssayData(rnaOnlyOverlap),
+                                           classes = rnaOnlyOverlap$cell_identity,
+                                          logits = F),
   # xi 2020 ---
   xi_2020 = readRDS('/hpc/pmc_drost/PROJECTS/cell_origin_NP/data/Jeff_rf/xi_2020.rds'),
   xi_2020_nor = normalize_dim_plot_sr(xi_2020, save_path = healthyDir, lib_name = 'xi_2020' ),
@@ -1193,8 +1193,9 @@ logistic_atac_plan <- drake_plan(
   
   dscatacGAOverlaptest20_data = subset(dscatacGA_onlyoverlap, subset = cell_bc %in% dscatacGAOverlaptestBc), 
   # train ---
-  dscatacGAOverlaptrain80 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$group_cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data)),
-  
+  # dscatacGAOverlaptrain80 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$group_cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data)),
+
+  dscatacGAOverlaptrain80_nfold2 = trainModel(GetAssayData(dscatacGAOverlaptrain80_data), classes =dscatacGAOverlaptrain80_data$group_cell_type, maxCells = ncol(dscatacGAOverlaptrain80_data), nfolds = 2),
   # # test ----
   dscatacGAOverlaptest20 = predictSimilarity(dscatacGAOverlaptrain80, GetAssayData(dscatacGAOverlaptest20_data), classes = dscatacGAOverlaptest20_data$cell_type, logits = F),
   
@@ -1235,7 +1236,7 @@ logistic_atac_plan <- drake_plan(
                                       classes = sub_cleanDscAtac20$group_cell_type, 
                                       logits = F),
   # predict ----
-  sub_ataccleanDsc= new_atachmMx_colname[rownames(new_atachm_mx) %in% train_featurecleanDsc,], # 9760 features
+  sub_ataccleanDsc= new_atachmMx_colname[rownames(new_atachmMx_colname) %in% train_featurecleanDsc,], # 9760 features
   p_cleanDscAtac= predictSimilarity(train_cleanDscAtac, sub_ataccleanDsc, 
                                     classes = atac_hm_tumor_nona$cell_identity, 
                                     logits = F),

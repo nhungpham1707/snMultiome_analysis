@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=rnatofeaturelogis
-#SBATCH --output=log_logis_rnaTopfeatures.out
+#SBATCH --job-name=rnaclean
+#SBATCH --output=log_logis_rnaclean.out
 #SBATCH --time=100:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=350G

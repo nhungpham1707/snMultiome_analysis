@@ -136,3 +136,10 @@ VlnPlot(seurat.obj, features = c("nFeature_peaks", "nCount_peaks"), ncol = 2)
 FeatureScatter(seurat.obj, feature1 = "nCount_peaks", feature2 = "nFeature_peaks", group.by = 'cell_identity') +
   geom_smooth(method = 'lm') 
 
+### RNA -----------------
+# load data 
+loadd(dscRnaCleantest20_data)
+loadd(dscRnaCleantrain80)
+loadd(dscRnaCleanpredict)
+saveRDS(file = 'output/logistic_regression/dscRnaCleantest20_data.RDS', dscRnaCleantest20_data)
+saveRDS(file = 'output/logistic_regression/dscRnaCleanpredict.RDS', dscRnaCleanpredict)
